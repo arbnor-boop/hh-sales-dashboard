@@ -1431,6 +1431,7 @@ type PRow = {
   scgVol:number; scgCash:number;
   montano:number; cem:number; yves:number; mert:number; kada:number; soeren:number; rene:number;
 };
+const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.kada - r.soeren - r.rene;
 
 function aggregate(deals:Deal[]):PRow[] {
   const map:Record<string,PRow> = {};
@@ -1625,7 +1626,7 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(r.kada?C.amber:C.dimmed)}}>{fmt(r.kada)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.soeren?C.amber:C.dimmed)}}>{fmt(r.soeren)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.rene?C.amber:C.dimmed)}}>{fmt(r.rene)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.green),fontWeight:600}}>{fmt(r.scgCash)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.green),fontWeight:600}}>{fmt(nettoOf(r))}</td>
               </tr>
             ))}
             <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
@@ -1641,7 +1642,7 @@ export default function Dashboard() {
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.kada)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.soeren)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.rene)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(sum.scgCash)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(nettoOf(sum))}</td>
             </tr>
           </tbody>
         </table>
