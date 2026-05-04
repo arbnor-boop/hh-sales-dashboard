@@ -390,84 +390,177 @@ export default function Dashboard() {
         </>)}
 
         {/* ── DATUM TAB ── */}
-        {tab==="datum"&&(<>
-          <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:16}}>
-            <div>
-              <div style={{fontSize:11,color:C.muted,marginBottom:6,letterSpacing:"1px",textTransform:"uppercase"}}>Datum auswählen (Mai 2026)</div>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                {MAI_TAGE.map(d=>(
-                  <button key={d} onClick={()=>setSelectedDay(d)} style={{padding:"8px 14px",borderRadius:8,border:`1px solid ${selectedDay===d?C.indigo:C.border}`,background:selectedDay===d?"#1a1a2e":"transparent",color:selectedDay===d?C.indigo:C.muted,fontSize:13,fontWeight:selectedDay===d?700:400,cursor:"pointer"}}>
-                    {d.slice(0,5)}
-                  </button>
-                ))}
+        {tab==="datum"&&(()=>{
+          // Alle Tage für gewählten Monat
+          const monatDeals = DEALS_MAI.filter(d=>d.datum.endsWith(selectedMonth==="Mai 2026"?"2026":selectedMonth.slice(-4)));
+          const tageImMonat = [...new Set(monatDeals.map(d=>d.datum))].sort();
+
+          // Tagesdaten nach Intern/Extern aufgeteilt
+          const dealsAmTag = DEALS_MAI.filter(d=>d.datum===selectedDay);
+          type PMap = Record<string,{total:number;ersteRate:number;vol:number;cash:number}>;
+
+          const internMap:PMap={}, externMap:PMap={}, gesamtMap:PMap={};
+          for(const d of dealsAmTag){
+            const key=d.partner;
+            const addTo=(m:PMap)=>{
+              if(!m[key])m[key]={total:0,ersteRate:0,vol:0,cash:0};
+              m[key].total+=d.vol;
+              m[key].ersteRate+=d.cash;
+              if(d.intern){m[key].vol+=d.vol;m[key].cash+=d.cash;}
+              else{m[key].vol+=d.vol;m[key].cash+=d.cash;}
+            };
+            if(d.intern)addTo(internMap);
+            else addTo(externMap);
+            if(!gesamtMap[key])gesamtMap[key]={total:0,ersteRate:0,vol:0,cash:0};
+            gesamtMap[key].total+=d.vol;
+            gesamtMap[key].ersteRate+=d.cash;
+            gesamtMap[key].vol+=d.vol;
+            gesamtMap[key].cash+=d.cash;
+          }
+
+          const sumRow=(m:PMap,label:string,volLabel:string,cashLabel:string,color:string)=>{
+            const rows=Object.entries(m).sort((a,b)=>b[1].total-a[1].total);
+            const totals=rows.reduce((acc,[,v])=>({total:acc.total+v.total,ersteRate:acc.ersteRate+v.ersteRate,vol:acc.vol+v.vol,cash:acc.cash+v.cash}),{total:0,ersteRate:0,vol:0,cash:0});
+            return(
+              <div style={{...card(),padding:0,overflow:"hidden",marginBottom:24}}>
+                <div style={{padding:"16px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
+                  <span style={{fontSize:14,fontWeight:700,color:color}}>{label}</span>
+                  <span style={{fontSize:12,color:C.muted}}>{selectedDay}</span>
+                </div>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead><tr style={{background:"#0a0a14"}}>
+                    <th style={TH}>Partner</th>
+                    <th style={{...TH,textAlign:"right"}}>SUM Total</th>
+                    <th style={{...TH,textAlign:"right"}}>SUM Erste Rate</th>
+                    <th style={{...TH,textAlign:"right",color}}>{volLabel}</th>
+                    <th style={{...TH,textAlign:"right",color:C.green}}>{cashLabel}</th>
+                  </tr></thead>
+                  <tbody>
+                    {rows.map(([partner,v],i)=>(
+                      <tr key={partner} style={{borderBottom:`1px solid #1a1a28`,background:i%2===0?"transparent":"#0d0d18"}}>
+                        <td style={{...TD,fontWeight:600}}>{partner}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(v.total)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(v.ersteRate)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(color)}}>{fmt(v.vol)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(v.cash)}</td>
+                      </tr>
+                    ))}
+                    <tr style={{background:"#0a0a14",borderTop:`2px solid ${C.border}`}}>
+                      <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.ersteRate)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(color)}}>{fmt(totals.vol)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.cash)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            );
+          };
+
+          return(<>
+            {/* Datum + Monat Auswahl */}
+            <div style={{display:"flex",gap:24,marginBottom:28,flexWrap:"wrap",alignItems:"flex-end"}}>
+              <div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:8,letterSpacing:"1px",textTransform:"uppercase"}}>Datum auswählen</div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {tageImMonat.map(d=>(
+                    <button key={d} onClick={()=>setSelectedDay(d)} style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${selectedDay===d?C.indigo:C.border}`,background:selectedDay===d?"#1a1a2e":"transparent",color:selectedDay===d?C.indigo:C.muted,fontSize:13,fontWeight:selectedDay===d?700:400,cursor:"pointer"}}>
+                      {d.slice(0,5)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:8,letterSpacing:"1px",textTransform:"uppercase"}}>Monat</div>
+                <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{background:"#1a1a2e",border:`1px solid #2a2a40`,color:C.text,borderRadius:8,padding:"8px 14px",fontSize:13,fontWeight:600,cursor:"pointer"}}>
+                  {MONTHS.map(m=><option key={m} value={m}>{m}</option>)}
+                </select>
               </div>
             </div>
-          </div>
 
-          {/* Tages-KPIs */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:24}}>
-            {([["SCG Volumen",fmt(dayData.vol),C.indigo],["Cash IN",fmt(dayData.cash),C.green],["Deals",String(dayData.count),C.pink]] as [string,string,string][]).map(([lbl,val,col])=>(
-              <div key={lbl} style={{...card(col),padding:"20px 22px"}}>
-                <div style={{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:8}}>{lbl} · {selectedDay}</div>
-                <div style={{fontSize:28,fontWeight:700,...mono("#fff"),letterSpacing:"-1px"}}>{val}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Deals am Tag */}
-          <div style={{...card(),marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#888",marginBottom:20}}>DEALS AM {selectedDay} · {view.toUpperCase()}</div>
-            {Object.entries(dayData.partnerMap).length===0?(
-              <div style={{color:C.muted,fontSize:13,padding:"16px 0"}}>Keine Deals für diese Ansicht an diesem Tag.</div>
-            ):(
-              Object.entries(dayData.partnerMap).sort((a,b)=>b[1].vol-a[1].vol).map(([partner,{vol,cash}])=>{
-                return(
-                  <div key={partner} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #1a1a28`}}>
-                    <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:13,fontWeight:600}}>{partner}</span>
-                    </div>
+            {/* Zusammenfassung oben */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:28}}>
+              {(()=>{
+                const internTotal=Object.values(internMap).reduce((a,v)=>({vol:a.vol+v.vol,cash:a.cash+v.cash}),{vol:0,cash:0});
+                const externTotal=Object.values(externMap).reduce((a,v)=>({vol:a.vol+v.vol,cash:a.cash+v.cash}),{vol:0,cash:0});
+                const gesamtTotal=Object.values(gesamtMap).reduce((a,v)=>({vol:a.vol+v.vol,cash:a.cash+v.cash}),{vol:0,cash:0});
+                return([
+                  ["INTERN",internTotal.vol,internTotal.cash,C.green,"#0d1f1a","#1a4a35"],
+                  ["EXTERN",externTotal.vol,externTotal.cash,C.pink,"#1a0d1a","#4a1a3a"],
+                  ["GESAMT",gesamtTotal.vol,gesamtTotal.cash,C.indigo,"#0f0f1a","#2a2a50"],
+                ] as [string,number,number,string,string,string][]).map(([lbl,vol,cash,col,bg,border])=>(
+                  <div key={lbl} style={{background:bg,border:`1px solid ${border}`,borderRadius:14,padding:"20px 22px"}}>
+                    <div style={{fontSize:11,color:col,textTransform:"uppercase",letterSpacing:"2px",marginBottom:12,fontWeight:700}}>{lbl} · {selectedDay}</div>
                     <div style={{display:"flex",gap:24}}>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:10,color:C.muted}}>Volumen</div>
-                        <div style={{...mono(C.indigo),fontSize:13,fontWeight:600}}>{fmt(vol)}</div>
+                      <div>
+                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>SCG Volumen</div>
+                        <div style={{fontSize:20,fontWeight:700,...mono(col),letterSpacing:"-1px"}}>{fmt(vol)}</div>
                       </div>
-                      <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:10,color:C.muted}}>Cash IN</div>
-                        <div style={{...mono(C.green),fontSize:13,fontWeight:600}}>{fmt(cash)}</div>
+                      <div>
+                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Cash IN</div>
+                        <div style={{fontSize:20,fontWeight:700,...mono(C.green),letterSpacing:"-1px"}}>{fmt(cash)}</div>
                       </div>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
+                ));
+              })()}
+            </div>
 
-          {/* Alle Tage im Mai - Übersicht */}
-          <div style={{...card(),padding:0,overflow:"hidden"}}>
-            <div style={{padding:"20px 24px 12px",fontSize:13,fontWeight:600,color:"#888"}}>MAI 2026 · ALLE TAGE</div>
-            <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead><tr style={{background:"#0a0a14"}}>
-                <th style={TH}>Datum</th>
-                <th style={{...TH,textAlign:"right"}}>SCG Volumen</th>
-                <th style={{...TH,textAlign:"right"}}>Cash IN</th>
-                <th style={{...TH,textAlign:"right"}}>Deals</th>
-              </tr></thead>
-              <tbody>
-                {MAI_TAGE.map((d,i)=>{
-                  const dd=calcDay(d,view);
-                  return(
-                    <tr key={d} onClick={()=>setSelectedDay(d)} style={{borderBottom:`1px solid #1a1a28`,background:selectedDay===d?"#15152a":i%2===0?"transparent":"#0d0d18",cursor:"pointer"}}>
-                      <td style={{...TD,fontWeight:selectedDay===d?700:600,color:selectedDay===d?C.indigo:C.text}}>{d}</td>
-                      <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(dd.vol)}</td>
-                      <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(dd.cash)}</td>
-                      <td style={{...TD,textAlign:"right",color:"#888"}}>{dd.count}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>)}
+            {/* Block 1: INTERN */}
+            {sumRow(internMap,"INTERN","SUM Intern Volumen","SUM Intern Cash IN",C.green)}
+
+            {/* Block 2: EXTERN */}
+            {sumRow(externMap,"EXTERN","SUM Extern Volumen","SUM Extern Cash IN",C.pink)}
+
+            {/* Block 3: GESAMT */}
+            {(()=>{
+              const rows=Object.entries(gesamtMap).sort((a,b)=>b[1].total-a[1].total);
+              const totals=rows.reduce((acc,[,v])=>({total:acc.total+v.total,ersteRate:acc.ersteRate+v.ersteRate,vol:acc.vol+v.vol,cash:acc.cash+v.cash}),{total:0,ersteRate:0,vol:0,cash:0});
+              return(
+                <div style={{...card(),padding:0,overflow:"hidden",marginBottom:24}}>
+                  <div style={{padding:"16px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
+                    <span style={{fontSize:14,fontWeight:700,color:C.indigo}}>GESAMT</span>
+                    <span style={{fontSize:12,color:C.muted}}>{selectedDay}</span>
+                  </div>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead><tr style={{background:"#0a0a14"}}>
+                      <th style={TH}>Partner</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM Total</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM Erste Rate</th>
+                      <th style={{...TH,textAlign:"right",color:C.indigo}}>SUM SCG Volumen</th>
+                      <th style={{...TH,textAlign:"right",color:C.green}}>SUM SCG Cash IN</th>
+                      <th style={{...TH,textAlign:"right",color:C.amber}}>Netto Cash-IN</th>
+                    </tr></thead>
+                    <tbody>
+                      {rows.map(([partner,v],i)=>{
+                        const isInt=INTERN_PARTNERS.has(partner);
+                        return(
+                          <tr key={partner} style={{borderBottom:`1px solid #1a1a28`,background:i%2===0?"transparent":"#0d0d18"}}>
+                            <td style={{...TD,fontWeight:600}}>{partner}</td>
+                            <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(v.total)}</td>
+                            <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(v.ersteRate)}</td>
+                            <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(v.vol)}</td>
+                            <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(v.cash)}</td>
+                            <td style={{...TD,textAlign:"right",...mono(C.amber)}}>{isInt?fmt(v.cash*0.84):fmt(v.cash)}</td>
+                          </tr>
+                        );
+                      })}
+                      <tr style={{background:"#0a0a14",borderTop:`2px solid ${C.border}`}}>
+                        <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.ersteRate)}</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(totals.vol)}</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.cash)}</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(totals.cash*0.9)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+          </>);
+        })()}
 
         {/* ── PROGNOSE ── */}
         {tab==="prognose"&&(<>
