@@ -11,22 +11,39 @@ const INTERN_PARTNERS = new Set([
 // ─── DEAL-DATEN PRO TAG (Mai 2026 - aus Google Sheet) ──────────────────────
 // Format: { datum, partner, name, produkt, vol, cash, intern }
 const DEALS_MAI: Array<{datum:string;partner:string;name:string;produkt:string;vol:number;cash:number;intern:boolean}> = [
-  { datum:"01.05.2026", partner:"Candidate-flow", name:"Malerbetrieb Kluge", produkt:"Recruiting", vol:360, cash:360, intern:true },
-  { datum:"01.05.2026", partner:"Candidate-flow", name:"Dachdecker Hoffmann", produkt:"Recruiting", vol:540, cash:540, intern:true },
-  { datum:"01.05.2026", partner:"Schippke", name:"Thomas Weber", produkt:"Coaching", vol:1150, cash:1150, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Sanitär Meister GmbH", produkt:"Recruiting", vol:756, cash:756, intern:true },
-  { datum:"02.05.2026", partner:"Investmentpunk", name:"Klaus Bauer", produkt:"Mastermind", vol:3495.49, cash:3495.49, intern:false },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Elektro Braun", produkt:"Recruiting", vol:900, cash:900, intern:true },
-  { datum:"02.05.2026", partner:"Volume-Trader", name:"Stefan Müller", produkt:"Mentoring", vol:337.41, cash:337.41, intern:false },
-  { datum:"02.05.2026", partner:"Eitel Invest AG", name:"Peter Koch", produkt:"Coaching", vol:180, cash:36, intern:false },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Bäcker Schneider", produkt:"Recruiting", vol:360, cash:360, intern:true },
-  { datum:"02.05.2026", partner:"Investmentpunk", name:"Maria Lange", produkt:"Mastermind", vol:1674.00, cash:0, intern:false },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Friseur Maier", produkt:"Recruiting", vol:756, cash:756, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Handwerk GmbH", produkt:"Recruiting", vol:540, cash:540, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Maler Schmidt", produkt:"Recruiting", vol:630, cash:630, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Tischler Fischer", produkt:"Recruiting", vol:900, cash:900, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Gärtner Wagner", produkt:"Recruiting", vol:900, cash:900, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Heizung Becker", produkt:"Recruiting", vol:1501, cash:900, intern:true },
+  // ── 01.05.2026 ──
+  { datum:"01.05.2026", partner:"Candidate-flow", name:"Deal 1", produkt:"Recruiting", vol:360, cash:360, intern:true },
+  { datum:"01.05.2026", partner:"Candidate-flow", name:"Deal 2", produkt:"Recruiting", vol:540, cash:540, intern:true },
+  { datum:"01.05.2026", partner:"Schippke", name:"Deal 3", produkt:"Coaching", vol:1150, cash:1150, intern:true },
+  // ── 02.05.2026 ──
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 4", produkt:"Recruiting", vol:756, cash:756, intern:true },
+  { datum:"02.05.2026", partner:"Investmentpunk", name:"Deal 5", produkt:"Mastermind", vol:3495.49, cash:3495.49, intern:false },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 6", produkt:"Recruiting", vol:900, cash:900, intern:true },
+  { datum:"02.05.2026", partner:"Volume-Trader", name:"Deal 7", produkt:"Mentoring", vol:337.41, cash:337.41, intern:false },
+  { datum:"02.05.2026", partner:"Eitel Invest AG", name:"Deal 8", produkt:"Coaching", vol:180, cash:36, intern:false },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 9", produkt:"Recruiting", vol:360, cash:360, intern:true },
+  { datum:"02.05.2026", partner:"Investmentpunk", name:"Deal 10", produkt:"Mastermind", vol:1674.00, cash:0, intern:false },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 11", produkt:"Recruiting", vol:756, cash:756, intern:true },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 12", produkt:"Recruiting", vol:540, cash:540, intern:true },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 13", produkt:"Recruiting", vol:630, cash:630, intern:true },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 14", produkt:"Recruiting", vol:900, cash:900, intern:true },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 15", produkt:"Recruiting", vol:900, cash:900, intern:true },
+  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 16", produkt:"Recruiting", vol:1501, cash:900, intern:true },
+  // ── 04.05.2026 · INTERN ──
+  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Intern 1", produkt:"Recruiting", vol:2850, cash:1980, intern:true },
+  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Intern 2", produkt:"Recruiting", vol:2850, cash:1980, intern:true },
+  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Intern 3", produkt:"Recruiting", vol:2140, cash:1430, intern:true },
+  { datum:"04.05.2026", partner:"Hamann & Kollegen Immobilien GmbH", name:"Hamann Deal", produkt:"Immobilien", vol:38340, cash:38340, intern:true },
+  { datum:"04.05.2026", partner:"Schippke", name:"Schippke INT", produkt:"Coaching", vol:4125, cash:4125, intern:true },
+  // ── 04.05.2026 · EXTERN ──
+  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Extern 1", produkt:"Recruiting", vol:1300, cash:1113, intern:false },
+  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Extern 2", produkt:"Recruiting", vol:1303, cash:1112, intern:false },
+  { datum:"04.05.2026", partner:"Investmentpunk", name:"IP Deal 1", produkt:"Mastermind", vol:3345, cash:2258, intern:false },
+  { datum:"04.05.2026", partner:"Investmentpunk", name:"IP Deal 2", produkt:"Mastermind", vol:3345.41, cash:2257.41, intern:false },
+  { datum:"04.05.2026", partner:"Schippke", name:"Schippke EXT", produkt:"Coaching", vol:1150, cash:1150, intern:false },
+  { datum:"04.05.2026", partner:"Close Consulting - Leon", name:"CCL Deal", produkt:"Consulting", vol:1800, cash:1800, intern:false },
+  { datum:"04.05.2026", partner:"Volume-Trader", name:"VT Deal", produkt:"Trading", vol:3749, cash:3749, intern:false },
+  { datum:"04.05.2026", partner:"Eitel Invest AG", name:"Eitel Deal", produkt:"Invest", vol:2000, cash:400, intern:false },
 ];
 
 // ─── MONATSDATEN (aggregiert aus Google Sheet) ────────────────────────────
@@ -96,11 +113,13 @@ const PARTNER_MONTHLY: Record<string, Record<string,{vol:number;cash:number;nett
     "Close Consulting - Leon":{vol:3900,      cash:1500,     netto:1500,     intern:false},
   },
   "Mai 2026": {
-    "Candidate-flow":         {vol:10443,     cash:7615,     netto:5690,     intern:true},
-    "Schippke":               {vol:1150,      cash:1150,     netto:1150,     intern:true},
-    "Investmentpunk":         {vol:5170.49,   cash:3495.49,  netto:3495.49,  intern:false},
-    "Volume-Trader":          {vol:337.41,    cash:337.41,   netto:337.41,   intern:false},
-    "Eitel Invest AG":        {vol:180,       cash:36,       netto:36,       intern:false},
+    "Candidate-flow":                      {vol:10443,    cash:7615,    netto:5690,    intern:true},
+    "Hamann & Kollegen Immobilien GmbH":   {vol:38340,    cash:38340,   netto:38340,   intern:true},
+    "Schippke":                            {vol:5275,     cash:5275,    netto:3955,    intern:true},
+    "Investmentpunk":                      {vol:6690.41,  cash:4515.41, netto:4515.41, intern:false},
+    "Close Consulting - Leon":             {vol:1800,     cash:1800,    netto:1800,    intern:false},
+    "Volume-Trader":                       {vol:3749,     cash:3749,    netto:3749,    intern:false},
+    "Eitel Invest AG":                     {vol:2000,     cash:400,     netto:400,     intern:false},
   },
 };
 
@@ -110,7 +129,7 @@ const MONTH_SHORT: Record<string,string> = {
   "April 2026":"Apr","Mai 2026":"Mai"
 };
 const DEALS_COUNT: Record<string,number> = {
-  "Januar 2026":445,"Februar 2026":283,"März 2026":334,"April 2026":309,"Mai 2026":16
+  "Januar 2026":445,"Februar 2026":283,"März 2026":334,"April 2026":309,"Mai 2026":32
 };
 
 const fmt = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
@@ -322,13 +341,11 @@ export default function Dashboard() {
           <div style={{...card(),marginBottom:24}}>
             <div style={{fontSize:13,fontWeight:600,color:"#888",marginBottom:20}}>PARTNER RANKING · {selectedMonth} · {view.toUpperCase()}</div>
             {partners.map(([name,{vol,cash,netto}],i)=>{
-              const isInt=INTERN_PARTNERS.has(name);
               return(<div key={name} style={{marginBottom:18}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <span style={{width:22,height:22,borderRadius:6,background:i===0?C.indigo:i===1?"#6366f1":i===2?"#4f46e5":C.border,color:i<3?"#fff":C.muted,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{i+1}</span>
                     <span style={{fontSize:13,fontWeight:600}}>{name}</span>
-                    <span style={{fontSize:10,padding:"1px 6px",borderRadius:8,background:isInt?"#0d1f1a":"#1a0d1a",color:isInt?C.green:C.pink,border:`1px solid ${isInt?"#1a4a35":"#4a1a3a"}`}}>{isInt?"INT":"EXT"}</span>
                   </div>
                   <div style={{display:"flex",gap:20}}>
                     {([["Vol",fmt(vol),C.indigo],["Cash",fmt(cash),C.green],["Netto",fmt(netto),C.amber]] as [string,string,string][]).map(([l,v,c])=>(
@@ -404,12 +421,10 @@ export default function Dashboard() {
               <div style={{color:C.muted,fontSize:13,padding:"16px 0"}}>Keine Deals für diese Ansicht an diesem Tag.</div>
             ):(
               Object.entries(dayData.partnerMap).sort((a,b)=>b[1].vol-a[1].vol).map(([partner,{vol,cash}])=>{
-                const isInt=INTERN_PARTNERS.has(partner);
                 return(
                   <div key={partner} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #1a1a28`}}>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <span style={{fontSize:13,fontWeight:600}}>{partner}</span>
-                      <span style={{fontSize:10,padding:"1px 6px",borderRadius:8,background:isInt?"#0d1f1a":"#1a0d1a",color:isInt?C.green:C.pink,border:`1px solid ${isInt?"#1a4a35":"#4a1a3a"}`}}>{isInt?"INT":"EXT"}</span>
                     </div>
                     <div style={{display:"flex",gap:24}}>
                       <div style={{textAlign:"right"}}>
