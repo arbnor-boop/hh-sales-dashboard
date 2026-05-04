@@ -69,12 +69,16 @@ const PARTNER_MONTHLY: Record<string, Record<string, { vol: number; cash: number
     "Close Consulting - Leon":{ vol: 3900,      cash: 1500,     netto: 1500,     intern: false },
   },
   "05-2026": {
-    "Investmentpunk": { vol: 500, cash: 500, netto: 500, intern: false },
+    "Candidate-flow":  { vol: 10443,    cash: 7615,    netto: 5690,    intern: true  },
+    "Investmentpunk":  { vol: 5170.49,  cash: 3495.49, netto: 3495.49, intern: false },
+    "Schippke":        { vol: 1150,     cash: 1150,    netto: 1150,    intern: true  },
+    "Volume-Trader":   { vol: 337.41,   cash: 337.41,  netto: 337.41,  intern: false },
+    "Eitel Invest AG": { vol: 180,      cash: 36,      netto: 36,      intern: false },
   },
 };
 
 const MONTHS = ["01-2026","02-2026","03-2026","04-2026","05-2026"];
-const MONTH_LABELS: Record<string,string> = {"01-2026":"Jan 2026","02-2026":"Feb 2026","03-2026":"Mär 2026","04-2026":"Apr 2026","05-2026":"Mai 2026"};
+const MONTH_LABELS: Record<string,string> = {"01-2026":"Januar 2026","02-2026":"Februar 2026","03-2026":"März 2026","04-2026":"April 2026","05-2026":"Mai 2026"};
 const MONTH_SHORT: Record<string,string>  = {"01-2026":"Jan","02-2026":"Feb","03-2026":"Mär","04-2026":"Apr","05-2026":"Mai"};
 const DEALS: Record<string,number> = {"01-2026":445,"02-2026":283,"03-2026":334,"04-2026":309,"05-2026":1};
 
