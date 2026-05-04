@@ -1,620 +1,480 @@
 "use client";
 import { useState, useMemo } from "react";
 
-// ─── INTERN PARTNER LISTE ───────────────────────────────────────────────────
+// ─── INTERN PARTNER LISTE ────────────────────────────────────────────────────
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
   "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
 
-// ─── DEAL-DATEN PRO TAG (Mai 2026 - aus Google Sheet) ──────────────────────
-// Format: { datum, partner, name, produkt, vol, cash, intern }
-const DEALS_MAI: Array<{datum:string;partner:string;name:string;produkt:string;vol:number;cash:number;intern:boolean}> = [
-  // ── 01.05.2026 ──
-  { datum:"01.05.2026", partner:"Candidate-flow", name:"Deal 1", produkt:"Recruiting", vol:360, cash:360, intern:true },
-  { datum:"01.05.2026", partner:"Candidate-flow", name:"Deal 2", produkt:"Recruiting", vol:540, cash:540, intern:true },
-  { datum:"01.05.2026", partner:"Schippke", name:"Deal 3", produkt:"Coaching", vol:1150, cash:1150, intern:true },
-  // ── 02.05.2026 ──
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 4", produkt:"Recruiting", vol:756, cash:756, intern:true },
-  { datum:"02.05.2026", partner:"Investmentpunk", name:"Deal 5", produkt:"Mastermind", vol:3495.49, cash:3495.49, intern:false },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 6", produkt:"Recruiting", vol:900, cash:900, intern:true },
-  { datum:"02.05.2026", partner:"Volume-Trader", name:"Deal 7", produkt:"Mentoring", vol:337.41, cash:337.41, intern:false },
-  { datum:"02.05.2026", partner:"Eitel Invest AG", name:"Deal 8", produkt:"Coaching", vol:180, cash:36, intern:false },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 9", produkt:"Recruiting", vol:360, cash:360, intern:true },
-  { datum:"02.05.2026", partner:"Investmentpunk", name:"Deal 10", produkt:"Mastermind", vol:1674.00, cash:0, intern:false },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 11", produkt:"Recruiting", vol:756, cash:756, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 12", produkt:"Recruiting", vol:540, cash:540, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 13", produkt:"Recruiting", vol:630, cash:630, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 14", produkt:"Recruiting", vol:900, cash:900, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 15", produkt:"Recruiting", vol:900, cash:900, intern:true },
-  { datum:"02.05.2026", partner:"Candidate-flow", name:"Deal 16", produkt:"Recruiting", vol:1501, cash:900, intern:true },
-  // ── 04.05.2026 · INTERN ──
-  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Intern 1", produkt:"Recruiting", vol:2850, cash:1980, intern:true },
-  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Intern 2", produkt:"Recruiting", vol:2850, cash:1980, intern:true },
-  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Intern 3", produkt:"Recruiting", vol:2140, cash:1430, intern:true },
-  { datum:"04.05.2026", partner:"Hamann & Kollegen Immobilien GmbH", name:"Hamann Deal", produkt:"Immobilien", vol:38340, cash:38340, intern:true },
-  { datum:"04.05.2026", partner:"Schippke", name:"Schippke INT", produkt:"Coaching", vol:4125, cash:4125, intern:true },
-  // ── 04.05.2026 · EXTERN ──
-  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Extern 1", produkt:"Recruiting", vol:1300, cash:1113, intern:false },
-  { datum:"04.05.2026", partner:"Candidate-flow", name:"CF Extern 2", produkt:"Recruiting", vol:1303, cash:1112, intern:false },
-  { datum:"04.05.2026", partner:"Investmentpunk", name:"IP Deal 1", produkt:"Mastermind", vol:3345, cash:2258, intern:false },
-  { datum:"04.05.2026", partner:"Investmentpunk", name:"IP Deal 2", produkt:"Mastermind", vol:3345.41, cash:2257.41, intern:false },
-  { datum:"04.05.2026", partner:"Schippke", name:"Schippke EXT", produkt:"Coaching", vol:1150, cash:1150, intern:false },
-  { datum:"04.05.2026", partner:"Close Consulting - Leon", name:"CCL Deal", produkt:"Consulting", vol:1800, cash:1800, intern:false },
-  { datum:"04.05.2026", partner:"Volume-Trader", name:"VT Deal", produkt:"Trading", vol:3749, cash:3749, intern:false },
-  { datum:"04.05.2026", partner:"Eitel Invest AG", name:"Eitel Deal", produkt:"Invest", vol:2000, cash:400, intern:false },
+// ─── SETTER ──────────────────────────────────────────────────────────────────
+const SETTER = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
+
+// ─── DEAL-DATEN ──────────────────────────────────────────────────────────────
+type Deal = {
+  datum: string; monat: string; partner: string;
+  total: number; ersteRate: number; intern: boolean;
+  setter: string; nettoFaktor: number;
+};
+
+const DEALS: Deal[] = [
+  // ── Januar 2026 ──────────────────────────────────────────────────────────
+  { datum:"05.01.2026", monat:"Januar 2026",  partner:"Candidate-flow",              total:51249,    ersteRate:38316.60, intern:true,  setter:"Montano", nettoFaktor:0.95 },
+  { datum:"10.01.2026", monat:"Januar 2026",  partner:"ZELLGUT GmbH",                total:118372.66,ersteRate:64858.52, intern:true,  setter:"Cem",     nettoFaktor:0.82 },
+  { datum:"12.01.2026", monat:"Januar 2026",  partner:"Schippke",                    total:39375,    ersteRate:26062.50, intern:true,  setter:"",        nettoFaktor:0.84 },
+  { datum:"15.01.2026", monat:"Januar 2026",  partner:"HH SCG",                      total:60000,    ersteRate:20000,    intern:true,  setter:"",        nettoFaktor:1.00 },
+  { datum:"18.01.2026", monat:"Januar 2026",  partner:"Grundl Leadership",           total:35319.14, ersteRate:26163.01, intern:true,  setter:"Yves",    nettoFaktor:0.69 },
+  { datum:"20.01.2026", monat:"Januar 2026",  partner:"Nuhi Consulting",             total:13366.25, ersteRate:5238.75,  intern:true,  setter:"",        nettoFaktor:0.84 },
+  { datum:"22.01.2026", monat:"Januar 2026",  partner:"White Immobilien",            total:30000,    ersteRate:30000,    intern:true,  setter:"",        nettoFaktor:0.53 },
+  { datum:"25.01.2026", monat:"Januar 2026",  partner:"KHPH AG",                     total:25000,    ersteRate:25000,    intern:true,  setter:"",        nettoFaktor:1.00 },
+  { datum:"08.01.2026", monat:"Januar 2026",  partner:"ECOM HOUSE GmbH",             total:26240,    ersteRate:10220,    intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"14.01.2026", monat:"Januar 2026",  partner:"2b AHEAD ThinkTank GmbH",     total:23238.40, ersteRate:14149.20, intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"16.01.2026", monat:"Januar 2026",  partner:"Temmer",                      total:21992.50, ersteRate:8114.52,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"19.01.2026", monat:"Januar 2026",  partner:"Everflow Excellence",         total:20220,    ersteRate:11040,    intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"21.01.2026", monat:"Januar 2026",  partner:"Volume-Trader",               total:17990.66, ersteRate:12020.81, intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"24.01.2026", monat:"Januar 2026",  partner:"Eitel Invest AG",             total:5175,     ersteRate:2548.50,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"28.01.2026", monat:"Januar 2026",  partner:"MBA",                         total:3000,     ersteRate:2375,     intern:false, setter:"",        nettoFaktor:1.00 },
+  // ── Februar 2026 ─────────────────────────────────────────────────────────
+  { datum:"04.02.2026", monat:"Februar 2026", partner:"Candidate-flow",              total:115342,   ersteRate:66207.55, intern:true,  setter:"Montano", nettoFaktor:0.91 },
+  { datum:"07.02.2026", monat:"Februar 2026", partner:"Schippke",                    total:52800,    ersteRate:35904,    intern:true,  setter:"",        nettoFaktor:0.76 },
+  { datum:"11.02.2026", monat:"Februar 2026", partner:"Grundl Leadership",           total:39118.69, ersteRate:34768.69, intern:true,  setter:"Cem",     nettoFaktor:0.87 },
+  { datum:"14.02.2026", monat:"Februar 2026", partner:"KHPH AG",                     total:86000,    ersteRate:28000,    intern:true,  setter:"",        nettoFaktor:1.00 },
+  { datum:"18.02.2026", monat:"Februar 2026", partner:"Nuhi Consulting",             total:15696,    ersteRate:6032,     intern:true,  setter:"",        nettoFaktor:0.87 },
+  { datum:"22.02.2026", monat:"Februar 2026", partner:"ZELLGUT GmbH",                total:3890.76,  ersteRate:1342.44,  intern:true,  setter:"",        nettoFaktor:0.61 },
+  { datum:"06.02.2026", monat:"Februar 2026", partner:"Everflow Excellence",         total:33720,    ersteRate:5700,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"10.02.2026", monat:"Februar 2026", partner:"2b AHEAD ThinkTank GmbH",     total:29619.40, ersteRate:16194.40, intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"13.02.2026", monat:"Februar 2026", partner:"ECOM HOUSE GmbH",             total:27000,    ersteRate:9230,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"17.02.2026", monat:"Februar 2026", partner:"Temmer",                      total:22439,    ersteRate:4287.67,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"20.02.2026", monat:"Februar 2026", partner:"Volume-Trader",               total:13345.28, ersteRate:8120.64,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"24.02.2026", monat:"Februar 2026", partner:"Eitel Invest AG",             total:6390,     ersteRate:2695.50,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"26.02.2026", monat:"Februar 2026", partner:"MBA",                         total:1887.50,  ersteRate:755.20,   intern:false, setter:"",        nettoFaktor:1.00 },
+  // ── März 2026 ────────────────────────────────────────────────────────────
+  { datum:"05.03.2026", monat:"März 2026",    partner:"Candidate-flow",              total:93930,    ersteRate:52904.40, intern:true,  setter:"Montano", nettoFaktor:0.92 },
+  { datum:"08.03.2026", monat:"März 2026",    partner:"ZELLGUT GmbH",                total:53305.34, ersteRate:28778.11, intern:true,  setter:"",        nettoFaktor:0.71 },
+  { datum:"12.03.2026", monat:"März 2026",    partner:"Grundl Leadership",           total:47966.40, ersteRate:31807.21, intern:true,  setter:"Cem",     nettoFaktor:0.87 },
+  { datum:"15.03.2026", monat:"März 2026",    partner:"Schippke",                    total:43250,    ersteRate:35462.50, intern:true,  setter:"",        nettoFaktor:0.75 },
+  { datum:"18.03.2026", monat:"März 2026",    partner:"White Immobilien",            total:60197.65, ersteRate:60197.65, intern:true,  setter:"",        nettoFaktor:0.97 },
+  { datum:"20.03.2026", monat:"März 2026",    partner:"KHPH AG",                     total:25000,    ersteRate:25000,    intern:true,  setter:"",        nettoFaktor:1.00 },
+  { datum:"24.03.2026", monat:"März 2026",    partner:"Nuhi Consulting",             total:6558.75,  ersteRate:3243.75,  intern:true,  setter:"",        nettoFaktor:0.77 },
+  { datum:"07.03.2026", monat:"März 2026",    partner:"ECOM HOUSE GmbH",             total:29876,    ersteRate:17043,    intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"11.03.2026", monat:"März 2026",    partner:"2b AHEAD ThinkTank GmbH",     total:27560,    ersteRate:16160,    intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"14.03.2026", monat:"März 2026",    partner:"Temmer",                      total:16159.50, ersteRate:4390.58,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"17.03.2026", monat:"März 2026",    partner:"Volume-Trader",               total:8129.63,  ersteRate:4812.75,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"22.03.2026", monat:"März 2026",    partner:"Eitel Invest AG",             total:4230,     ersteRate:1777.50,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"26.03.2026", monat:"März 2026",    partner:"CAREFREE",                    total:152.40,   ersteRate:152.40,   intern:false, setter:"",        nettoFaktor:1.00 },
+  // ── April 2026 ───────────────────────────────────────────────────────────
+  { datum:"03.04.2026", monat:"April 2026",   partner:"Schippke",                    total:83750,    ersteRate:75958.25, intern:true,  setter:"",        nettoFaktor:0.79 },
+  { datum:"06.04.2026", monat:"April 2026",   partner:"Candidate-flow",              total:74813.60, ersteRate:58856.73, intern:true,  setter:"Montano", nettoFaktor:0.89 },
+  { datum:"09.04.2026", monat:"April 2026",   partner:"Grundl Leadership",           total:58805.82, ersteRate:54105.93, intern:true,  setter:"Cem",     nettoFaktor:0.71 },
+  { datum:"12.04.2026", monat:"April 2026",   partner:"ZELLGUT GmbH",                total:10043.60, ersteRate:5187.83,  intern:true,  setter:"",        nettoFaktor:0.66 },
+  { datum:"15.04.2026", monat:"April 2026",   partner:"Nuhi Consulting",             total:9577.50,  ersteRate:4480,     intern:true,  setter:"",        nettoFaktor:0.73 },
+  { datum:"18.04.2026", monat:"April 2026",   partner:"Peak",                        total:20820.17, ersteRate:20820.17, intern:true,  setter:"",        nettoFaktor:1.00 },
+  { datum:"22.04.2026", monat:"April 2026",   partner:"Hamann & Kollegen Immobilien GmbH", total:20529.41, ersteRate:20529.41, intern:true, setter:"", nettoFaktor:1.00 },
+  { datum:"05.04.2026", monat:"April 2026",   partner:"Investmentpunk",              total:38827.53, ersteRate:21608.03, intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"08.04.2026", monat:"April 2026",   partner:"ECOM HOUSE GmbH",             total:28300,    ersteRate:11150,    intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"11.04.2026", monat:"April 2026",   partner:"Everflow Excellence",         total:14600,    ersteRate:4200,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"14.04.2026", monat:"April 2026",   partner:"Volume-Trader",               total:9752.44,  ersteRate:6314.48,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"17.04.2026", monat:"April 2026",   partner:"2b AHEAD ThinkTank GmbH",     total:11068.07, ersteRate:4668.07,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"20.04.2026", monat:"April 2026",   partner:"Eitel Invest AG",             total:5571,     ersteRate:2445,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"23.04.2026", monat:"April 2026",   partner:"Temmer",                      total:2090,     ersteRate:1045,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"25.04.2026", monat:"April 2026",   partner:"Close Consulting - Leon",     total:3900,     ersteRate:1500,     intern:false, setter:"",        nettoFaktor:1.00 },
+  // ── Mai 2026 ─────────────────────────────────────────────────────────────
+  { datum:"01.05.2026", monat:"Mai 2026",     partner:"Candidate-flow",              total:900,      ersteRate:900,      intern:true,  setter:"",        nettoFaktor:0.95 },
+  { datum:"01.05.2026", monat:"Mai 2026",     partner:"Schippke",                    total:1150,     ersteRate:1150,     intern:true,  setter:"",        nettoFaktor:0.84 },
+  { datum:"02.05.2026", monat:"Mai 2026",     partner:"Candidate-flow",              total:7386,     ersteRate:5490,     intern:true,  setter:"",        nettoFaktor:0.95 },
+  { datum:"02.05.2026", monat:"Mai 2026",     partner:"Investmentpunk",              total:5169.49,  ersteRate:3495.49,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"02.05.2026", monat:"Mai 2026",     partner:"Volume-Trader",               total:337.41,   ersteRate:337.41,   intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"02.05.2026", monat:"Mai 2026",     partner:"Eitel Invest AG",             total:180,      ersteRate:36,       intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Candidate-flow",              total:7840,     ersteRate:5390,     intern:true,  setter:"Montano", nettoFaktor:0.95 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Hamann & Kollegen Immobilien GmbH", total:38340, ersteRate:38340, intern:true,  setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Schippke",                    total:4125,     ersteRate:4125,     intern:true,  setter:"Cem",     nettoFaktor:0.84 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Candidate-flow",              total:2603,     ersteRate:2225,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Investmentpunk",              total:6690.41,  ersteRate:4515.41,  intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Schippke",                    total:1150,     ersteRate:1150,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Close Consulting - Leon",     total:1800,     ersteRate:1800,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Volume-Trader",               total:3749,     ersteRate:3749,     intern:false, setter:"",        nettoFaktor:1.00 },
+  { datum:"04.05.2026", monat:"Mai 2026",     partner:"Eitel Invest AG",             total:2000,     ersteRate:400,      intern:false, setter:"",        nettoFaktor:1.00 },
 ];
 
-// ─── MONATSDATEN (aggregiert aus Google Sheet) ────────────────────────────
-const PARTNER_MONTHLY: Record<string, Record<string,{vol:number;cash:number;netto:number;intern:boolean}>> = {
-  "Januar 2026": {
-    "Candidate-flow":         {vol:51249,     cash:38316.60, netto:36462.43, intern:true},
-    "ZELLGUT GmbH":           {vol:118372.66, cash:64858.52, netto:53183.08, intern:true},
-    "Schippke":               {vol:39375,     cash:26062.50, netto:21922.50, intern:true},
-    "HH SCG":                 {vol:60000,     cash:20000,    netto:20000,    intern:true},
-    "Grundl Leadership":      {vol:35319.14,  cash:26163.01, netto:18101.25, intern:true},
-    "Nuhi Consulting":        {vol:13366.25,  cash:5238.75,  netto:4410,     intern:true},
-    "White Immobilien":       {vol:30000,     cash:30000,    netto:15800,    intern:true},
-    "KHPH AG":                {vol:25000,     cash:25000,    netto:25000,    intern:true},
-    "ECOM HOUSE GmbH":        {vol:26240,     cash:10220,    netto:10220,    intern:false},
-    "2b AHEAD ThinkTank GmbH":{vol:23238.40,  cash:14149.20, netto:14149.20, intern:false},
-    "Temmer":                 {vol:21992.50,  cash:8114.52,  netto:8114.52,  intern:false},
-    "Everflow Excellence":    {vol:20220,     cash:11040,    netto:11040,    intern:false},
-    "Volume-Trader":          {vol:17990.66,  cash:12020.81, netto:12020.81, intern:false},
-    "Eitel Invest AG":        {vol:5175,      cash:2548.50,  netto:2548.50,  intern:false},
-    "MBA":                    {vol:3000,      cash:2375,     netto:2375,     intern:false},
-  },
-  "Februar 2026": {
-    "Candidate-flow":         {vol:115342,    cash:66207.55, netto:60373.05, intern:true},
-    "Schippke":               {vol:52800,     cash:35904,    netto:27150.72, intern:true},
-    "Grundl Leadership":      {vol:39118.69,  cash:34768.69, netto:30318.26, intern:true},
-    "KHPH AG":                {vol:86000,     cash:28000,    netto:28000,    intern:true},
-    "Nuhi Consulting":        {vol:15696,     cash:6032,     netto:5276,     intern:true},
-    "ZELLGUT GmbH":           {vol:3890.76,   cash:1342.44,  netto:817.73,   intern:true},
-    "Everflow Excellence":    {vol:33720,     cash:5700,     netto:5700,     intern:false},
-    "2b AHEAD ThinkTank GmbH":{vol:29619.40,  cash:16194.40, netto:16194.40, intern:false},
-    "ECOM HOUSE GmbH":        {vol:27000,     cash:9230,     netto:9230,     intern:false},
-    "Temmer":                 {vol:22439,     cash:4287.67,  netto:4287.67,  intern:false},
-    "Volume-Trader":          {vol:13345.28,  cash:8120.64,  netto:8120.64,  intern:false},
-    "Eitel Invest AG":        {vol:6390,      cash:2695.50,  netto:2695.50,  intern:false},
-    "MBA":                    {vol:1887.50,   cash:755.20,   netto:755.20,   intern:false},
-  },
-  "März 2026": {
-    "Candidate-flow":         {vol:93930,     cash:52904.40, netto:48604.40, intern:true},
-    "ZELLGUT GmbH":           {vol:53305.34,  cash:28778.11, netto:20426.45, intern:true},
-    "Grundl Leadership":      {vol:47966.40,  cash:31807.21, netto:27521.06, intern:true},
-    "Schippke":               {vol:43250,     cash:35462.50, netto:26682.50, intern:true},
-    "White Immobilien":       {vol:60197.65,  cash:60197.65, netto:58391.72, intern:true},
-    "KHPH AG":                {vol:25000,     cash:25000,    netto:25000,    intern:true},
-    "Nuhi Consulting":        {vol:6558.75,   cash:3243.75,  netto:2510.63,  intern:true},
-    "ECOM HOUSE GmbH":        {vol:29876,     cash:17043,    netto:17043,    intern:false},
-    "2b AHEAD ThinkTank GmbH":{vol:27560,     cash:16160,    netto:16160,    intern:false},
-    "Temmer":                 {vol:16159.50,  cash:4390.58,  netto:4390.58,  intern:false},
-    "Volume-Trader":          {vol:8129.63,   cash:4812.75,  netto:4812.75,  intern:false},
-    "Eitel Invest AG":        {vol:4230,      cash:1777.50,  netto:1777.50,  intern:false},
-    "CAREFREE":               {vol:152.40,    cash:152.40,   netto:152.40,   intern:false},
-  },
-  "April 2026": {
-    "Schippke":               {vol:83750,     cash:75958.25, netto:60171.61, intern:true},
-    "Candidate-flow":         {vol:74813.60,  cash:58856.73, netto:52199.23, intern:true},
-    "Grundl Leadership":      {vol:58805.82,  cash:54105.93, netto:38369.05, intern:true},
-    "ZELLGUT GmbH":           {vol:10043.60,  cash:5187.83,  netto:3419.80,  intern:true},
-    "Nuhi Consulting":        {vol:9577.50,   cash:4480,     netto:3280,     intern:true},
-    "Peak":                   {vol:20820.17,  cash:20820.17, netto:20820.17, intern:true},
-    "Hamann & Kollegen Immobilien GmbH":{vol:20529.41,cash:20529.41,netto:20529.41,intern:true},
-    "Investmentpunk":         {vol:38827.53,  cash:21608.03, netto:21608.03, intern:false},
-    "ECOM HOUSE GmbH":        {vol:28300,     cash:11150,    netto:11150,    intern:false},
-    "Everflow Excellence":    {vol:14600,     cash:4200,     netto:4200,     intern:false},
-    "Volume-Trader":          {vol:9752.44,   cash:6314.48,  netto:6314.48,  intern:false},
-    "2b AHEAD ThinkTank GmbH":{vol:11068.07,  cash:4668.07,  netto:4668.07,  intern:false},
-    "Eitel Invest AG":        {vol:5571,      cash:2445,     netto:2445,     intern:false},
-    "Temmer":                 {vol:2090,      cash:1045,     netto:1045,     intern:false},
-    "Close Consulting - Leon":{vol:3900,      cash:1500,     netto:1500,     intern:false},
-  },
-  "Mai 2026": {
-    "Candidate-flow":                      {vol:10443,    cash:7615,    netto:5690,    intern:true},
-    "Hamann & Kollegen Immobilien GmbH":   {vol:38340,    cash:38340,   netto:38340,   intern:true},
-    "Schippke":                            {vol:5275,     cash:5275,    netto:3955,    intern:true},
-    "Investmentpunk":                      {vol:6690.41,  cash:4515.41, netto:4515.41, intern:false},
-    "Close Consulting - Leon":             {vol:1800,     cash:1800,    netto:1800,    intern:false},
-    "Volume-Trader":                       {vol:3749,     cash:3749,    netto:3749,    intern:false},
-    "Eitel Invest AG":                     {vol:2000,     cash:400,     netto:400,     intern:false},
-  },
-};
-
 const MONTHS = ["Januar 2026","Februar 2026","März 2026","April 2026","Mai 2026"];
-const MONTH_SHORT: Record<string,string> = {
-  "Januar 2026":"Jan","Februar 2026":"Feb","März 2026":"Mär",
-  "April 2026":"Apr","Mai 2026":"Mai"
+const MONTH_SHORT: Record<string,string> = {"Januar 2026":"Jan","Februar 2026":"Feb","März 2026":"Mär","April 2026":"Apr","Mai 2026":"Mai"};
+const DEALS_COUNT: Record<string,number> = {"Januar 2026":445,"Februar 2026":283,"März 2026":334,"April 2026":309,"Mai 2026":32};
+
+const fmt  = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+const fmt0 = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
+
+type PRow = {
+  partner:string; total:number; ersteRate:number;
+  internVol:number; internCash:number; externVol:number; externCash:number;
+  scgVol:number; scgCash:number; netto:number;
+  setterMap:Record<string,number>;
 };
-const DEALS_COUNT: Record<string,number> = {
-  "Januar 2026":445,"Februar 2026":283,"März 2026":334,"April 2026":309,"Mai 2026":32
-};
 
-const fmt = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
-
-function calcMonth(month:string, view:"gesamt"|"intern"|"extern") {
-  let vol=0,cash=0,netto=0;
-  for(const d of Object.values(PARTNER_MONTHLY[month]||{})){
-    if(view==="gesamt"||(view==="intern"&&d.intern)||(view==="extern"&&!d.intern)){
-      vol+=d.vol;cash+=d.cash;netto+=d.netto;
-    }
-  }
-  return {vol,cash,netto,deals:DEALS_COUNT[month]||0};
-}
-
-function calcPartners(months:string[], view:"gesamt"|"intern"|"extern") {
-  const map:Record<string,{vol:number;cash:number;netto:number}> = {};
-  for(const m of months){
-    for(const [name,d] of Object.entries(PARTNER_MONTHLY[m]||{})){
-      if(view==="gesamt"||(view==="intern"&&d.intern)||(view==="extern"&&!d.intern)){
-        if(!map[name])map[name]={vol:0,cash:0,netto:0};
-        map[name].vol+=d.vol;map[name].cash+=d.cash;map[name].netto+=d.netto;
-      }
-    }
-  }
-  return Object.entries(map).sort((a,b)=>b[1].vol-a[1].vol);
-}
-
-// Tagesdaten für Mai (aus DEALS_MAI)
-function calcDay(datum:string, view:"gesamt"|"intern"|"extern") {
-  const deals = DEALS_MAI.filter(d=>d.datum===datum);
-  let vol=0,cash=0,count=0;
-  const partnerMap:Record<string,{vol:number;cash:number}> = {};
+function aggregate(deals:Deal[]):PRow[] {
+  const map:Record<string,PRow> = {};
   for(const d of deals){
-    if(view==="gesamt"||(view==="intern"&&d.intern)||(view==="extern"&&!d.intern)){
-      vol+=d.vol;cash+=d.cash;count++;
-      if(!partnerMap[d.partner])partnerMap[d.partner]={vol:0,cash:0};
-      partnerMap[d.partner].vol+=d.vol;
-      partnerMap[d.partner].cash+=d.cash;
-    }
+    if(!map[d.partner]) map[d.partner]={
+      partner:d.partner, total:0, ersteRate:0,
+      internVol:0, internCash:0, externVol:0, externCash:0,
+      scgVol:0, scgCash:0, netto:0, setterMap:{}
+    };
+    const r=map[d.partner];
+    r.total+=d.total; r.ersteRate+=d.ersteRate;
+    if(d.intern){ r.internVol+=d.ersteRate; r.internCash+=d.ersteRate; }
+    else        { r.externVol+=d.ersteRate; r.externCash+=d.ersteRate; }
+    r.scgVol+=d.ersteRate; r.scgCash+=d.ersteRate;
+    r.netto+=d.ersteRate*d.nettoFaktor;
+    if(d.setter) r.setterMap[d.setter]=(r.setterMap[d.setter]||0)+d.ersteRate;
   }
-  return {vol,cash,count,partnerMap};
+  return Object.values(map).sort((a,b)=>b.total-a.total);
 }
 
-// Alle verfügbaren Daten im Mai
-const MAI_TAGE = [...new Set(DEALS_MAI.map(d=>d.datum))].sort();
+function sumRows(rows:PRow[]):PRow {
+  return rows.reduce((acc,r)=>({
+    partner:"Gesamtsumme", total:acc.total+r.total, ersteRate:acc.ersteRate+r.ersteRate,
+    internVol:acc.internVol+r.internVol, internCash:acc.internCash+r.internCash,
+    externVol:acc.externVol+r.externVol, externCash:acc.externCash+r.externCash,
+    scgVol:acc.scgVol+r.scgVol, scgCash:acc.scgCash+r.scgCash, netto:acc.netto+r.netto,
+    setterMap:{}
+  }),{partner:"",total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,netto:0,setterMap:{}});
+}
 
 export default function Dashboard() {
-  const [view,setView]   = useState<"gesamt"|"intern"|"extern">("gesamt");
-  const [tab,setTab]     = useState<"overview"|"partner"|"datum"|"prognose">("overview");
-  const [selectedMonth,setSelectedMonth] = useState("April 2026");
-  const [selectedDay,setSelectedDay]     = useState(MAI_TAGE[MAI_TAGE.length-1]);
-
-  // Für Übersicht: alle Monate bis zum gewählten
-  const rangeMonths = useMemo(()=>MONTHS.filter((_,i)=>i<=MONTHS.indexOf(selectedMonth)),[selectedMonth]);
-
-  const monthKpis = useMemo(()=>calcMonth(selectedMonth,view),[selectedMonth,view]);
-  const partners  = useMemo(()=>calcPartners([selectedMonth],view),[selectedMonth,view]);
-  const maxVol    = partners[0]?.[1].vol||1;
-
-  // Alle Monate für Chart
-  const allRows = useMemo(()=>MONTHS.map(m=>({m,...calcMonth(m,view)})),[view]);
-
-  const dayData = useMemo(()=>calcDay(selectedDay,view),[selectedDay,view]);
-
-  const ZIEL = 500000;
-  const basisNetto = calcMonth("April 2026","gesamt").netto;
-  const zielPct = Math.min((basisNetto/ZIEL)*100,100);
+  const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
+  const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
+  const [activeTab, setActiveTab]         = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht">("tagesansicht");
 
   const C = {
-    bg:"#0a0a0f", card:"#0f0f1a", border:"#1e1e30",
+    bg:"#07070f", sidebar:"#0b0b15", card:"#0f0f1c", border:"#1c1c2e", border2:"#252538",
     indigo:"#818cf8", green:"#34d399", amber:"#f59e0b", pink:"#f472b6",
-    text:"#e8e8f0", muted:"#555",
+    cyan:"#67e8f9", text:"#e8e8f0", muted:"#52526a", dimmed:"#252540",
   };
-  const card = (color?:string):React.CSSProperties => ({
-    background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:24,
-    ...(color ? {borderTop:`2px solid ${color}`} : {})
+  const TH: React.CSSProperties = {
+    padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
+    letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
+    whiteSpace:"nowrap", background:"#08081a",
+  };
+  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap" };
+  const card = (accent?:string):React.CSSProperties => ({
+    background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
+    ...(accent?{borderTop:`2px solid ${accent}`}:{})
   });
   const mono = (color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color});
-  const sideBtn = (active:boolean,color?:string):React.CSSProperties => ({
-    display:"flex",alignItems:"center",gap:8,width:"100%",padding:"8px 12px",
-    borderRadius:8,border:"none",cursor:"pointer",marginBottom:4,
-    background:active?"#1a1a2e":"transparent",
-    color:active?(color||C.indigo):C.muted,
-    fontSize:13,fontWeight:active?600:400,
+
+  const tageImMonat = useMemo(()=>[...new Set(DEALS.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth]);
+
+  const tagRows     = useMemo(()=>aggregate(DEALS.filter(d=>d.datum===selectedDatum)),[selectedDatum]);
+  const tagIntern   = useMemo(()=>tagRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[tagRows]);
+  const tagExtern   = useMemo(()=>tagRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[tagRows]);
+
+  const monatsRows   = useMemo(()=>aggregate(DEALS.filter(d=>d.monat===selectedMonth)),[selectedMonth]);
+  const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
+  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
+
+  const jahresRows   = useMemo(()=>aggregate(DEALS),[]);
+
+  // ── Summary Card ──
+  function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
+    return(
+      <div style={{background:bg,border:`1px solid ${border}`,borderRadius:12,padding:"18px 22px"}}>
+        <div style={{fontSize:10,color,textTransform:"uppercase",letterSpacing:"2px",marginBottom:14,fontWeight:700}}>{label}</div>
+        <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
+          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>SCG Volumen</div><div style={{fontSize:17,fontWeight:700,...mono(color)}}>{fmt0(vol)}</div></div>
+          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:17,fontWeight:700,...mono(C.green)}}>{fmt0(cash)}</div></div>
+          {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:17,fontWeight:700,...mono(C.amber)}}>{fmt0(netto)}</div></div>}
+        </div>
+      </div>
+    );
+  }
+
+  // ── INTERN Tabelle ──
+  function InternTable({rows,label}:{rows:PRow[];label:string}) {
+    const sum=sumRows(rows);
+    return(
+      <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
+        <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
+          <span style={{fontSize:13,fontWeight:700,color:C.green,letterSpacing:"1px"}}>INTERN</span>
+          <span style={{fontSize:12,color:C.muted}}>{label}</span>
+        </div>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr>
+            <th style={TH}>Partner</th>
+            <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
+            <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
+            <th style={{...TH,textAlign:"right",color:C.green}}>SUM von Intern Volumen</th>
+            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von Intern Cash IN</th>
+          </tr></thead>
+          <tbody>
+            {rows.map((r,i)=>(
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#0c0c1a"}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.internVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.internCash)}</td>
+              </tr>
+            ))}
+            <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
+              <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(sum.internVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.cyan)}}>{fmt(sum.internCash)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // ── EXTERN Tabelle ──
+  function ExternTable({rows,label}:{rows:PRow[];label:string}) {
+    const sum=sumRows(rows);
+    return(
+      <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
+        <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:C.pink}}/>
+          <span style={{fontSize:13,fontWeight:700,color:C.pink,letterSpacing:"1px"}}>EXTERN</span>
+          <span style={{fontSize:12,color:C.muted}}>{label}</span>
+        </div>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr>
+            <th style={TH}>Partner</th>
+            <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
+            <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
+            <th style={{...TH,textAlign:"right",color:C.pink}}>SUM von Extern Volumen</th>
+            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von Extern Cash IN</th>
+          </tr></thead>
+          <tbody>
+            {rows.map((r,i)=>(
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#0c0c1a"}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.pink)}}>{fmt(r.externVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.externCash)}</td>
+              </tr>
+            ))}
+            <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
+              <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.pink)}}>{fmt(sum.externVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.cyan)}}>{fmt(sum.externCash)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  // ── GESAMT Tabelle ──
+  function GesamtTable({rows,label}:{rows:PRow[];label:string}) {
+    const sum=sumRows(rows);
+    return(
+      <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
+        <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:8,height:8,borderRadius:"50%",background:C.indigo}}/>
+          <span style={{fontSize:13,fontWeight:700,color:C.indigo,letterSpacing:"1px"}}>GESAMT</span>
+          <span style={{fontSize:12,color:C.muted}}>{label}</span>
+        </div>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr>
+            <th style={TH}>Partner</th>
+            <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
+            <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
+            <th style={{...TH,textAlign:"right",color:C.indigo}}>SUM von SCG Volumen</th>
+            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
+            {SETTER.map(s=><th key={s} style={{...TH,textAlign:"right",color:C.amber}}>{s}</th>)}
+            <th style={{...TH,textAlign:"right",color:C.green}}>Netto Cash-IN</th>
+          </tr></thead>
+          <tbody>
+            {rows.map((r,i)=>(
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#0c0c1a"}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(r.scgVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.scgCash)}</td>
+                {SETTER.map(s=><td key={s} style={{...TD,textAlign:"right",...mono(r.setterMap[s]?C.amber:C.dimmed)}}>{fmt(r.setterMap[s]||0)}</td>)}
+                <td style={{...TD,textAlign:"right",...mono(C.green),fontWeight:600}}>{fmt(r.netto)}</td>
+              </tr>
+            ))}
+            <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
+              <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(sum.scgVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.cyan)}}>{fmt(sum.scgCash)}</td>
+              {SETTER.map(s=>{const t=rows.reduce((a,r)=>a+(r.setterMap[s]||0),0);return<td key={s} style={{...TD,textAlign:"right",fontWeight:700,...mono(t?C.amber:C.dimmed)}}>{fmt(t)}</td>;})}
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(sum.netto)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  const sideBtn=(active:boolean):React.CSSProperties=>({
+    display:"flex",alignItems:"center",justifyContent:"space-between",
+    width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,
+    border:"none",cursor:"pointer",marginBottom:3,
+    background:active?"#1a1a30":"transparent",
+    color:active?C.text:C.muted,fontSize:13,fontWeight:active?600:400,
   });
-  const TH:React.CSSProperties = {padding:"11px 18px",textAlign:"left",fontSize:11,color:C.muted,letterSpacing:"1.5px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`};
-  const TD:React.CSSProperties = {padding:"11px 18px",fontSize:13};
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif",display:"flex"}}>
 
       {/* ── SIDEBAR ── */}
-      <div style={{position:"fixed",left:0,top:0,bottom:0,width:220,background:C.card,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"24px 0",zIndex:100}}>
-        <div style={{padding:"0 20px 24px",borderBottom:`1px solid ${C.border}`}}>
-          <div style={{fontSize:18,fontWeight:700,letterSpacing:"-0.5px",color:"#fff"}}>HH SCG</div>
-          <div style={{fontSize:11,color:C.muted,marginTop:2,letterSpacing:"2px",textTransform:"uppercase"}}>Sales Dashboard</div>
+      <div style={{width:220,background:C.sidebar,borderRight:`1px solid ${C.border}`,position:"fixed",top:0,bottom:0,left:0,zIndex:100,overflowY:"auto",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"20px 18px 16px",borderBottom:`1px solid ${C.border}`}}>
+          <div style={{fontSize:19,fontWeight:800,letterSpacing:"-0.5px",color:"#fff"}}>HH SCG</div>
+          <div style={{fontSize:10,color:C.muted,marginTop:2,letterSpacing:"3px"}}>SALES DASHBOARD</div>
         </div>
 
         {/* Ansicht */}
-        <div style={{padding:"20px 16px 8px"}}>
-          <div style={{fontSize:10,color:"#444",letterSpacing:"2px",marginBottom:10,textTransform:"uppercase"}}>Ansicht</div>
-          {(["gesamt","intern","extern"] as const).map(v=>(
-            <button key={v} onClick={()=>setView(v)} style={sideBtn(view===v,v==="intern"?C.green:v==="extern"?C.pink:undefined)}>
-              <span style={{textTransform:"capitalize"}}>{v}</span>
-              {view===v&&<span style={{marginLeft:"auto",width:6,height:6,borderRadius:"50%",background:C.indigo}}/>}
+        <div style={{padding:"14px 12px 4px"}}>
+          <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
+          {([["tagesansicht","📅 Tagesansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"]] as const).map(([t,lbl])=>(
+            <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
+              <span>{lbl}</span>
+              {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
             </button>
           ))}
         </div>
 
-        <div style={{height:1,background:C.border,margin:"8px 16px"}}/>
+        <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
 
-        {/* Navigation */}
-        <div style={{padding:"8px 16px"}}>
-          <div style={{fontSize:10,color:"#444",letterSpacing:"2px",marginBottom:10,textTransform:"uppercase"}}>Navigation</div>
-          {([["overview","Übersicht"],["partner","Partner"],["datum","Nach Datum"],["prognose","Prognose"]] as const).map(([t,lbl])=>(
-            <button key={t} onClick={()=>setTab(t)} style={sideBtn(tab===t)}>{lbl}</button>
+        {/* Monat */}
+        <div style={{padding:"4px 12px"}}>
+          <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Monat</div>
+          {MONTHS.map(m=>(
+            <button key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(DEALS.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={sideBtn(selectedMonth===m)}>
+              <span>{m}</span>
+              {selectedMonth===m&&<span style={{width:6,height:6,borderRadius:"50%",background:C.green,flexShrink:0}}/>}
+            </button>
           ))}
         </div>
 
-        {/* Monat Filter */}
-        <div style={{padding:"16px 16px 0",marginTop:"auto",borderTop:`1px solid ${C.border}`}}>
-          <div style={{fontSize:10,color:"#444",letterSpacing:"2px",marginBottom:10,textTransform:"uppercase"}}>Monat</div>
-          <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{width:"100%",background:"#1a1a2e",border:`1px solid #2a2a40`,color:C.text,borderRadius:6,padding:"8px 10px",fontSize:13,fontWeight:600}}>
-            {MONTHS.map(m=><option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
+        {/* Datum (nur Tagesansicht) */}
+        {activeTab==="tagesansicht"&&(<>
+          <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
+          <div style={{padding:"4px 12px 16px"}}>
+            <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Datum</div>
+            {tageImMonat.map(d=>(
+              <button key={d} onClick={()=>setSelectedDatum(d)} style={sideBtn(selectedDatum===d)}>
+                <span>{d.slice(0,5)}</span>
+                {selectedDatum===d&&<span style={{width:6,height:6,borderRadius:"50%",background:C.amber,flexShrink:0}}/>}
+              </button>
+            ))}
+          </div>
+        </>)}
       </div>
 
       {/* ── MAIN ── */}
-      <div style={{marginLeft:220,padding:"32px 32px 64px"}}>
-        <div style={{marginBottom:32}}>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <h1 style={{margin:0,fontSize:24,fontWeight:700,letterSpacing:"-0.5px"}}>
-              {tab==="overview"?"Übersicht":tab==="partner"?"Partner":tab==="datum"?"Nach Datum":"Prognose"}
-            </h1>
-            <span style={{padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600,letterSpacing:"1px",textTransform:"uppercase",background:view==="intern"?"#0d1f1a":view==="extern"?"#1a0d1a":"#1a1a2e",color:view==="intern"?C.green:view==="extern"?C.pink:C.indigo,border:`1px solid ${view==="intern"?"#1a4a35":view==="extern"?"#4a1a3a":"#2a2a50"}`}}>{view}</span>
-            {tab!=="datum"&&<span style={{padding:"3px 10px",borderRadius:20,fontSize:11,background:"#1a1a2e",color:"#888",border:`1px solid ${C.border}`}}>{selectedMonth}</span>}
-          </div>
-        </div>
+      <div style={{marginLeft:220,flex:1,padding:"28px 32px 64px",minWidth:0}}>
 
-        {/* ── OVERVIEW ── */}
-        {tab==="overview"&&(<>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:16,marginBottom:32}}>
-            {([["SCG Volumen",fmt(monthKpis.vol),"Auftragsvolumen",C.indigo],["Cash IN",fmt(monthKpis.cash),`${monthKpis.vol>0?(monthKpis.cash/monthKpis.vol*100).toFixed(1):0}% Rate`,C.green],["Netto Cash IN",fmt(monthKpis.netto),"Nach Provisionen",C.amber],["Deals",String(monthKpis.deals),"Abgeschlossen",C.pink]] as [string,string,string,string][]).map(([lbl,val,sub,col])=>(
-              <div key={lbl} style={{...card(col),padding:"20px 22px"}}>
-                <div style={{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:8}}>{lbl}</div>
-                <div style={{fontSize:22,fontWeight:700,...mono("#fff"),letterSpacing:"-1px"}}>{val}</div>
-                <div style={{fontSize:11,color:"#444",marginTop:4}}>{sub}</div>
-              </div>
-            ))}
+        {/* ── TAGESANSICHT ── */}
+        {activeTab==="tagesansicht"&&(<>
+          <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+            <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Tagesansicht</h1>
+            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.amber,border:`1px solid #3a3a20`}}>{selectedDatum}</span>
+            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#1a1a2e",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
           </div>
 
-          {/* Chart */}
-          <div style={{...card(),marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#888",marginBottom:20}}>JAHRESVERLAUF · ALLE MONATE · {view.toUpperCase()}</div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:8,height:200}}>
-              {allRows.map(({m,vol,cash})=>{
-                const maxV=Math.max(...allRows.map(r=>r.vol),1);
-                const isSelected=m===selectedMonth;
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
+            <SumCard label="INTERN" vol={sumRows(tagIntern).scgVol} cash={sumRows(tagIntern).scgCash} color={C.green} bg="#0a1a10" border="#1a4a25"/>
+            <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={sumRows(tagExtern).scgCash} color={C.pink}  bg="#1a0a10" border="#4a1a25"/>
+            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol}   cash={sumRows(tagRows).scgCash}   color={C.indigo} bg="#0f0f1c" border="#2a2a50"/>
+          </div>
+
+          <InternTable rows={tagIntern} label={selectedDatum}/>
+          <ExternTable rows={tagExtern} label={selectedDatum}/>
+          <GesamtTable rows={tagRows}   label={selectedDatum}/>
+        </>)}
+
+        {/* ── MONATSANSICHT ── */}
+        {activeTab==="monatsansicht"&&(<>
+          <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
+            <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Monatsansicht</h1>
+            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:`1px solid #2a2a50`}}>{selectedMonth}</span>
+          </div>
+
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
+            <SumCard label="INTERN" vol={sumRows(monatsIntern).scgVol} cash={sumRows(monatsIntern).scgCash} netto={sumRows(monatsIntern).netto} color={C.green}  bg="#0a1a10" border="#1a4a25"/>
+            <SumCard label="EXTERN" vol={sumRows(monatsExtern).scgVol} cash={sumRows(monatsExtern).scgCash} netto={sumRows(monatsExtern).netto} color={C.pink}   bg="#1a0a10" border="#4a1a25"/>
+            <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol}   cash={sumRows(monatsRows).scgCash}   netto={sumRows(monatsRows).netto}   color={C.indigo}  bg="#0f0f1c" border="#2a2a50"/>
+          </div>
+
+          <InternTable rows={monatsIntern} label={selectedMonth}/>
+          <ExternTable rows={monatsExtern} label={selectedMonth}/>
+          <GesamtTable rows={monatsRows}   label={selectedMonth}/>
+        </>)}
+
+        {/* ── JAHRESÜBERSICHT ── */}
+        {activeTab==="jahresuebersicht"&&(<>
+          <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
+            <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Jahresübersicht 2026</h1>
+          </div>
+
+          {/* Balken Chart */}
+          <div style={{...card(),padding:24,marginBottom:28}}>
+            <div style={{fontSize:11,fontWeight:600,color:C.muted,letterSpacing:"1.5px",marginBottom:20}}>SCG VOLUMEN · ALLE MONATE</div>
+            <div style={{display:"flex",alignItems:"flex-end",gap:10,height:160}}>
+              {MONTHS.map(m=>{
+                const rows=aggregate(DEALS.filter(d=>d.monat===m));
+                const vol=rows.reduce((a,r)=>a+r.scgVol,0);
+                const maxV=Math.max(...MONTHS.map(mm=>aggregate(DEALS.filter(d=>d.monat===mm)).reduce((a,r)=>a+r.scgVol,0)),1);
+                const isSel=m===selectedMonth;
                 return(
-                  <div key={m} onClick={()=>setSelectedMonth(m)} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer"}}>
-                    <div style={{display:"flex",alignItems:"flex-end",gap:3,height:180}}>
-                      <div style={{width:22,height:Math.max((vol/maxV)*180,2),background:isSelected?C.indigo:"#2a2a50",borderRadius:"4px 4px 0 0",opacity:.9}}/>
-                      <div style={{width:22,height:Math.max((cash/maxV)*180,2),background:isSelected?C.green:"#1a3a2a",borderRadius:"4px 4px 0 0",opacity:.9}}/>
-                    </div>
-                    <div style={{fontSize:11,color:isSelected?C.text:C.muted,fontWeight:isSelected?700:400}}>{MONTH_SHORT[m]}</div>
+                  <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>{setSelectedMonth(m);const t=[...new Set(DEALS.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}}>
+                    <div style={{fontSize:10,...mono(isSel?C.amber:C.muted)}}>{fmt0(vol)}</div>
+                    <div style={{width:"100%",height:Math.max((vol/maxV)*130,3),background:isSel?`linear-gradient(180deg,${C.indigo},#4f46e5)`:"#1e1e38",borderRadius:"4px 4px 0 0"}}/>
+                    <div style={{fontSize:12,color:isSel?C.text:C.muted,fontWeight:isSel?700:400}}>{MONTH_SHORT[m]}</div>
                   </div>
                 );
               })}
             </div>
-            <div style={{display:"flex",gap:20,marginTop:12}}>
-              {[[C.indigo,"SCG Volumen"],[C.green,"Cash IN"]].map(([c,l])=>(
-                <div key={l} style={{display:"flex",alignItems:"center",gap:6}}>
-                  <div style={{width:10,height:10,borderRadius:2,background:c}}/>
-                  <span style={{fontSize:11,color:C.muted}}>{l}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Monatstabelle */}
-          <div style={{...card(),padding:0,overflow:"hidden"}}>
+          <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
             <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead><tr style={{background:"#0a0a14"}}>
-                {["Monat","SCG Volumen","Cash IN","Netto Cash IN","Deals","Cash-Rate"].map(h=><th key={h} style={TH}>{h}</th>)}
+              <thead><tr>
+                <th style={TH}>Monat</th>
+                <th style={{...TH,textAlign:"right",color:C.indigo}}>SCG Volumen</th>
+                <th style={{...TH,textAlign:"right",color:C.cyan}}>SCG Cash IN</th>
+                <th style={{...TH,textAlign:"right",color:C.green}}>Netto Cash-IN</th>
+                <th style={{...TH,textAlign:"right"}}>Deals</th>
+                <th style={{...TH,textAlign:"right"}}>Cash-Rate</th>
               </tr></thead>
               <tbody>
-                {allRows.map(({m,vol,cash,netto,deals},i)=>{
-                  const rate=vol>0?(cash/vol*100):0;
+                {MONTHS.map((m,i)=>{
+                  const rows=aggregate(DEALS.filter(d=>d.monat===m));
+                  const vol=rows.reduce((a,r)=>a+r.scgVol,0);
+                  const cash=rows.reduce((a,r)=>a+r.scgCash,0);
+                  const netto=rows.reduce((a,r)=>a+r.netto,0);
+                  const rate=vol>0?cash/vol*100:0;
                   const isSel=m===selectedMonth;
                   return(
-                    <tr key={m} onClick={()=>setSelectedMonth(m)} style={{borderBottom:`1px solid #1a1a28`,background:isSel?"#15152a":i%2===0?"transparent":"#0d0d18",cursor:"pointer"}}>
+                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(DEALS.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#13132a":i%2===0?"transparent":"#0c0c1a",cursor:"pointer"}}>
                       <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text}}>{m}</td>
-                      <td style={{...TD,...mono(C.indigo)}}>{fmt(vol)}</td>
-                      <td style={{...TD,...mono(C.green)}}>{fmt(cash)}</td>
-                      <td style={{...TD,...mono(C.amber)}}>{fmt(netto)}</td>
-                      <td style={{...TD,color:"#888"}}>{deals}</td>
-                      <td style={TD}><span style={{padding:"2px 8px",borderRadius:12,background:rate>=70?"#0d2a1a":rate>=55?"#1a2a10":"#2a1a10",color:rate>=70?C.green:rate>=55?"#84cc16":C.amber,fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
+                      <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(vol)}</td>
+                      <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(cash)}</td>
+                      <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(netto)}</td>
+                      <td style={{...TD,textAlign:"right",color:C.muted}}>{DEALS_COUNT[m]||0}</td>
+                      <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#0d2a1a":rate>=55?"#1a2a10":"#2a1a10",color:rate>=70?C.green:rate>=55?"#84cc16":C.amber,fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-        </>)}
 
-        {/* ── PARTNER ── */}
-        {tab==="partner"&&(<>
-          <div style={{...card(),marginBottom:24}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#888",marginBottom:20}}>PARTNER RANKING · {selectedMonth} · {view.toUpperCase()}</div>
-            {partners.map(([name,{vol,cash,netto}],i)=>{
-              return(<div key={name} style={{marginBottom:18}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{width:22,height:22,borderRadius:6,background:i===0?C.indigo:i===1?"#6366f1":i===2?"#4f46e5":C.border,color:i<3?"#fff":C.muted,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{i+1}</span>
-                    <span style={{fontSize:13,fontWeight:600}}>{name}</span>
-                  </div>
-                  <div style={{display:"flex",gap:20}}>
-                    {([["Vol",fmt(vol),C.indigo],["Cash",fmt(cash),C.green],["Netto",fmt(netto),C.amber]] as [string,string,string][]).map(([l,v,c])=>(
-                      <div key={l} style={{textAlign:"right"}}>
-                        <div style={{fontSize:10,color:C.muted}}>{l}</div>
-                        <div style={{fontSize:12,...mono(c),fontWeight:600}}>{v}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{height:5,borderRadius:3,background:C.border,overflow:"hidden"}}>
-                  <div style={{height:"100%",borderRadius:3,width:`${(vol/maxVol)*100}%`,background:`linear-gradient(90deg,${C.indigo},#6366f1)`}}/>
-                </div>
-              </div>);
-            })}
-          </div>
-
-          {/* Partner Monatliche Vergleichstabelle */}
-          <div style={{...card(),padding:0,overflow:"auto"}}>
-            <div style={{padding:"20px 24px 12px",fontSize:13,fontWeight:600,color:"#888"}}>PARTNER VERGLEICH · ALLE MONATE</div>
-            <table style={{width:"100%",borderCollapse:"collapse",minWidth:600}}>
-              <thead><tr style={{background:"#0a0a14"}}>
-                <th style={{...TH,whiteSpace:"nowrap"}}>Partner</th>
-                {MONTHS.map(m=><th key={m} style={{...TH,textAlign:"right"}}>{MONTH_SHORT[m]}</th>)}
-                <th style={{...TH,textAlign:"right",color:C.indigo}}>Total</th>
-              </tr></thead>
-              <tbody>
-                {calcPartners(MONTHS,view).map(([name,{vol}],i)=>(
-                  <tr key={name} style={{borderBottom:`1px solid #1a1a28`,background:i%2===0?"transparent":"#0d0d18"}}>
-                    <td style={{...TD,fontWeight:600,whiteSpace:"nowrap"}}>{name}</td>
-                    {MONTHS.map(m=>{
-                      const d=PARTNER_MONTHLY[m]?.[name];
-                      const show=d&&(view==="gesamt"||(view==="intern"&&d.intern)||(view==="extern"&&!d.intern));
-                      return<td key={m} style={{...TD,textAlign:"right",...mono(show&&d.vol>0?C.indigo:"#2a2a40")}}>{show&&d.vol>0?fmt(d.vol):"—"}</td>;
-                    })}
-                    <td style={{...TD,textAlign:"right",...mono(C.indigo),fontWeight:700}}>{fmt(vol)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>)}
-
-        {/* ── DATUM TAB ── */}
-        {tab==="datum"&&(()=>{
-          // Alle Tage für gewählten Monat
-          const monatDeals = DEALS_MAI.filter(d=>d.datum.endsWith(selectedMonth==="Mai 2026"?"2026":selectedMonth.slice(-4)));
-          const tageImMonat = [...new Set(monatDeals.map(d=>d.datum))].sort();
-
-          // Tagesdaten nach Intern/Extern aufgeteilt
-          const dealsAmTag = DEALS_MAI.filter(d=>d.datum===selectedDay);
-          type PMap = Record<string,{total:number;ersteRate:number;vol:number;cash:number}>;
-
-          const internMap:PMap={}, externMap:PMap={}, gesamtMap:PMap={};
-          for(const d of dealsAmTag){
-            const key=d.partner;
-            const addTo=(m:PMap)=>{
-              if(!m[key])m[key]={total:0,ersteRate:0,vol:0,cash:0};
-              m[key].total+=d.vol;
-              m[key].ersteRate+=d.cash;
-              if(d.intern){m[key].vol+=d.vol;m[key].cash+=d.cash;}
-              else{m[key].vol+=d.vol;m[key].cash+=d.cash;}
-            };
-            if(d.intern)addTo(internMap);
-            else addTo(externMap);
-            if(!gesamtMap[key])gesamtMap[key]={total:0,ersteRate:0,vol:0,cash:0};
-            gesamtMap[key].total+=d.vol;
-            gesamtMap[key].ersteRate+=d.cash;
-            gesamtMap[key].vol+=d.vol;
-            gesamtMap[key].cash+=d.cash;
-          }
-
-          const sumRow=(m:PMap,label:string,volLabel:string,cashLabel:string,color:string)=>{
-            const rows=Object.entries(m).sort((a,b)=>b[1].total-a[1].total);
-            const totals=rows.reduce((acc,[,v])=>({total:acc.total+v.total,ersteRate:acc.ersteRate+v.ersteRate,vol:acc.vol+v.vol,cash:acc.cash+v.cash}),{total:0,ersteRate:0,vol:0,cash:0});
-            return(
-              <div style={{...card(),padding:0,overflow:"hidden",marginBottom:24}}>
-                <div style={{padding:"16px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
-                  <span style={{fontSize:14,fontWeight:700,color:color}}>{label}</span>
-                  <span style={{fontSize:12,color:C.muted}}>{selectedDay}</span>
-                </div>
-                <table style={{width:"100%",borderCollapse:"collapse"}}>
-                  <thead><tr style={{background:"#0a0a14"}}>
-                    <th style={TH}>Partner</th>
-                    <th style={{...TH,textAlign:"right"}}>SUM Total</th>
-                    <th style={{...TH,textAlign:"right"}}>SUM Erste Rate</th>
-                    <th style={{...TH,textAlign:"right",color}}>{volLabel}</th>
-                    <th style={{...TH,textAlign:"right",color:C.green}}>{cashLabel}</th>
-                  </tr></thead>
-                  <tbody>
-                    {rows.map(([partner,v],i)=>(
-                      <tr key={partner} style={{borderBottom:`1px solid #1a1a28`,background:i%2===0?"transparent":"#0d0d18"}}>
-                        <td style={{...TD,fontWeight:600}}>{partner}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(v.total)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(v.ersteRate)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(color)}}>{fmt(v.vol)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(v.cash)}</td>
-                      </tr>
-                    ))}
-                    <tr style={{background:"#0a0a14",borderTop:`2px solid ${C.border}`}}>
-                      <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.ersteRate)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(color)}}>{fmt(totals.vol)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.cash)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            );
-          };
-
-          return(<>
-            {/* Datum + Monat Auswahl */}
-            <div style={{display:"flex",gap:24,marginBottom:28,flexWrap:"wrap",alignItems:"flex-end"}}>
-              <div>
-                <div style={{fontSize:11,color:C.muted,marginBottom:8,letterSpacing:"1px",textTransform:"uppercase"}}>Datum auswählen</div>
-                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                  {tageImMonat.map(d=>(
-                    <button key={d} onClick={()=>setSelectedDay(d)} style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${selectedDay===d?C.indigo:C.border}`,background:selectedDay===d?"#1a1a2e":"transparent",color:selectedDay===d?C.indigo:C.muted,fontSize:13,fontWeight:selectedDay===d?700:400,cursor:"pointer"}}>
-                      {d.slice(0,5)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div style={{fontSize:11,color:C.muted,marginBottom:8,letterSpacing:"1px",textTransform:"uppercase"}}>Monat</div>
-                <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{background:"#1a1a2e",border:`1px solid #2a2a40`,color:C.text,borderRadius:8,padding:"8px 14px",fontSize:13,fontWeight:600,cursor:"pointer"}}>
-                  {MONTHS.map(m=><option key={m} value={m}>{m}</option>)}
-                </select>
-              </div>
-            </div>
-
-            {/* Zusammenfassung oben */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:28}}>
-              {(()=>{
-                const internTotal=Object.values(internMap).reduce((a,v)=>({vol:a.vol+v.vol,cash:a.cash+v.cash}),{vol:0,cash:0});
-                const externTotal=Object.values(externMap).reduce((a,v)=>({vol:a.vol+v.vol,cash:a.cash+v.cash}),{vol:0,cash:0});
-                const gesamtTotal=Object.values(gesamtMap).reduce((a,v)=>({vol:a.vol+v.vol,cash:a.cash+v.cash}),{vol:0,cash:0});
-                return([
-                  ["INTERN",internTotal.vol,internTotal.cash,C.green,"#0d1f1a","#1a4a35"],
-                  ["EXTERN",externTotal.vol,externTotal.cash,C.pink,"#1a0d1a","#4a1a3a"],
-                  ["GESAMT",gesamtTotal.vol,gesamtTotal.cash,C.indigo,"#0f0f1a","#2a2a50"],
-                ] as [string,number,number,string,string,string][]).map(([lbl,vol,cash,col,bg,border])=>(
-                  <div key={lbl} style={{background:bg,border:`1px solid ${border}`,borderRadius:14,padding:"20px 22px"}}>
-                    <div style={{fontSize:11,color:col,textTransform:"uppercase",letterSpacing:"2px",marginBottom:12,fontWeight:700}}>{lbl} · {selectedDay}</div>
-                    <div style={{display:"flex",gap:24}}>
-                      <div>
-                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>SCG Volumen</div>
-                        <div style={{fontSize:20,fontWeight:700,...mono(col),letterSpacing:"-1px"}}>{fmt(vol)}</div>
-                      </div>
-                      <div>
-                        <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Cash IN</div>
-                        <div style={{fontSize:20,fontWeight:700,...mono(C.green),letterSpacing:"-1px"}}>{fmt(cash)}</div>
-                      </div>
-                    </div>
-                  </div>
-                ));
-              })()}
-            </div>
-
-            {/* Block 1: INTERN */}
-            {sumRow(internMap,"INTERN","SUM Intern Volumen","SUM Intern Cash IN",C.green)}
-
-            {/* Block 2: EXTERN */}
-            {sumRow(externMap,"EXTERN","SUM Extern Volumen","SUM Extern Cash IN",C.pink)}
-
-            {/* Block 3: GESAMT */}
-            {(()=>{
-              const rows=Object.entries(gesamtMap).sort((a,b)=>b[1].total-a[1].total);
-              const totals=rows.reduce((acc,[,v])=>({total:acc.total+v.total,ersteRate:acc.ersteRate+v.ersteRate,vol:acc.vol+v.vol,cash:acc.cash+v.cash}),{total:0,ersteRate:0,vol:0,cash:0});
-              return(
-                <div style={{...card(),padding:0,overflow:"hidden",marginBottom:24}}>
-                  <div style={{padding:"16px 24px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:12}}>
-                    <span style={{fontSize:14,fontWeight:700,color:C.indigo}}>GESAMT</span>
-                    <span style={{fontSize:12,color:C.muted}}>{selectedDay}</span>
-                  </div>
-                  <table style={{width:"100%",borderCollapse:"collapse"}}>
-                    <thead><tr style={{background:"#0a0a14"}}>
-                      <th style={TH}>Partner</th>
-                      <th style={{...TH,textAlign:"right"}}>SUM Total</th>
-                      <th style={{...TH,textAlign:"right"}}>SUM Erste Rate</th>
-                      <th style={{...TH,textAlign:"right",color:C.indigo}}>SUM SCG Volumen</th>
-                      <th style={{...TH,textAlign:"right",color:C.green}}>SUM SCG Cash IN</th>
-                      <th style={{...TH,textAlign:"right",color:C.amber}}>Netto Cash-IN</th>
-                    </tr></thead>
-                    <tbody>
-                      {rows.map(([partner,v],i)=>{
-                        const isInt=INTERN_PARTNERS.has(partner);
-                        return(
-                          <tr key={partner} style={{borderBottom:`1px solid #1a1a28`,background:i%2===0?"transparent":"#0d0d18"}}>
-                            <td style={{...TD,fontWeight:600}}>{partner}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(v.total)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(v.ersteRate)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(v.vol)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(v.cash)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.amber)}}>{isInt?fmt(v.cash*0.84):fmt(v.cash)}</td>
-                          </tr>
-                        );
-                      })}
-                      <tr style={{background:"#0a0a14",borderTop:`2px solid ${C.border}`}}>
-                        <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.ersteRate)}</td>
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(totals.vol)}</td>
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.cash)}</td>
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(totals.cash*0.9)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })()}
-          </>);
-        })()}
-
-        {/* ── PROGNOSE ── */}
-        {tab==="prognose"&&(<>
-          <div style={{...card(),marginBottom:24,padding:28}}>
-            <div style={{fontSize:13,fontWeight:600,color:"#888",marginBottom:20}}>MONATSZIEL · NETTO CASH IN</div>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-              <div>
-                <div style={{fontSize:34,fontWeight:700,...mono("#fff"),letterSpacing:"-2px"}}>{fmt(basisNetto)}</div>
-                <div style={{fontSize:12,color:C.muted,marginTop:4}}>April 2026 (letzter Monat)</div>
-              </div>
-              <div style={{textAlign:"right"}}>
-                <div style={{fontSize:20,fontWeight:700,...mono(C.amber)}}>{fmt(ZIEL)}</div>
-                <div style={{fontSize:12,color:C.muted,marginTop:4}}>Ziel pro Monat</div>
-              </div>
-            </div>
-            <div style={{height:12,borderRadius:6,background:C.border,overflow:"hidden",marginBottom:8}}>
-              <div style={{height:"100%",borderRadius:6,width:`${zielPct}%`,background:`linear-gradient(90deg,${C.amber},#d97706)`}}/>
-            </div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.muted}}>
-              <span>{zielPct.toFixed(1)}% des Ziels erreicht</span>
-              <span>Noch {fmt(Math.max(ZIEL-basisNetto,0))} bis Ziel</span>
-            </div>
-          </div>
-
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
-            <div style={card(C.indigo)}>
-              <div style={{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:10}}>Jahresprognose</div>
-              <div style={{fontSize:26,fontWeight:700,...mono(C.indigo),letterSpacing:"-1px"}}>{fmt(basisNetto*12)}</div>
-              <div style={{fontSize:12,color:"#444",marginTop:6}}>Basis: April × 12 Monate</div>
-            </div>
-            <div style={card(C.green)}>
-              <div style={{fontSize:11,color:C.muted,textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:10}}>Mai Prognose</div>
-              <div style={{fontSize:26,fontWeight:700,...mono(C.green),letterSpacing:"-1px"}}>{fmt(190089.90)}</div>
-              <div style={{fontSize:12,color:"#444",marginTop:6}}>Basis: 2 Werktage × 20 Werktage</div>
-            </div>
-          </div>
-
-          <div style={card()}>
-            <div style={{fontSize:13,fontWeight:600,color:"#888",marginBottom:20}}>NETTO CASH IN · MONATSENTWICKLUNG</div>
-            <div style={{display:"flex",alignItems:"flex-end",gap:12,height:180}}>
-              {MONTHS.slice(0,5).map(m=>{
-                const {netto}=calcMonth(m,"gesamt");
-                const maxN=Math.max(...MONTHS.slice(0,5).map(mm=>calcMonth(mm,"gesamt").netto),1);
-                const isSel=m===selectedMonth;
-                return(
-                  <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:8}}>
-                    <div style={{fontSize:11,...mono(isSel?C.amber:"#333")}}>{(netto/1000).toFixed(0)}k</div>
-                    <div style={{width:"100%",height:Math.max((netto/maxN)*160,2),background:isSel?`linear-gradient(180deg,${C.amber},#d97706)`:"#1e1e30",borderRadius:"4px 4px 0 0"}}/>
-                    <div style={{fontSize:12,color:isSel?C.text:"#444"}}>{MONTH_SHORT[m]}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <GesamtTable rows={jahresRows} label="Gesamtes Jahr 2026"/>
         </>)}
       </div>
     </div>
