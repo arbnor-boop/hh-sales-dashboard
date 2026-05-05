@@ -1540,6 +1540,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("tagesansicht");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
+  const [monthOpen, setMonthOpen] = useState(false);
 
   const deals = uploadedDeals ?? DEALS;
 
@@ -1846,13 +1847,22 @@ export default function Dashboard() {
         </div>
         <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
         <div style={{padding:"4px 12px"}}>
-          <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Monat</div>
-          {dynamicMonths.map(m=>(
-            <button key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={sideBtn(selectedMonth===m)}>
+          <button onClick={()=>setMonthOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 4px",background:"transparent",border:"none",cursor:"pointer",marginBottom:4}}>
+            <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",textTransform:"uppercase"}}>Monat</div>
+            <span style={{color:"#2e2e50",fontSize:12}}>{monthOpen?"▲":"▼"}</span>
+          </button>
+          {monthOpen && dynamicMonths.map(m=>(
+            <button key={m} onClick={()=>{setSelectedMonth(m);setMonthOpen(false);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={sideBtn(selectedMonth===m)}>
               <span>{m}</span>
               {selectedMonth===m&&<span style={{width:6,height:6,borderRadius:"50%",background:C.green,flexShrink:0}}/>}
             </button>
           ))}
+          {!monthOpen && (
+            <button onClick={()=>setMonthOpen(true)} style={sideBtn(true)}>
+              <span>{selectedMonth}</span>
+              <span style={{width:6,height:6,borderRadius:"50%",background:C.green,flexShrink:0}}/>
+            </button>
+          )}
         </div>
         {activeTab==="tagesansicht"&&(<>
           <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
