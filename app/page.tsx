@@ -1455,7 +1455,20 @@ function sumRows(rows:PRow[]):PRow {
   }),{partner:"",total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0});
 }
 
-function parseCSV(text: string): Deal[] {
+function parseCSVLine(line: string, sep: string): string[] {
+  if (sep !== ",") return line.split(sep).map(c => c.replace(/^"|"$/g,"").trim());
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQuotes = !inQuotes; }
+    else if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ""; }
+    else { current += ch; }
+  }
+  result.push(current.trim());
+  return result;
+}
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   const parseEur = (s: string) => {
     if (!s) return 0;
@@ -1473,7 +1486,7 @@ function parseCSV(text: string): Deal[] {
   let sep = ",";
   for (let i = 0; i < Math.min(15, lines.length); i++) {
     const s = lines[i].includes("\t") ? "\t" : lines[i].includes(";") ? ";" : ",";
-    const cols = lines[i].split(s).map(c => c.replace(/^"|"$/g,"").trim().toLowerCase());
+    const cols = parseCSVLine(lines[i], s).map(c => c.toLowerCase());
     if (cols.some(c => c === "partner") && cols.some(c => c === "date" || c === "datum")) {
       headerIdx = i;
       sep = s;
@@ -1483,10 +1496,9 @@ function parseCSV(text: string): Deal[] {
 
   // If no header found, fall back to fixed column positions (original behavior)
   if (headerIdx === -1) {
-    const dataLines = lines.filter(l => /^\d{2}\.\d{2}\.\d{4}/.test(l.split(/[,;\t]/)[1] || ""));
+    const dataLines = lines.filter(l => /^\d{2}\.\d{2}\.\d{4}/.test(parseCSVLine(l,",")[1] || ""));
     return dataLines.map(line => {
-      const s = line.includes("\t") ? "\t" : line.includes(";") ? ";" : ",";
-      const cols = line.split(s).map(c => c.replace(/^"|"$/g,"").trim());
+      const cols = parseCSVLine(line, ",");
       const dateParts = (cols[1]||"").split(".");
       const monat = `${MONTH_MAP[dateParts[1]]||dateParts[1]} ${dateParts[2]||"2026"}`;
       return {
@@ -1504,7 +1516,7 @@ function parseCSV(text: string): Deal[] {
   }
 
   // Use header row to map column names to indices
-  const headers = lines[headerIdx].split(sep).map(c => c.replace(/^"|"$/g,"").trim().toLowerCase());
+  const headers = parseCSVLine(lines[headerIdx], sep).map(c => c.toLowerCase());
   const col = (names: string[]) => {
     for (const n of names) {
       const idx = headers.findIndex(h => h.includes(n.toLowerCase()));
@@ -1535,7 +1547,7 @@ function parseCSV(text: string): Deal[] {
   const g = (cols: string[], i: number) => i >= 0 ? (cols[i]||"") : "";
 
   return lines.slice(headerIdx + 1).map(line => {
-    const cols = line.split(sep).map(c => c.replace(/^"|"$/g,"").trim());
+    const cols = parseCSVLine(line, sep);
     const datum = g(cols, iDate);
     const partner = g(cols, iPartner);
     if (!datum || !partner || !/^\d{2}\.\d{2}\.\d{4}/.test(datum)) return null;
