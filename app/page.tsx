@@ -1474,7 +1474,7 @@ function parseCSV(text: string): Deal[] {
   for (let i = 0; i < Math.min(15, lines.length); i++) {
     const s = lines[i].includes("\t") ? "\t" : lines[i].includes(";") ? ";" : ",";
     const cols = lines[i].split(s).map(c => c.replace(/^"|"$/g,"").trim().toLowerCase());
-    if (cols.some(c => c === "partner") && cols.some(c => c.includes("scg") || c.includes("volumen") || c.includes("date"))) {
+    if (cols.some(c => c === "partner") && cols.some(c => c === "date" || c === "datum")) {
       headerIdx = i;
       sep = s;
       break;
@@ -1516,21 +1516,21 @@ function parseCSV(text: string): Deal[] {
   const iPartner  = col(["partner"]);
   const iDate     = col(["date","datum"]);
   const iTotal    = col(["total"]);
-  const iErste    = col(["erste_rate","erste rate","ersterate"]);
+  const iErste    = col(["erste rate","erste_rate","ersterate"]);
   const iCloser   = col(["closer","setter"]);
-  const iScgVol   = col(["scg_volumen","scg volumen","scgvolumen"]);
-  const iScgCash  = col(["scg_cash_in","scg cash in","scgcashin"]);
+  const iScgVol   = col(["scg volumen","scg_volumen"]);
+  const iScgCash  = col(["scg cash in","scg_cash_in"]);
   const iMontano  = col(["montano"]);
   const iCem      = col(["cem"]);
   const iYves     = col(["yves"]);
   const iMert     = col(["mert"]);
   const iKada     = col(["kada"]);
-  const iSoeren   = col(["sören","soeren","söen"]);
+  const iSoeren   = col(["sören","soeren"]);
   const iRene     = col(["rene"]);
-  const iInternVol  = col(["intern_volumen","intern volumen"]);
-  const iInternCash = col(["intern_cash_in","intern cash"]);
-  const iExternVol  = col(["extern_volumen","extern volumen"]);
-  const iExternCash = col(["extern_cash_in","extern cash"]);
+  const iInternVol  = col(["intern volumen","intern_volumen"]);
+  const iInternCash = col(["intern cash in","intern_cash_in"]);
+  const iExternVol  = col(["extern volumen","extern_volumen"]);
+  const iExternCash = col(["extern cash in","extern_cash_in"]);
 
   const g = (cols: string[], i: number) => i >= 0 ? (cols[i]||"") : "";
 
