@@ -1541,7 +1541,7 @@ export default function Dashboard() {
           setUploadedDeals(parsed);
           setUploadStatus("success");
         }
-      } catch { /* silent fail */ }
+      } catch { setUploadStatus("error"); /* silent fail, use built-in data */ }
     }
     fetchSheetData();
     const interval = setInterval(fetchSheetData, 2 * 60 * 1000);
@@ -1857,24 +1857,26 @@ export default function Dashboard() {
         <div style={{padding:"12px",borderTop:`1px solid ${C.border}`}}>
           <div style={{
             padding:"9px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",
-            background: uploadStatus==="success" ? "#0a2a10" : uploadStatus==="error" ? "#2a0a0a" : "#13132a",
-            border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : uploadStatus==="error" ? "#5a1a1a" : C.border2}`,
-            color: uploadStatus==="success" ? C.green : uploadStatus==="error" ? "#f87171" : C.muted,
+            background: uploadStatus==="success" ? "#0a2a10" : uploadStatus==="error" ? "#0a0a1a" : "#13132a",
+            border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : "#252538"}`,
+            color: uploadStatus==="success" ? C.green : C.muted,
             letterSpacing:"1px",
           }}>
-            {uploadStatus==="success" ? "● LIVE — Google Sheet" : uploadStatus==="error" ? "✗ Verbindungsfehler" : "⟳ Verbinde..."}
+            {uploadStatus==="success" ? "● LIVE — Google Sheet" : uploadStatus==="error" ? "● Eingebaute Daten" : "⟳ Verbinde..."}
           </div>
           {uploadedDeals && (
             <div style={{marginTop:6,fontSize:10,color:C.muted,textAlign:"center"}}>{uploadedDeals.length} Deals geladen</div>
           )}
           <button onClick={async()=>{
+            setUploadStatus("idle");
             try{
               const res=await fetch(SHEET_URL);
               const text=await res.text();
               const parsed=parseCSV(text);
               if(parsed.length>0){setUploadedDeals(parsed);setUploadStatus("success");}
-            }catch{}
-          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer",letterSpacing:"0.5px"}}>
+              else{setUploadStatus("error");}
+            }catch{setUploadStatus("error");}
+          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#1a1a2e",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
           <label style={{display:"block",cursor:"pointer",marginTop:6}}>
