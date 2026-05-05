@@ -1521,7 +1521,7 @@ const PASSWORD = "HHSales3!";
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(() => {
     if (typeof window !== "undefined") {
-      return sessionStorage.getItem("hh_scg_auth") === "1";
+      return localStorage.getItem("hh_scg_auth") === "1";
     }
     return false;
   });
@@ -1530,7 +1530,7 @@ export default function Dashboard() {
 
   function doLogin() {
     if (pwInput === PASSWORD) {
-      sessionStorage.setItem("hh_scg_auth", "1");
+      localStorage.setItem("hh_scg_auth", "1");
       setLoggedIn(true);
     } else {
       setPwError(true);
