@@ -1613,6 +1613,80 @@ export default function Dashboard() {
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
   const [closerView, setCloserView] = useState<"monat"|"tag">("monat");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{role:"user"|"assistant",content:string}[]>([]);
+
+  async function sendChatMessage(msg: string) {
+    if (!msg.trim() || chatLoading) return;
+    setChatInput("");
+    setChatLoading(true);
+    const newMessages = [...chatMessages, {role:"user" as const, content:msg}];
+    setChatMessages(newMessages);
+
+    // Build data summary for context
+    const MONTHS = ["Januar 2026","Februar 2026","März 2026","April 2026","Mai 2026"];
+    const summary = MONTHS.map(m => {
+      const sub = deals.filter(d=>d.monat===m);
+      const scgVol = sub.reduce((a,d)=>a+d.scgVol,0);
+      const scgCash = sub.reduce((a,d)=>a+d.scgCash,0);
+      const setter = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
+      const setterSum = setter.reduce((a,s)=>{
+        const key = s==="Sören"?"soeren":s.toLowerCase();
+        return a+sub.reduce((b,d)=>{const v=(d as Record<string,unknown>)[key];return b+(typeof v==="number"?v:0);},0);
+      },0);
+      return `${m}: ${sub.length} Deals, SCG Vol: ${scgVol.toFixed(0)}€, SCG Cash: ${scgCash.toFixed(0)}€, Netto: ${(scgCash-setterSum).toFixed(0)}€`;
+    }).join("\n");
+
+    const partnerSummary = Object.entries(
+      deals.reduce((acc,d)=>{
+        if(!acc[d.partner]) acc[d.partner]={vol:0,cash:0,deals:0};
+        acc[d.partner].vol+=d.scgVol; acc[d.partner].cash+=d.scgCash; acc[d.partner].deals+=1;
+        return acc;
+      },{} as Record<string,{vol:number,cash:number,deals:number}>)
+    ).sort((a,b)=>b[1].cash-a[1].cash).slice(0,15)
+     .map(([p,v])=>`${p}: ${v.deals} Deals, Cash: ${v.cash.toFixed(0)}€`).join("\n");
+
+    const closerSummary = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"].map(name=>{
+      const key = name==="Sören"?"soeren":name.toLowerCase();
+      const provi = deals.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
+      const dealCount = deals.filter(d=>{const v=(d as Record<string,unknown>)[key];return typeof v==="number"&&v>0;}).length;
+      return `${name}: ${dealCount} Deals, Provision: ${provi.toFixed(0)}€`;
+    }).join("\n");
+
+    const systemPrompt = `Du bist ein Sales-Assistent für HH SCG (HH Sales Consulting Germany). Du hast Zugriff auf folgende aktuelle Verkaufsdaten:
+
+MONATSÜBERSICHT:
+${summary}
+
+TOP PARTNER (Gesamt):
+${partnerSummary}
+
+CLOSER INTERN (Gesamt):
+${closerSummary}
+
+Beantworte Fragen präzise und auf Deutsch. Nutze € Zeichen und formatiere Zahlen mit Punkten als Tausendertrennzeichen. Sei freundlich und professionell.`;
+
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: newMessages.map(m=>({role:m.role, content:m.content})),
+        })
+      });
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || "Fehler beim Laden der Antwort.";
+      setChatMessages([...newMessages, {role:"assistant", content:reply}]);
+    } catch {
+      setChatMessages([...newMessages, {role:"assistant", content:"Verbindungsfehler. Bitte versuche es erneut."}]);
+    }
+    setChatLoading(false);
+  }
 
   const deals = uploadedDeals ?? DEALS;
 
@@ -1982,14 +2056,67 @@ export default function Dashboard() {
           }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#1a1a2e",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
-          <label style={{display:"block",cursor:"pointer",marginTop:6}}>
-            <input type="file" accept=".csv" onChange={handleCSVUpload} style={{display:"none"}}/>
-            <div style={{padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,textAlign:"center",background:"transparent",border:`1px solid ${C.border}`,color:"#52526a",cursor:"pointer",letterSpacing:"0.5px"}}>
-              📂 CSV manuell laden
-            </div>
-          </label>
+          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#818cf8",background:"#0f0f20",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
+            🤖 KI-Assistent
+          </button>
         </div>
       </div>
+
+      {/* AI Chat Modal */}
+      {chatOpen && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)setChatOpen(false);}}>
+          <div style={{background:"#0f0f1c",border:`1px solid ${C.border2}`,borderRadius:16,width:520,maxWidth:"90vw",height:600,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+            <div style={{padding:"16px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:700,color:C.text}}>🤖 KI-Assistent</div>
+                <div style={{fontSize:11,color:C.muted}}>Frag mich über deine Sales-Daten</div>
+              </div>
+              <button onClick={()=>setChatOpen(false)} style={{background:"transparent",border:"none",color:C.muted,fontSize:18,cursor:"pointer"}}>✕</button>
+            </div>
+            <div style={{flex:1,overflow:"auto",padding:"16px 20px",display:"flex",flexDirection:"column",gap:12}}>
+              {chatMessages.length===0 && (
+                <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:8}}>
+                  <div style={{fontSize:12,color:C.muted,marginBottom:4}}>Beispiele:</div>
+                  {["Wer ist Top-Closer im Mai?","Welcher Monat hatte den höchsten Umsatz?","Wie viel hat Schippke im April gemacht?","Vergleiche März mit April"].map(q=>(
+                    <button key={q} onClick={()=>sendChatMessage(q)} style={{padding:"10px 14px",borderRadius:8,fontSize:12,textAlign:"left",background:"#13132a",border:`1px solid ${C.border}`,color:C.text,cursor:"pointer"}}>
+                      💡 {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {chatMessages.map((m,i)=>(
+                <div key={i} style={{display:"flex",flexDirection:"column",gap:4,alignItems:m.role==="user"?"flex-end":"flex-start"}}>
+                  <div style={{
+                    maxWidth:"85%",padding:"10px 14px",borderRadius:10,fontSize:13,lineHeight:1.5,
+                    background:m.role==="user"?"#1e1e40":"#13132a",
+                    color:m.role==="user"?C.indigo:C.text,
+                    border:`1px solid ${m.role==="user"?"#2a2a60":C.border}`,
+                    whiteSpace:"pre-wrap",
+                  }}>{m.content}</div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div style={{display:"flex",alignItems:"center",gap:8,color:C.muted,fontSize:12}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:C.indigo,animation:"pulse 1s infinite"}}/>
+                  KI denkt nach...
+                </div>
+              )}
+            </div>
+            <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`,display:"flex",gap:8}}>
+              <input
+                value={chatInput}
+                onChange={e=>setChatInput(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChatMessage(chatInput);}}}
+                placeholder="Frage eingeben..."
+                style={{flex:1,padding:"10px 14px",borderRadius:8,fontSize:13,background:"#07070f",border:`1px solid ${C.border2}`,color:C.text,outline:"none"}}
+              />
+              <button onClick={()=>sendChatMessage(chatInput)} disabled={chatLoading||!chatInput.trim()} style={{padding:"10px 16px",borderRadius:8,fontSize:13,fontWeight:700,background:"#4f46e5",color:"#fff",border:"none",cursor:"pointer",opacity:chatLoading||!chatInput.trim()?0.5:1}}>
+                ➤
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{marginLeft:220,flex:1,padding:"28px 32px 64px",minWidth:0}}>
 
