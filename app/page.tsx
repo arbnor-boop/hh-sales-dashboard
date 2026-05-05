@@ -1460,10 +1460,92 @@ function sumRows(rows:PRow[]):PRow {
   }),{partner:"",total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0});
 }
 
+function parseCSV(text: string): Deal[] {
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  // Skip header rows (find first row where col 1 looks like a date dd.mm.yyyy)
+  const dataLines = lines.filter(l => /^\d{2}\.\d{2}\.\d{4}/.test(l.split(/[,;	]/)[1] || ""));
+  const parseEur = (s: string) => {
+    if (!s) return 0;
+    const clean = s.replace(/€/g,"").replace(/\s/g,"").replace(/\./g,"").replace(",",".").trim();
+    if (!clean || clean === "-") return 0;
+    return parseFloat(clean) || 0;
+  };
+  const MONTH_MAP: Record<string,string> = {
+    "01":"Januar","02":"Februar","03":"März","04":"April","05":"Mai",
+    "06":"Juni","07":"Juli","08":"August","09":"September","10":"Oktober","11":"November","12":"Dezember"
+  };
+  return dataLines.map(line => {
+    // Support comma, semicolon, or tab separated
+    const sep = line.includes("\t") ? "\t" : line.includes(";") ? ";" : ",";
+    const cols = line.split(sep).map(c => c.replace(/^"|"$/g,"").trim());
+    // col indices: 0=Partner,1=Date,2=Name,3=Email,4=Produkt,5=Total,6=Erste_Rate,7=Closer,
+    // 8=SCG_Volumen,9=Monat,10=Jahr,11=SCG_Cash_IN,12=Montano,13=Cem,14=Yves,15=Mert,
+    // 16=col16,17=Kada,18=Daniel,19=Sören,20=Rene,21=Intern_Vol,22=Intern_Cash,23=Extern_Vol,24=Extern_Cash
+    const dateParts = (cols[1]||"").split(".");
+    const monatNum = dateParts[1] || "01";
+    const jahr = dateParts[2] || "2026";
+    const monat = `${MONTH_MAP[monatNum] || monatNum} ${jahr}`;
+    const intern = INTERN_PARTNERS.has((cols[0]||"").trim());
+    return {
+      datum: cols[1] || "",
+      monat,
+      partner: (cols[0]||"").trim(),
+      total: parseEur(cols[5]),
+      ersteRate: parseEur(cols[6]),
+      intern,
+      setter: cols[7] || "",
+      scgVol: parseEur(cols[8]),
+      scgCash: parseEur(cols[11]),
+      internVol: parseEur(cols[21]),
+      internCash: parseEur(cols[22]),
+      externVol: parseEur(cols[23]),
+      externCash: parseEur(cols[24]),
+      montano: parseEur(cols[12]),
+      cem: parseEur(cols[13]),
+      yves: parseEur(cols[14]),
+      mert: parseEur(cols[15]),
+      kada: parseEur(cols[17]),
+      soeren: parseEur(cols[19]),
+      rene: parseEur(cols[20]),
+    } as Deal;
+  }).filter(d => d.partner && d.datum);
+}
+
 export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
   const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht">("tagesansicht");
+  const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
+  const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
+
+  const deals = uploadedDeals ?? DEALS;
+
+  function handleCSVUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const text = ev.target?.result as string;
+        const parsed = parseCSV(text);
+        if (parsed.length === 0) { setUploadStatus("error"); return; }
+        setUploadedDeals(parsed);
+        // Set to latest month/date
+        const months = [...new Set(parsed.map(d => d.monat))].sort((a,b) => {
+          const mo = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+          const [am,ay] = a.split(" "); const [bm,by] = b.split(" ");
+          return ay !== by ? parseInt(ay)-parseInt(by) : mo.indexOf(am)-mo.indexOf(bm);
+        });
+        const latestMonth = months[months.length-1];
+        setSelectedMonth(latestMonth);
+        const datesInMonth = [...new Set(parsed.filter(d=>d.monat===latestMonth).map(d=>d.datum))].sort();
+        if (datesInMonth.length) setSelectedDatum(datesInMonth[datesInMonth.length-1]);
+        setUploadStatus("success");
+      } catch { setUploadStatus("error"); }
+    };
+    reader.readAsText(file, "UTF-8");
+    e.target.value = "";
+  }
 
   const C = {
     bg:"#07070f", sidebar:"#0b0b15", card:"#0f0f1c", border:"#1c1c2e", border2:"#252538",
@@ -1482,16 +1564,24 @@ export default function Dashboard() {
   });
   const mono = (color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color});
 
-  const tageImMonat = useMemo(()=>[...new Set(DEALS.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth]);
+  const dynamicMonths = useMemo(()=>{
+    const mo = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+    return [...new Set(deals.map(d=>d.monat))].sort((a,b)=>{
+      const [am,ay]=a.split(" "); const [bm,by]=b.split(" ");
+      return ay!==by?parseInt(ay)-parseInt(by):mo.indexOf(am)-mo.indexOf(bm);
+    });
+  },[deals]);
 
-  const tagRows      = useMemo(()=>aggregate(DEALS.filter(d=>d.datum===selectedDatum)),[selectedDatum]);
+  const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
+
+  const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
   const tagIntern    = useMemo(()=>tagRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[tagRows]);
   const tagExtern    = useMemo(()=>tagRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[tagRows]);
 
-  const monatsRows   = useMemo(()=>aggregate(DEALS.filter(d=>d.monat===selectedMonth)),[selectedMonth]);
+  const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
   const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
   const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
-  const jahresRows   = useMemo(()=>aggregate(DEALS),[]);
+  const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
 
   function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
     return(
@@ -1677,8 +1767,8 @@ export default function Dashboard() {
         <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
         <div style={{padding:"4px 12px"}}>
           <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Monat</div>
-          {MONTHS.map(m=>(
-            <button key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(DEALS.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={sideBtn(selectedMonth===m)}>
+          {dynamicMonths.map(m=>(
+            <button key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={sideBtn(selectedMonth===m)}>
               <span>{m}</span>
               {selectedMonth===m&&<span style={{width:6,height:6,borderRadius:"50%",background:C.green,flexShrink:0}}/>}
             </button>
@@ -1696,6 +1786,29 @@ export default function Dashboard() {
             ))}
           </div>
         </>)}
+        <div style={{flex:1}}/>
+        <div style={{padding:"12px",borderTop:`1px solid ${C.border}`}}>
+          <label style={{display:"block",cursor:"pointer"}}>
+            <input type="file" accept=".csv" onChange={handleCSVUpload} style={{display:"none"}}/>
+            <div style={{
+              padding:"9px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",
+              background: uploadStatus==="success" ? "#0a2a10" : uploadStatus==="error" ? "#2a0a0a" : "#13132a",
+              border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : uploadStatus==="error" ? "#5a1a1a" : C.border2}`,
+              color: uploadStatus==="success" ? C.green : uploadStatus==="error" ? "#f87171" : C.muted,
+              letterSpacing:"1px",cursor:"pointer",
+            }}>
+              {uploadStatus==="success" ? "✓ CSV geladen" : uploadStatus==="error" ? "✗ Fehler" : "📂 CSV hochladen"}
+            </div>
+          </label>
+          {uploadedDeals && (
+            <div style={{marginTop:6,fontSize:10,color:C.muted,textAlign:"center"}}>{uploadedDeals.length} Deals geladen</div>
+          )}
+          {uploadedDeals && (
+            <button onClick={()=>{setUploadedDeals(null);setUploadStatus("idle");setSelectedMonth("Mai 2026");setSelectedDatum("04.05.2026");}} style={{marginTop:6,width:"100%",padding:"5px",borderRadius:6,fontSize:10,color:"#52526a",background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>
+              Zurücksetzen
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{marginLeft:220,flex:1,padding:"28px 32px 64px",minWidth:0}}>
@@ -1738,16 +1851,16 @@ export default function Dashboard() {
           <div style={{...card(),padding:24,marginBottom:28}}>
             <div style={{fontSize:11,fontWeight:600,color:C.muted,letterSpacing:"1.5px",marginBottom:20}}>SCG CASH IN · ALLE MONATE</div>
             <div style={{display:"flex",alignItems:"flex-end",gap:10,height:160}}>
-              {MONTHS.map(m=>{
-                const rows=aggregate(DEALS.filter(d=>d.monat===m));
+              {dynamicMonths.map(m=>{
+                const rows=aggregate(deals.filter(d=>d.monat===m));
                 const cash=rows.reduce((a,r)=>a+r.scgCash,0);
-                const maxC=Math.max(...MONTHS.map(mm=>aggregate(DEALS.filter(d=>d.monat===mm)).reduce((a,r)=>a+r.scgCash,0)),1);
+                const maxC=Math.max(...dynamicMonths.map(mm=>aggregate(deals.filter(d=>d.monat===mm)).reduce((a,r)=>a+r.scgCash,0)),1);
                 const isSel=m===selectedMonth;
                 return(
-                  <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>{setSelectedMonth(m);const t=[...new Set(DEALS.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}}>
+                  <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}}>
                     <div style={{fontSize:10,...mono(isSel?C.amber:C.muted)}}>{fmt0(cash)}</div>
                     <div style={{width:"100%",height:Math.max((cash/maxC)*130,3),background:isSel?"linear-gradient(180deg,#818cf8,#4f46e5)":"#1e1e38",borderRadius:"4px 4px 0 0"}}/>
-                    <div style={{fontSize:12,color:isSel?C.text:C.muted,fontWeight:isSel?700:400}}>{MONTH_SHORT[m]}</div>
+                    <div style={{fontSize:11,color:isSel?C.text:C.muted,fontWeight:isSel?700:400,textAlign:"center"}}>{m.split(" ")[0].slice(0,3)}</div>
                   </div>
                 );
               })}
@@ -1765,22 +1878,23 @@ export default function Dashboard() {
                 <th style={{...TH,textAlign:"right"}}>Cash-Rate</th>
               </tr></thead>
               <tbody>
-                {MONTHS.map((m,i)=>{
-                  const rows=aggregate(DEALS.filter(d=>d.monat===m));
+                {dynamicMonths.map((m,i)=>{
+                  const rows=aggregate(deals.filter(d=>d.monat===m));
                   const vol=rows.reduce((a,r)=>a+r.scgVol,0);
                   const cash=rows.reduce((a,r)=>a+r.scgCash,0);
                   const intV=rows.reduce((a,r)=>a+r.internVol,0);
                   const extV=rows.reduce((a,r)=>a+r.externVol,0);
                   const rate=vol>0?cash/vol*100:0;
+                  const dealCount=deals.filter(d=>d.monat===m).length;
                   const isSel=m===selectedMonth;
                   return(
-                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(DEALS.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#13132a":i%2===0?"transparent":"#0c0c1a",cursor:"pointer"}}>
+                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#13132a":i%2===0?"transparent":"#0c0c1a",cursor:"pointer"}}>
                       <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text}}>{m}</td>
                       <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(vol)}</td>
                       <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(cash)}</td>
                       <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(intV)}</td>
                       <td style={{...TD,textAlign:"right",...mono(C.pink)}}>{fmt(extV)}</td>
-                      <td style={{...TD,textAlign:"right",color:C.muted}}>{DEALS_COUNT[m]||0}</td>
+                      <td style={{...TD,textAlign:"right",color:C.muted}}>{dealCount}</td>
                       <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#0d2a1a":rate>=55?"#1a2a10":"#2a1a10",color:rate>=70?C.green:rate>=55?"#84cc16":C.amber,fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
                     </tr>
                   );
