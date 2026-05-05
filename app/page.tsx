@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 const SHEET_ID = "10QX67xfKkuF-XTaSxOq5dx9TVEZi0wu_jVXSMSpsPFk";
 const GID = "938130939";
@@ -1567,23 +1567,22 @@ export default function Dashboard() {
 
   const deals = uploadedDeals ?? DEALS;
 
-  const fetchSheetData = useCallback(async () => {
-    try {
-      const res = await fetch(SHEET_URL);
-      const text = await res.text();
-      const parsed = parseCSV(text);
-      if (parsed.length > 0) {
-        setUploadedDeals(parsed);
-        setUploadStatus("success");
-      }
-    } catch { /* silent fail, keep existing data */ }
-  }, []);
-
   useEffect(() => {
+    async function fetchSheetData() {
+      try {
+        const res = await fetch(SHEET_URL);
+        const text = await res.text();
+        const parsed = parseCSV(text);
+        if (parsed.length > 0) {
+          setUploadedDeals(parsed);
+          setUploadStatus("success");
+        }
+      } catch { /* silent fail */ }
+    }
     fetchSheetData();
-    const interval = setInterval(fetchSheetData, 2 * 60 * 1000); // every 2 minutes
+    const interval = setInterval(fetchSheetData, 2 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchSheetData]);
+  }, []);
 
   function handleCSVUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1865,7 +1864,14 @@ export default function Dashboard() {
           {uploadedDeals && (
             <div style={{marginTop:6,fontSize:10,color:C.muted,textAlign:"center"}}>{uploadedDeals.length} Deals geladen</div>
           )}
-          <button onClick={fetchSheetData} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer",letterSpacing:"0.5px"}}>
+          <button onClick={async()=>{
+            try{
+              const res=await fetch(SHEET_URL);
+              const text=await res.text();
+              const parsed=parseCSV(text);
+              if(parsed.length>0){setUploadedDeals(parsed);setUploadStatus("success");}
+            }catch{}
+          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
           <label style={{display:"block",cursor:"pointer",marginTop:6}}>
