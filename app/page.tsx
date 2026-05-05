@@ -1548,6 +1548,42 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  const C = {
+    bg:"#07070f", sidebar:"#0b0b15", card:"#0f0f1c", border:"#1c1c2e", border2:"#252538",
+    indigo:"#818cf8", green:"#34d399", amber:"#f59e0b", pink:"#f472b6",
+    cyan:"#67e8f9", text:"#e8e8f0", muted:"#52526a", dimmed:"#252540",
+  };
+  const TH: React.CSSProperties = {
+    padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
+    letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
+    whiteSpace:"nowrap", background:"#08081a",
+  };
+  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap" };
+  const card = (accent?:string):React.CSSProperties => ({
+    background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
+    ...(accent?{borderTop:`2px solid ${accent}`}:{})
+  });
+  const mono = (color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color});
+
+  const dynamicMonths = useMemo(()=>{
+    const mo = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+    return [...new Set(deals.map(d=>d.monat))].sort((a,b)=>{
+      const [am,ay]=a.split(" "); const [bm,by]=b.split(" ");
+      return ay!==by?parseInt(ay)-parseInt(by):mo.indexOf(am)-mo.indexOf(bm);
+    });
+  },[deals]);
+
+  const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
+
+  const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
+  const tagIntern    = useMemo(()=>tagRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[tagRows]);
+  const tagExtern    = useMemo(()=>tagRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[tagRows]);
+
+  const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
+  const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
+  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
+  const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
+
   if (!loggedIn) {
     return (
       <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
@@ -1584,6 +1620,7 @@ export default function Dashboard() {
     );
   }
 
+  // computed below
   function handleCSVUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1611,41 +1648,7 @@ export default function Dashboard() {
     e.target.value = "";
   }
 
-  const C = {
-    bg:"#07070f", sidebar:"#0b0b15", card:"#0f0f1c", border:"#1c1c2e", border2:"#252538",
-    indigo:"#818cf8", green:"#34d399", amber:"#f59e0b", pink:"#f472b6",
-    cyan:"#67e8f9", text:"#e8e8f0", muted:"#52526a", dimmed:"#252540",
-  };
-  const TH: React.CSSProperties = {
-    padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
-    letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
-    whiteSpace:"nowrap", background:"#08081a",
-  };
-  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap" };
-  const card = (accent?:string):React.CSSProperties => ({
-    background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
-    ...(accent?{borderTop:`2px solid ${accent}`}:{})
-  });
-  const mono = (color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color});
 
-  const dynamicMonths = useMemo(()=>{
-    const mo = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-    return [...new Set(deals.map(d=>d.monat))].sort((a,b)=>{
-      const [am,ay]=a.split(" "); const [bm,by]=b.split(" ");
-      return ay!==by?parseInt(ay)-parseInt(by):mo.indexOf(am)-mo.indexOf(bm);
-    });
-  },[deals]);
-
-  const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
-
-  const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
-  const tagIntern    = useMemo(()=>tagRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[tagRows]);
-  const tagExtern    = useMemo(()=>tagRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[tagRows]);
-
-  const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
-  const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
-  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
-  const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
 
   function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
     return(
