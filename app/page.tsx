@@ -1,10 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
 
-const SHEET_ID = "10QX67xfKkuF-XTaSxOq5dx9TVEZi0wu_jVXSMSpsPFk";
-const GID = "938130939";
-const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
-const SHEET_URL = `https://corsproxy.io/?${encodeURIComponent(SHEET_CSV_URL)}`;
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D9vdTtiglhv8rTmraXiH6nLr9dTLrQQjyQCG2SEkVXsUdganxtjmdRniRamAJx_e1Ek/pub?output=csv";
 
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
