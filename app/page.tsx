@@ -2011,8 +2011,16 @@ export default function Dashboard() {
           function closerMonthStats(ds: Deal[], name: string) {
             const key = name === "Sören" ? "soeren" : name.toLowerCase();
             const relevant = ds.filter(d => {
-              const v = (d as Record<string,unknown>)[key];
-              return typeof v === "number" && v > 0 && (isIntern ? d.intern : !d.intern);
+              const matchIntern = isIntern ? d.intern : !d.intern;
+              if (!matchIntern) return false;
+              if (isIntern) {
+                // Intern: closer must have provision
+                const v = (d as Record<string,unknown>)[key];
+                return typeof v === "number" && v > 0;
+              } else {
+                // Extern: closer name must match the Closer column
+                return (d.setter || "").trim() === name;
+              }
             });
             const provi = relevant.reduce((a,d) => {
               const v = (d as Record<string,unknown>)[key];
