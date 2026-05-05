@@ -1457,8 +1457,6 @@ function sumRows(rows:PRow[]):PRow {
 
 function parseCSV(text: string): Deal[] {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-  // Skip header rows (find first row where col 1 looks like a date dd.mm.yyyy)
-  const dataLines = lines.filter(l => /^\d{2}\.\d{2}\.\d{4}/.test(l.split(/[,;	]/)[1] || ""));
   const parseEur = (s: string) => {
     if (!s) return 0;
     const clean = s.replace(/€/g,"").replace(/\s/g,"").replace(/\./g,"").replace(",",".").trim();
@@ -1469,42 +1467,101 @@ function parseCSV(text: string): Deal[] {
     "01":"Januar","02":"Februar","03":"März","04":"April","05":"Mai",
     "06":"Juni","07":"Juli","08":"August","09":"September","10":"Oktober","11":"November","12":"Dezember"
   };
-  return dataLines.map(line => {
-    // Support comma, semicolon, or tab separated
-    const sep = line.includes("\t") ? "\t" : line.includes(";") ? ";" : ",";
+
+  // Find header row by looking for "Partner" or "SCG" keywords
+  let headerIdx = -1;
+  let sep = ",";
+  for (let i = 0; i < Math.min(15, lines.length); i++) {
+    const s = lines[i].includes("\t") ? "\t" : lines[i].includes(";") ? ";" : ",";
+    const cols = lines[i].split(s).map(c => c.replace(/^"|"$/g,"").trim().toLowerCase());
+    if (cols.some(c => c === "partner") && cols.some(c => c.includes("scg") || c.includes("volumen") || c.includes("date"))) {
+      headerIdx = i;
+      sep = s;
+      break;
+    }
+  }
+
+  // If no header found, fall back to fixed column positions (original behavior)
+  if (headerIdx === -1) {
+    const dataLines = lines.filter(l => /^\d{2}\.\d{2}\.\d{4}/.test(l.split(/[,;\t]/)[1] || ""));
+    return dataLines.map(line => {
+      const s = line.includes("\t") ? "\t" : line.includes(";") ? ";" : ",";
+      const cols = line.split(s).map(c => c.replace(/^"|"$/g,"").trim());
+      const dateParts = (cols[1]||"").split(".");
+      const monat = `${MONTH_MAP[dateParts[1]]||dateParts[1]} ${dateParts[2]||"2026"}`;
+      return {
+        datum:cols[1]||"", monat, partner:(cols[0]||"").trim(),
+        total:parseEur(cols[5]), ersteRate:parseEur(cols[6]),
+        intern:INTERN_PARTNERS.has((cols[0]||"").trim()),
+        setter:cols[7]||"",
+        scgVol:parseEur(cols[8]), scgCash:parseEur(cols[11]),
+        internVol:parseEur(cols[21]), internCash:parseEur(cols[22]),
+        externVol:parseEur(cols[23]), externCash:parseEur(cols[24]),
+        montano:parseEur(cols[12]), cem:parseEur(cols[13]), yves:parseEur(cols[14]),
+        mert:parseEur(cols[15]), kada:parseEur(cols[17]), soeren:parseEur(cols[19]), rene:parseEur(cols[20]),
+      } as Deal;
+    }).filter(d => d.partner && d.datum);
+  }
+
+  // Use header row to map column names to indices
+  const headers = lines[headerIdx].split(sep).map(c => c.replace(/^"|"$/g,"").trim().toLowerCase());
+  const col = (names: string[]) => {
+    for (const n of names) {
+      const idx = headers.findIndex(h => h.includes(n.toLowerCase()));
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  };
+
+  const iPartner  = col(["partner"]);
+  const iDate     = col(["date","datum"]);
+  const iTotal    = col(["total"]);
+  const iErste    = col(["erste_rate","erste rate","ersterate"]);
+  const iCloser   = col(["closer","setter"]);
+  const iScgVol   = col(["scg_volumen","scg volumen","scgvolumen"]);
+  const iScgCash  = col(["scg_cash_in","scg cash in","scgcashin"]);
+  const iMontano  = col(["montano"]);
+  const iCem      = col(["cem"]);
+  const iYves     = col(["yves"]);
+  const iMert     = col(["mert"]);
+  const iKada     = col(["kada"]);
+  const iSoeren   = col(["sören","soeren","söen"]);
+  const iRene     = col(["rene"]);
+  const iInternVol  = col(["intern_volumen","intern volumen"]);
+  const iInternCash = col(["intern_cash_in","intern cash"]);
+  const iExternVol  = col(["extern_volumen","extern volumen"]);
+  const iExternCash = col(["extern_cash_in","extern cash"]);
+
+  const g = (cols: string[], i: number) => i >= 0 ? (cols[i]||"") : "";
+
+  return lines.slice(headerIdx + 1).map(line => {
     const cols = line.split(sep).map(c => c.replace(/^"|"$/g,"").trim());
-    // col indices: 0=Partner,1=Date,2=Name,3=Email,4=Produkt,5=Total,6=Erste_Rate,7=Closer,
-    // 8=SCG_Volumen,9=Monat,10=Jahr,11=SCG_Cash_IN,12=Montano,13=Cem,14=Yves,15=Mert,
-    // 16=col16,17=Kada,18=Daniel,19=Sören,20=Rene,21=Intern_Vol,22=Intern_Cash,23=Extern_Vol,24=Extern_Cash
-    const dateParts = (cols[1]||"").split(".");
-    const monatNum = dateParts[1] || "01";
-    const jahr = dateParts[2] || "2026";
-    const monatName = MONTH_MAP[monatNum] || monatNum;
-    const monat = `${monatName} ${jahr}`;
-    const intern = INTERN_PARTNERS.has((cols[0]||"").trim());
+    const datum = g(cols, iDate);
+    const partner = g(cols, iPartner);
+    if (!datum || !partner || !/^\d{2}\.\d{2}\.\d{4}/.test(datum)) return null;
+    const dateParts = datum.split(".");
+    const monat = `${MONTH_MAP[dateParts[1]]||dateParts[1]} ${dateParts[2]||"2026"}`;
     return {
-      datum: cols[1] || "",
-      monat,
-      partner: (cols[0]||"").trim(),
-      total: parseEur(cols[5]),
-      ersteRate: parseEur(cols[6]),
-      intern,
-      setter: cols[7] || "",
-      scgVol: parseEur(cols[8]),
-      scgCash: parseEur(cols[11]),
-      internVol: parseEur(cols[21]),
-      internCash: parseEur(cols[22]),
-      externVol: parseEur(cols[23]),
-      externCash: parseEur(cols[24]),
-      montano: parseEur(cols[12]),
-      cem: parseEur(cols[13]),
-      yves: parseEur(cols[14]),
-      mert: parseEur(cols[15]),
-      kada: parseEur(cols[17]),
-      soeren: parseEur(cols[19]),
-      rene: parseEur(cols[20]),
+      datum, monat, partner: partner.trim(),
+      total: parseEur(g(cols,iTotal)),
+      ersteRate: parseEur(g(cols,iErste)),
+      intern: INTERN_PARTNERS.has(partner.trim()),
+      setter: g(cols,iCloser),
+      scgVol: parseEur(g(cols,iScgVol)),
+      scgCash: parseEur(g(cols,iScgCash)),
+      internVol: parseEur(g(cols,iInternVol)),
+      internCash: parseEur(g(cols,iInternCash)),
+      externVol: parseEur(g(cols,iExternVol)),
+      externCash: parseEur(g(cols,iExternCash)),
+      montano: parseEur(g(cols,iMontano)),
+      cem: parseEur(g(cols,iCem)),
+      yves: parseEur(g(cols,iYves)),
+      mert: parseEur(g(cols,iMert)),
+      kada: parseEur(g(cols,iKada)),
+      soeren: parseEur(g(cols,iSoeren)),
+      rene: parseEur(g(cols,iRene)),
     } as Deal;
-  }).filter(d => d.partner && d.datum);
+  }).filter(Boolean) as Deal[];
 }
 
 const PASSWORD = "HHSales3!";
