@@ -1612,6 +1612,7 @@ export default function Dashboard() {
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
+  const [closerView, setCloserView] = useState<"monat"|"tag">("monat");
 
   const deals = uploadedDeals ?? DEALS;
 
@@ -2091,7 +2092,6 @@ export default function Dashboard() {
             Kada:C.cyan, Sören:"#a78bfa", Rene:"#fb923c"
           };
           const INTERN_CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
-          const [closerView, setCloserView] = React.useState<"monat"|"tag">("monat");
           const tageInMonat = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           const filterDeals = closerView==="tag"
             ? deals.filter(d=>d.datum===selectedDatum)
