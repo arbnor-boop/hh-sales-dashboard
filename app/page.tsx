@@ -1543,7 +1543,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht"|"closer">("tagesansicht");
+  const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("tagesansicht");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
 
@@ -1843,7 +1843,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["tagesansicht","📅 Tagesansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer","👤 Closer"]] as const).map(([t,lbl])=>(
+          {([["tagesansicht","📅 Tagesansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -2001,108 +2001,65 @@ export default function Dashboard() {
           <GesamtTable rows={jahresRows} label="Gesamtes Jahr 2026"/>
         </>)}
 
-        {activeTab==="closer"&&(()=>{
+        {(activeTab==="closer_intern"||activeTab==="closer_extern")&&(()=>{
+          const isIntern = activeTab==="closer_intern";
           const CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
           const closerColor: Record<string,string> = {
             Montano:C.indigo, Cem:C.green, Yves:C.amber, Mert:C.pink,
             Kada:C.cyan, Sören:"#a78bfa", Rene:"#fb923c"
           };
-          function closerStats(ds: Deal[], name: string) {
-            const lower = name.toLowerCase();
+          function closerMonthStats(ds: Deal[], name: string) {
+            const key = name === "Sören" ? "soeren" : name.toLowerCase();
             const relevant = ds.filter(d => {
-              const v = (d as Record<string,unknown>)[lower];
-              return typeof v === "number" && v > 0;
+              const v = (d as Record<string,unknown>)[key];
+              return typeof v === "number" && v > 0 && (isIntern ? d.intern : !d.intern);
             });
             const cash = relevant.reduce((a,d) => {
-              const v = (d as Record<string,unknown>)[lower];
+              const v = (d as Record<string,unknown>)[key];
               return a + (typeof v === "number" ? v : 0);
             }, 0);
-            const internDeals = relevant.filter(d=>d.intern).length;
-            const externDeals = relevant.filter(d=>!d.intern).length;
-            const internCash = relevant.filter(d=>d.intern).reduce((a,d)=>{
-              const v=(d as Record<string,unknown>)[lower]; return a+(typeof v==="number"?v:0);
-            },0);
-            const externCash = relevant.filter(d=>!d.intern).reduce((a,d)=>{
-              const v=(d as Record<string,unknown>)[lower]; return a+(typeof v==="number"?v:0);
-            },0);
-            return { deals: relevant.length, cash, internDeals, externDeals, internCash, externCash };
+            return { deals: relevant.length, cash };
           }
-          const monatDeals = deals.filter(d=>d.monat===selectedMonth);
-          const jahresDeals = deals;
           return (
             <>
               <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
-                <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Closer Übersicht</h1>
-                <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{selectedMonth}</span>
+                <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Closer {isIntern?"Intern":"Extern"}</h1>
               </div>
-              <div style={{fontSize:12,color:C.muted,letterSpacing:"1.5px",marginBottom:14,fontWeight:600}}>MONAT — {selectedMonth}</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16,marginBottom:36}}>
-                {CLOSERS.map(name=>{
-                  const s = closerStats(monatDeals, name);
-                  const color = closerColor[name] || C.indigo;
-                  return (
-                    <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:20}}>
-                      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-                        <div style={{width:36,height:36,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color}}>{name[0]}</div>
-                        <div>
-                          <div style={{fontSize:15,fontWeight:700,color:C.text}}>{name}</div>
-                          <div style={{fontSize:11,color:C.muted}}>{s.deals} Deals</div>
-                        </div>
-                        <div style={{marginLeft:"auto",textAlign:"right"}}>
-                          <div style={{fontSize:16,fontWeight:700,...mono(color)}}>{fmt(s.cash)}</div>
-                          <div style={{fontSize:10,color:C.muted}}>Provision</div>
-                        </div>
-                      </div>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                        <div style={{background:"#0a1a10",borderRadius:8,padding:"10px 12px"}}>
-                          <div style={{fontSize:10,color:C.green,letterSpacing:"1px",marginBottom:4}}>INTERN</div>
-                          <div style={{fontSize:13,fontWeight:600,...mono(C.green)}}>{fmt(s.internCash)}</div>
-                          <div style={{fontSize:11,color:C.muted}}>{s.internDeals} Deals</div>
-                        </div>
-                        <div style={{background:"#1a0a10",borderRadius:8,padding:"10px 12px"}}>
-                          <div style={{fontSize:10,color:C.pink,letterSpacing:"1px",marginBottom:4}}>EXTERN</div>
-                          <div style={{fontSize:13,fontWeight:600,...mono(C.pink)}}>{fmt(s.externCash)}</div>
-                          <div style={{fontSize:11,color:C.muted}}>{s.externDeals} Deals</div>
-                        </div>
-                      </div>
+              {dynamicMonths.map(monat => {
+                const monatDeals = deals.filter(d=>d.monat===monat);
+                const stats = CLOSERS.map(name => ({name, ...closerMonthStats(monatDeals, name)})).filter(s=>s.deals>0||s.cash>0);
+                if (stats.length===0) return null;
+                return (
+                  <div key={monat} style={{marginBottom:36}}>
+                    <div style={{fontSize:12,color:C.muted,letterSpacing:"1.5px",marginBottom:14,fontWeight:600,display:"flex",alignItems:"center",gap:8}}>
+                      <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{monat}</span>
                     </div>
-                  );
-                })}
-              </div>
-              <div style={{fontSize:12,color:C.muted,letterSpacing:"1.5px",marginBottom:14,fontWeight:600}}>JAHR 2026 — GESAMT</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16,marginBottom:36}}>
-                {CLOSERS.map(name=>{
-                  const s = closerStats(jahresDeals, name);
-                  const color = closerColor[name] || C.indigo;
-                  return (
-                    <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:20}}>
-                      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-                        <div style={{width:36,height:36,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color}}>{name[0]}</div>
-                        <div>
-                          <div style={{fontSize:15,fontWeight:700,color:C.text}}>{name}</div>
-                          <div style={{fontSize:11,color:C.muted}}>{s.deals} Deals</div>
-                        </div>
-                        <div style={{marginLeft:"auto",textAlign:"right"}}>
-                          <div style={{fontSize:16,fontWeight:700,...mono(color)}}>{fmt(s.cash)}</div>
-                          <div style={{fontSize:10,color:C.muted}}>Provision</div>
-                        </div>
-                      </div>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                        <div style={{background:"#0a1a10",borderRadius:8,padding:"10px 12px"}}>
-                          <div style={{fontSize:10,color:C.green,letterSpacing:"1px",marginBottom:4}}>INTERN</div>
-                          <div style={{fontSize:13,fontWeight:600,...mono(C.green)}}>{fmt(s.internCash)}</div>
-                          <div style={{fontSize:11,color:C.muted}}>{s.internDeals} Deals</div>
-                        </div>
-                        <div style={{background:"#1a0a10",borderRadius:8,padding:"10px 12px"}}>
-                          <div style={{fontSize:10,color:C.pink,letterSpacing:"1px",marginBottom:4}}>EXTERN</div>
-                          <div style={{fontSize:13,fontWeight:600,...mono(C.pink)}}>{fmt(s.externCash)}</div>
-                          <div style={{fontSize:11,color:C.muted}}>{s.externDeals} Deals</div>
-                        </div>
-                      </div>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14}}>
+                      {CLOSERS.map(name=>{
+                        const s = closerMonthStats(monatDeals, name);
+                        if (s.deals===0 && s.cash===0) return null;
+                        const color = closerColor[name] || C.indigo;
+                        const accent = isIntern ? C.green : C.pink;
+                        return (
+                          <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:18}}>
+                            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                              <div style={{width:34,height:34,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color}}>{name[0]}</div>
+                              <div>
+                                <div style={{fontSize:14,fontWeight:700,color:C.text}}>{name}</div>
+                                <div style={{fontSize:11,color:C.muted}}>{s.deals} Deals</div>
+                              </div>
+                            </div>
+                            <div style={{background:isIntern?"#0a1a10":"#1a0a10",borderRadius:8,padding:"10px 12px"}}>
+                              <div style={{fontSize:10,color:accent,letterSpacing:"1px",marginBottom:4}}>{isIntern?"INTERN":"EXTERN"} PROVISION</div>
+                              <div style={{fontSize:15,fontWeight:700,...mono(accent)}}>{fmt(s.cash)}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </div>
+                );
+              })}
             </>
           );
         })()}
