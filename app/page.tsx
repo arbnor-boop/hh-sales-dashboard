@@ -1469,6 +1469,8 @@ function parseCSVLine(line: string, sep: string): string[] {
   result.push(current.trim());
   return result;
 }
+
+function parseCSV(text: string): Deal[] {
   const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").map(l => l.trim()).filter(Boolean);
   const parseEur = (s: string) => {
     if (!s) return 0;
