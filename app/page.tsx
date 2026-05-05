@@ -1519,9 +1519,24 @@ function parseCSV(text: string): Deal[] {
 const PASSWORD = "HHSales3!";
 
 export default function Dashboard() {
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("hh_scg_auth") === "1";
+    }
+    return false;
+  });
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState(false);
+
+  function doLogin() {
+    if (pwInput === PASSWORD) {
+      sessionStorage.setItem("hh_scg_auth", "1");
+      setLoggedIn(true);
+    } else {
+      setPwError(true);
+      setPwInput("");
+    }
+  }
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
@@ -1595,8 +1610,7 @@ export default function Dashboard() {
             placeholder="Passwort"
             value={pwInput}
             onChange={e=>{setPwInput(e.target.value);setPwError(false);}}
-            onKeyDown={e=>{if(e.key==="Enter"){if(pwInput===PASSWORD){setLoggedIn(true);}else{setPwError(true);setPwInput("");}}}
-            }
+            onKeyDown={e=>{if(e.key==="Enter") doLogin();}}
             style={{
               width:"100%",padding:"12px 16px",borderRadius:8,fontSize:14,
               background:"#07070f",border:`1px solid ${pwError?"#f87171":"#252538"}`,
@@ -1606,7 +1620,7 @@ export default function Dashboard() {
           />
           {pwError && <div style={{color:"#f87171",fontSize:12,marginBottom:8}}>Falsches Passwort</div>}
           <button
-            onClick={()=>{if(pwInput===PASSWORD){setLoggedIn(true);}else{setPwError(true);setPwInput("");}}}
+            onClick={doLogin}
             style={{
               width:"100%",padding:"12px",borderRadius:8,fontSize:14,fontWeight:700,
               background:"linear-gradient(135deg,#4f46e5,#818cf8)",color:"#fff",
