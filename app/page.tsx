@@ -1601,12 +1601,14 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     const SETTERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
     const stats = SETTERS.map(name => {
       const key = name==="Sören"?"soeren":name.toLowerCase();
-      const provi = src.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
-      const cnt = src.filter(d=>{const v=(d as Record<string,unknown>)[key];return typeof v==="number"&&v>0;}).length;
-      return {name, provi, cnt};
-    }).filter(s=>s.provi>0).sort((a,b)=>b.provi-a.provi);
+      const relevant = src.filter(d=>{const v=(d as Record<string,unknown>)[key];return d.intern && typeof v==="number"&&v>0;});
+      const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
+      const scgCash = relevant.reduce((a,d)=>a+d.scgCash,0);
+      const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
+      return {name, scgVol, scgCash, provi, cnt:relevant.length};
+    }).filter(s=>s.cnt>0).sort((a,b)=>b.scgVol-a.scgVol);
     if (stats.length===0) return `Keine Closer-Daten ${label} gefunden.`;
-    return `🏆 Top-Closer ${label}:\n\n${stats.map((s,i)=>`${i+1}. ${s.name}: ${fmt(s.provi)} (${s.cnt} Deals)`).join("\n")}`;
+    return `🏆 Top-Closer ${label} (nach SCG Volumen):\n\n${stats.map((s,i)=>`${i+1}. ${s.name}\n   SCG Volumen: ${fmt(s.scgVol)}\n   SCG Cash IN: ${fmt(s.scgCash)}\n   Provision: ${fmt(s.provi)}\n   Deals: ${s.cnt}`).join("\n\n")}`;
   }
 
   // Month comparison
