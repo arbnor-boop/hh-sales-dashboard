@@ -3,7 +3,8 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 
 const SHEET_ID = "10QX67xfKkuF-XTaSxOq5dx9TVEZi0wu_jVXSMSpsPFk";
 const GID = "938130939";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const SHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_CSV_URL)}`;
 
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
@@ -1568,7 +1569,7 @@ export default function Dashboard() {
 
   const fetchSheetData = useCallback(async () => {
     try {
-      const res = await fetch(SHEET_URL + "&t=" + Date.now());
+      const res = await fetch(SHEET_URL);
       const text = await res.text();
       const parsed = parseCSV(text);
       if (parsed.length > 0) {
