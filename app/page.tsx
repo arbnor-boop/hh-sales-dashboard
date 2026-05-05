@@ -1583,6 +1583,97 @@ function parseCSV(text: string): Deal[] {
 
 const PASSWORD = "HHSales3!";
 
+function beantworteFrageLokal(frage: string, deals: Deal[]): string {
+  const f = frage.toLowerCase();
+  const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  const fmt = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(n);
+
+  // Find mentioned month
+  const monatMatch = MONTHS.find(m => f.includes(m.toLowerCase()));
+
+  // Helper: get deals for month
+  const getMonat = (m: string) => deals.filter(d => d.monat.startsWith(m));
+
+  // Top Closer question
+  if (f.includes("top") && (f.includes("closer") || f.includes("setter"))) {
+    const src = monatMatch ? getMonat(monatMatch) : deals;
+    const label = monatMatch ? `im ${monatMatch}` : "gesamt";
+    const SETTERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
+    const stats = SETTERS.map(name => {
+      const key = name==="Sören"?"soeren":name.toLowerCase();
+      const provi = src.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
+      const cnt = src.filter(d=>{const v=(d as Record<string,unknown>)[key];return typeof v==="number"&&v>0;}).length;
+      return {name, provi, cnt};
+    }).filter(s=>s.provi>0).sort((a,b)=>b.provi-a.provi);
+    if (stats.length===0) return `Keine Closer-Daten ${label} gefunden.`;
+    return `🏆 Top-Closer ${label}:\n\n${stats.map((s,i)=>`${i+1}. ${s.name}: ${fmt(s.provi)} (${s.cnt} Deals)`).join("\n")}`;
+  }
+
+  // Month comparison
+  if (f.includes("vergleich") || (f.includes("vs") || f.includes("gegen"))) {
+    const found = MONTHS.filter(m => f.includes(m.toLowerCase()));
+    if (found.length >= 2) {
+      const [m1, m2] = found;
+      const d1 = getMonat(m1); const d2 = getMonat(m2);
+      const cash1 = d1.reduce((a,d)=>a+d.scgCash,0);
+      const cash2 = d2.reduce((a,d)=>a+d.scgCash,0);
+      const vol1 = d1.reduce((a,d)=>a+d.scgVol,0);
+      const vol2 = d2.reduce((a,d)=>a+d.scgVol,0);
+      const diff = cash2-cash1;
+      return `📊 Vergleich ${m1} vs ${m2}:\n\n${m1}:\n  Deals: ${d1.length}\n  SCG Volumen: ${fmt(vol1)}\n  SCG Cash IN: ${fmt(cash1)}\n\n${m2}:\n  Deals: ${d2.length}\n  SCG Volumen: ${fmt(vol2)}\n  SCG Cash IN: ${fmt(cash2)}\n\nUnterschied Cash IN: ${diff>=0?"+":""}${fmt(diff)}`;
+    }
+  }
+
+  // Partner question
+  const partnerNames = [...new Set(deals.map(d=>d.partner))];
+  const partnerMatch = partnerNames.find(p => f.includes(p.toLowerCase()));
+  if (partnerMatch) {
+    const src = monatMatch ? getMonat(monatMatch).filter(d=>d.partner===partnerMatch) : deals.filter(d=>d.partner===partnerMatch);
+    const label = monatMatch ? `im ${monatMatch}` : "gesamt";
+    if (src.length===0) return `Keine Daten für ${partnerMatch} ${label}.`;
+    const vol = src.reduce((a,d)=>a+d.scgVol,0);
+    const cash = src.reduce((a,d)=>a+d.scgCash,0);
+    const total = src.reduce((a,d)=>a+d.total,0);
+    const netto = src.reduce((a,d)=>a+d.scgCash-d.montano-d.cem-d.yves-d.mert-d.kada-d.soeren-d.rene,0);
+    return `📋 ${partnerMatch} ${label}:\n\n  Deals: ${src.length}\n  Total: ${fmt(total)}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Netto Cash-IN: ${fmt(netto)}`;
+  }
+
+  // Month overview
+  if (monatMatch) {
+    const src = getMonat(monatMatch);
+    if (src.length===0) return `Keine Daten für ${monatMatch} gefunden.`;
+    const vol = src.reduce((a,d)=>a+d.scgVol,0);
+    const cash = src.reduce((a,d)=>a+d.scgCash,0);
+    const setter = ["montano","cem","yves","mert","kada","soeren","rene"];
+    const setterSum = src.reduce((a,d)=>a+setter.reduce((b,s)=>{const v=(d as Record<string,unknown>)[s];return b+(typeof v==="number"?v:0);},0),0);
+    const intern = src.filter(d=>d.intern);
+    const extern = src.filter(d=>!d.intern);
+    return `📅 ${monatMatch} Übersicht:\n\n  Deals: ${src.length}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: ${fmt(setterSum)}\n  Netto Cash-IN: ${fmt(cash-setterSum)}\n\n  Intern: ${intern.length} Deals | ${fmt(intern.reduce((a,d)=>a+d.scgCash,0))}\n  Extern: ${extern.length} Deals | ${fmt(extern.reduce((a,d)=>a+d.scgCash,0))}`;
+  }
+
+  // Best month
+  if (f.includes("besten") || f.includes("höchsten") || f.includes("meisten")) {
+    const byMonth = MONTHS.map(m => {
+      const src = getMonat(m);
+      return {m, cash: src.reduce((a,d)=>a+d.scgCash,0), deals: src.length};
+    }).filter(x=>x.deals>0).sort((a,b)=>b.cash-a.cash);
+    if (byMonth.length===0) return "Keine Daten gefunden.";
+    const best = byMonth[0];
+    return `🏆 Bester Monat: ${best.m}\n\n  SCG Cash IN: ${fmt(best.cash)}\n  Deals: ${best.deals}\n\nAlle Monate:\n${byMonth.map((x,i)=>`${i+1}. ${x.m}: ${fmt(x.cash)} (${x.deals} Deals)`).join("\n")}`;
+  }
+
+  // General overview
+  if (f.includes("übersicht") || f.includes("gesamt") || f.includes("total") || f.includes("zusammenfassung")) {
+    const vol = deals.reduce((a,d)=>a+d.scgVol,0);
+    const cash = deals.reduce((a,d)=>a+d.scgCash,0);
+    const setter = ["montano","cem","yves","mert","kada","soeren","rene"];
+    const setterSum = deals.reduce((a,d)=>a+setter.reduce((b,s)=>{const v=(d as Record<string,unknown>)[s];return b+(typeof v==="number"?v:0);},0),0);
+    return `📊 Gesamtübersicht 2026:\n\n  Deals: ${deals.length}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: ${fmt(setterSum)}\n  Netto Cash-IN: ${fmt(cash-setterSum)}\n\nMonate:\n${MONTHS.map(m=>{const s=getMonat(m);const c=s.reduce((a,d)=>a+d.scgCash,0);return s.length?`  ${m}: ${fmt(c)} (${s.length} Deals)`:null;}).filter(Boolean).join("\n")}`;
+  }
+
+  return `Ich kann dir bei folgenden Fragen helfen:\n\n• "Wer ist Top-Closer im [Monat]?"\n• "Wie war der [Monat]?"\n• "Vergleiche [Monat1] mit [Monat2]"\n• "Wie viel hat [Partner] gemacht?"\n• "Welcher Monat war am besten?"\n• "Gesamtübersicht"`;
+}
+
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -1624,66 +1715,13 @@ export default function Dashboard() {
     setChatLoading(true);
     const newMessages = [...chatMessages, {role:"user" as const, content:msg}];
     setChatMessages(newMessages);
-
-    // Build data summary for context
-    const MONTHS = ["Januar 2026","Februar 2026","März 2026","April 2026","Mai 2026"];
-    const summary = MONTHS.map(m => {
-      const sub = deals.filter(d=>d.monat===m);
-      const scgVol = sub.reduce((a,d)=>a+d.scgVol,0);
-      const scgCash = sub.reduce((a,d)=>a+d.scgCash,0);
-      const setter = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
-      const setterSum = setter.reduce((a,s)=>{
-        const key = s==="Sören"?"soeren":s.toLowerCase();
-        return a+sub.reduce((b,d)=>{const v=(d as Record<string,unknown>)[key];return b+(typeof v==="number"?v:0);},0);
-      },0);
-      return `${m}: ${sub.length} Deals, SCG Vol: ${scgVol.toFixed(0)}€, SCG Cash: ${scgCash.toFixed(0)}€, Netto: ${(scgCash-setterSum).toFixed(0)}€`;
-    }).join("\n");
-
-    const partnerSummary = Object.entries(
-      deals.reduce((acc,d)=>{
-        if(!acc[d.partner]) acc[d.partner]={vol:0,cash:0,deals:0};
-        acc[d.partner].vol+=d.scgVol; acc[d.partner].cash+=d.scgCash; acc[d.partner].deals+=1;
-        return acc;
-      },{} as Record<string,{vol:number,cash:number,deals:number}>)
-    ).sort((a,b)=>b[1].cash-a[1].cash).slice(0,15)
-     .map(([p,v])=>`${p}: ${v.deals} Deals, Cash: ${v.cash.toFixed(0)}€`).join("\n");
-
-    const closerSummary = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"].map(name=>{
-      const key = name==="Sören"?"soeren":name.toLowerCase();
-      const provi = deals.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
-      const dealCount = deals.filter(d=>{const v=(d as Record<string,unknown>)[key];return typeof v==="number"&&v>0;}).length;
-      return `${name}: ${dealCount} Deals, Provision: ${provi.toFixed(0)}€`;
-    }).join("\n");
-
-    const systemPrompt = `Du bist ein Sales-Assistent für HH SCG (HH Sales Consulting Germany). Du hast Zugriff auf folgende aktuelle Verkaufsdaten:
-
-MONATSÜBERSICHT:
-${summary}
-
-TOP PARTNER (Gesamt):
-${partnerSummary}
-
-CLOSER INTERN (Gesamt):
-${closerSummary}
-
-Beantworte Fragen präzise und auf Deutsch. Nutze € Zeichen und formatiere Zahlen mit Punkten als Tausendertrennzeichen. Sei freundlich und professionell.`;
-
+    // Small delay for UX
+    await new Promise(r => setTimeout(r, 400));
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: systemPrompt,
-          messages: newMessages.map(m=>({role:m.role, content:m.content})),
-        })
-      });
-      const data = await res.json();
-      const reply = data.content?.[0]?.text || "Fehler beim Laden der Antwort.";
-      setChatMessages([...newMessages, {role:"assistant", content:reply}]);
+      const antwort = beantworteFrageLokal(msg, deals);
+      setChatMessages([...newMessages, {role:"assistant", content:antwort}]);
     } catch {
-      setChatMessages([...newMessages, {role:"assistant", content:"Verbindungsfehler. Bitte versuche es erneut."}]);
+      setChatMessages([...newMessages, {role:"assistant", content:"Fehler beim Verarbeiten der Frage."}]);
     }
     setChatLoading(false);
   }
