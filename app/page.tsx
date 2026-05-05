@@ -2005,119 +2005,101 @@ export default function Dashboard() {
           const monatDeals = deals.filter(d => d.monat === selectedMonth);
 
           if (isIntern) {
+            const monatDeals = deals.filter(d=>d.monat===selectedMonth);
             return (
               <>
-                <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
+                <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                   <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Closer Intern</h1>
+                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
+                    {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
+                  </select>
                 </div>
-                {dynamicMonths.map(monat => {
-                  const monatDeals = deals.filter(d=>d.monat===monat);
-                  const hasData = INTERN_CLOSERS.some(name => {
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
+                  {INTERN_CLOSERS.map(name=>{
                     const key = name === "Sören" ? "soeren" : name.toLowerCase();
-                    return monatDeals.some(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
-                  });
-                  if (!hasData) return null;
-                  return (
-                    <div key={monat} style={{marginBottom:36}}>
-                      <div style={{marginBottom:14}}>
-                        <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{monat}</span>
+                    const relevant = monatDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
+                    if (relevant.length===0) return null;
+                    const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
+                    const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
+                    const scgCash = relevant.reduce((a,d)=>a+d.scgCash,0);
+                    const color = closerColor[name] || C.indigo;
+                    return (
+                      <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:18}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                          <div style={{width:34,height:34,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color}}>{name[0]}</div>
+                          <div>
+                            <div style={{fontSize:14,fontWeight:700,color:C.text}}>{name}</div>
+                            <div style={{fontSize:11,color:C.muted}}>{relevant.length} Deals</div>
+                          </div>
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                          <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
+                          </div>
+                          <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
+                          </div>
+                          <div style={{background:"#0a1a10",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
-                        {INTERN_CLOSERS.map(name=>{
-                          const key = name === "Sören" ? "soeren" : name.toLowerCase();
-                          const relevant = monatDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
-                          if (relevant.length===0) return null;
-                          const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
-                          const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
-                          const scgCash = relevant.reduce((a,d)=>a+d.scgCash,0);
-                          const color = closerColor[name] || C.indigo;
-                          return (
-                            <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:18}}>
-                              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-                                <div style={{width:34,height:34,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color}}>{name[0]}</div>
-                                <div>
-                                  <div style={{fontSize:14,fontWeight:700,color:C.text}}>{name}</div>
-                                  <div style={{fontSize:11,color:C.muted}}>{relevant.length} Deals</div>
-                                </div>
-                              </div>
-                              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                                <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                                  <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                                  <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
-                                </div>
-                                <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                                  <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                                  <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
-                                </div>
-                                <div style={{background:"#0a1a10",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                                  <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
-                                  <span style={{fontSize:13,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             );
           } else {
-            // Extern: group by Closer field, show all months
+            const externDeals = deals.filter(d => d.monat===selectedMonth && !d.intern);
+            const closerMap: Record<string,{scgVol:number,scgCash:number,deals:number}> = {};
+            externDeals.forEach(d => {
+              const name = (d.setter||"").trim();
+              if (!name || name==="Closer") return;
+              if (!closerMap[name]) closerMap[name] = {scgVol:0,scgCash:0,deals:0};
+              closerMap[name].scgVol += d.scgVol;
+              closerMap[name].scgCash += d.scgCash;
+              closerMap[name].deals += 1;
+            });
+            const closers = Object.entries(closerMap).sort((a,b)=>b[1].scgCash-a[1].scgCash);
             return (
               <>
-                <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
+                <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
                   <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Closer Extern</h1>
+                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
+                    {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
+                  </select>
                 </div>
-                {dynamicMonths.map(monat => {
-                  const monatDeals = deals.filter(d => d.monat === monat && !d.intern);
-                  const closerMap: Record<string,{scgVol:number,scgCash:number,deals:number}> = {};
-                  monatDeals.forEach(d => {
-                    const name = (d.setter||"").trim();
-                    if (!name || name==="Closer") return;
-                    if (!closerMap[name]) closerMap[name] = {scgVol:0,scgCash:0,deals:0};
-                    closerMap[name].scgVol += d.scgVol;
-                    closerMap[name].scgCash += d.scgCash;
-                    closerMap[name].deals += 1;
-                  });
-                  const closers = Object.entries(closerMap).sort((a,b)=>b[1].scgCash-a[1].scgCash);
-                  if (closers.length===0) return null;
-                  return (
-                    <div key={monat} style={{marginBottom:36}}>
-                      <div style={{marginBottom:14}}>
-                        <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{monat}</span>
+                {closers.length===0 && <div style={{color:C.muted,fontSize:14}}>Keine externen Deals in {selectedMonth}</div>}
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
+                  {closers.map(([name,s],i)=>{
+                    const colors = [C.indigo,C.green,C.amber,C.pink,C.cyan,"#a78bfa","#fb923c","#38bdf8","#f43f5e","#84cc16"];
+                    const color = colors[i % colors.length];
+                    return (
+                      <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:18}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                          <div style={{width:34,height:34,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color}}>{name[0]}</div>
+                          <div>
+                            <div style={{fontSize:14,fontWeight:700,color:C.text}}>{name}</div>
+                            <div style={{fontSize:11,color:C.muted}}>{s.deals} Deals</div>
+                          </div>
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                          <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
+                          </div>
+                          <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
-                        {closers.map(([name,s],i)=>{
-                          const colors = [C.indigo,C.green,C.amber,C.pink,C.cyan,"#a78bfa","#fb923c","#38bdf8","#f43f5e","#84cc16"];
-                          const color = colors[i % colors.length];
-                          return (
-                            <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:18}}>
-                              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-                                <div style={{width:34,height:34,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color}}>{name[0]}</div>
-                                <div>
-                                  <div style={{fontSize:14,fontWeight:700,color:C.text}}>{name}</div>
-                                  <div style={{fontSize:11,color:C.muted}}>{s.deals} Deals</div>
-                                </div>
-                              </div>
-                              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                                <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                                  <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                                  <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
-                                </div>
-                                <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                                  <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                                  <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             );
           }
