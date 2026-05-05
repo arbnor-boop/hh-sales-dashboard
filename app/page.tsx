@@ -1511,12 +1511,54 @@ function parseCSV(text: string): Deal[] {
   }).filter(d => d.partner && d.datum);
 }
 
+const PASSWORD = "HHSales3!";
+
 export default function Dashboard() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
+
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
   const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht">("tagesansicht");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
+
+  if (!loggedIn) {
+    return (
+      <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
+        <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:360,textAlign:"center"}}>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
+          <div style={{fontSize:11,color:"#52526a",letterSpacing:"3px",marginBottom:32}}>SALES DASHBOARD</div>
+          <input
+            type="password"
+            placeholder="Passwort"
+            value={pwInput}
+            onChange={e=>{setPwInput(e.target.value);setPwError(false);}}
+            onKeyDown={e=>{if(e.key==="Enter"){if(pwInput===PASSWORD){setLoggedIn(true);}else{setPwError(true);setPwInput("");}}}
+            }
+            style={{
+              width:"100%",padding:"12px 16px",borderRadius:8,fontSize:14,
+              background:"#07070f",border:`1px solid ${pwError?"#f87171":"#252538"}`,
+              color:"#e8e8f0",outline:"none",boxSizing:"border-box",marginBottom:8,
+            }}
+            autoFocus
+          />
+          {pwError && <div style={{color:"#f87171",fontSize:12,marginBottom:8}}>Falsches Passwort</div>}
+          <button
+            onClick={()=>{if(pwInput===PASSWORD){setLoggedIn(true);}else{setPwError(true);setPwInput("");}}}
+            style={{
+              width:"100%",padding:"12px",borderRadius:8,fontSize:14,fontWeight:700,
+              background:"linear-gradient(135deg,#4f46e5,#818cf8)",color:"#fff",
+              border:"none",cursor:"pointer",marginTop:4,
+            }}
+          >
+            Anmelden
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const deals = uploadedDeals ?? DEALS;
 
