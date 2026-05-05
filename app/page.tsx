@@ -1529,6 +1529,25 @@ export default function Dashboard() {
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
 
+  const deals = uploadedDeals ?? DEALS;
+
+  useEffect(() => {
+    async function fetchSheetData() {
+      try {
+        const res = await fetch(SHEET_URL);
+        const text = await res.text();
+        const parsed = parseCSV(text);
+        if (parsed.length > 0) {
+          setUploadedDeals(parsed);
+          setUploadStatus("success");
+        }
+      } catch { /* silent fail */ }
+    }
+    fetchSheetData();
+    const interval = setInterval(fetchSheetData, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (!loggedIn) {
     return (
       <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
@@ -1564,25 +1583,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const deals = uploadedDeals ?? DEALS;
-
-  useEffect(() => {
-    async function fetchSheetData() {
-      try {
-        const res = await fetch(SHEET_URL);
-        const text = await res.text();
-        const parsed = parseCSV(text);
-        if (parsed.length > 0) {
-          setUploadedDeals(parsed);
-          setUploadStatus("success");
-        }
-      } catch { /* silent fail */ }
-    }
-    fetchSheetData();
-    const interval = setInterval(fetchSheetData, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   function handleCSVUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
