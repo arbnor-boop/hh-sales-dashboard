@@ -1,5 +1,9 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+
+const SHEET_ID = "10QX67xfKkuF-XTaSxOq5dx9TVEZi0wu_jVXSMSpsPFk";
+const GID = "938130939";
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
@@ -1562,6 +1566,24 @@ export default function Dashboard() {
 
   const deals = uploadedDeals ?? DEALS;
 
+  const fetchSheetData = useCallback(async () => {
+    try {
+      const res = await fetch(SHEET_URL + "&t=" + Date.now());
+      const text = await res.text();
+      const parsed = parseCSV(text);
+      if (parsed.length > 0) {
+        setUploadedDeals(parsed);
+        setUploadStatus("success");
+      }
+    } catch { /* silent fail, keep existing data */ }
+  }, []);
+
+  useEffect(() => {
+    fetchSheetData();
+    const interval = setInterval(fetchSheetData, 2 * 60 * 1000); // every 2 minutes
+    return () => clearInterval(interval);
+  }, [fetchSheetData]);
+
   function handleCSVUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1830,26 +1852,27 @@ export default function Dashboard() {
         </>)}
         <div style={{flex:1}}/>
         <div style={{padding:"12px",borderTop:`1px solid ${C.border}`}}>
-          <label style={{display:"block",cursor:"pointer"}}>
-            <input type="file" accept=".csv" onChange={handleCSVUpload} style={{display:"none"}}/>
-            <div style={{
-              padding:"9px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",
-              background: uploadStatus==="success" ? "#0a2a10" : uploadStatus==="error" ? "#2a0a0a" : "#13132a",
-              border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : uploadStatus==="error" ? "#5a1a1a" : C.border2}`,
-              color: uploadStatus==="success" ? C.green : uploadStatus==="error" ? "#f87171" : C.muted,
-              letterSpacing:"1px",cursor:"pointer",
-            }}>
-              {uploadStatus==="success" ? "✓ CSV geladen" : uploadStatus==="error" ? "✗ Fehler" : "📂 CSV hochladen"}
-            </div>
-          </label>
+          <div style={{
+            padding:"9px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",
+            background: uploadStatus==="success" ? "#0a2a10" : uploadStatus==="error" ? "#2a0a0a" : "#13132a",
+            border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : uploadStatus==="error" ? "#5a1a1a" : C.border2}`,
+            color: uploadStatus==="success" ? C.green : uploadStatus==="error" ? "#f87171" : C.muted,
+            letterSpacing:"1px",
+          }}>
+            {uploadStatus==="success" ? "● LIVE — Google Sheet" : uploadStatus==="error" ? "✗ Verbindungsfehler" : "⟳ Verbinde..."}
+          </div>
           {uploadedDeals && (
             <div style={{marginTop:6,fontSize:10,color:C.muted,textAlign:"center"}}>{uploadedDeals.length} Deals geladen</div>
           )}
-          {uploadedDeals && (
-            <button onClick={()=>{setUploadedDeals(null);setUploadStatus("idle");setSelectedMonth("Mai 2026");setSelectedDatum("04.05.2026");}} style={{marginTop:6,width:"100%",padding:"5px",borderRadius:6,fontSize:10,color:"#52526a",background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>
-              Zurücksetzen
-            </button>
-          )}
+          <button onClick={fetchSheetData} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer",letterSpacing:"0.5px"}}>
+            ↻ Jetzt aktualisieren
+          </button>
+          <label style={{display:"block",cursor:"pointer",marginTop:6}}>
+            <input type="file" accept=".csv" onChange={handleCSVUpload} style={{display:"none"}}/>
+            <div style={{padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,textAlign:"center",background:"transparent",border:`1px solid ${C.border}`,color:"#52526a",cursor:"pointer",letterSpacing:"0.5px"}}>
+              📂 CSV manuell laden
+            </div>
+          </label>
         </div>
       </div>
 
