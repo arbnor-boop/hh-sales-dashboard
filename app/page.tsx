@@ -1519,14 +1519,17 @@ function parseCSV(text: string): Deal[] {
 const PASSWORD = "HHSales3!";
 
 export default function Dashboard() {
-  const [loggedIn, setLoggedIn] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("hh_scg_auth") === "1";
-    }
-    return false;
-  });
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("hh_scg_auth") === "1") {
+      setLoggedIn(true);
+    }
+    setHydrated(true);
+  }, []);
 
   function doLogin() {
     if (pwInput === PASSWORD) {
@@ -1598,6 +1601,8 @@ export default function Dashboard() {
   const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
   const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
   const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
+
+  if (!hydrated) return <div style={{minHeight:"100vh",background:"#07070f"}}/>;
 
   if (!loggedIn) {
     return (
