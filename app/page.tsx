@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 const SHEET_ID = "10QX67xfKkuF-XTaSxOq5dx9TVEZi0wu_jVXSMSpsPFk";
 const GID = "938130939";
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
-const SHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_CSV_URL)}`;
+const SHEET_URL = `https://corsproxy.io/?${encodeURIComponent(SHEET_CSV_URL)}`;
 
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
