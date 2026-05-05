@@ -2014,11 +2014,13 @@ export default function Dashboard() {
               const v = (d as Record<string,unknown>)[key];
               return typeof v === "number" && v > 0 && (isIntern ? d.intern : !d.intern);
             });
-            const cash = relevant.reduce((a,d) => {
+            const provi = relevant.reduce((a,d) => {
               const v = (d as Record<string,unknown>)[key];
               return a + (typeof v === "number" ? v : 0);
             }, 0);
-            return { deals: relevant.length, cash };
+            const scgVol = relevant.reduce((a,d) => a + d.scgVol, 0);
+            const scgCash = relevant.reduce((a,d) => a + d.scgCash, 0);
+            return { deals: relevant.length, provi, scgVol, scgCash };
           }
           return (
             <>
@@ -2027,17 +2029,17 @@ export default function Dashboard() {
               </div>
               {dynamicMonths.map(monat => {
                 const monatDeals = deals.filter(d=>d.monat===monat);
-                const stats = CLOSERS.map(name => ({name, ...closerMonthStats(monatDeals, name)})).filter(s=>s.deals>0||s.cash>0);
+                const stats = CLOSERS.map(name => ({name, ...closerMonthStats(monatDeals, name)})).filter(s=>s.deals>0);
                 if (stats.length===0) return null;
                 return (
                   <div key={monat} style={{marginBottom:36}}>
                     <div style={{fontSize:12,color:C.muted,letterSpacing:"1.5px",marginBottom:14,fontWeight:600,display:"flex",alignItems:"center",gap:8}}>
                       <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{monat}</span>
                     </div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                       {CLOSERS.map(name=>{
                         const s = closerMonthStats(monatDeals, name);
-                        if (s.deals===0 && s.cash===0) return null;
+                        if (s.deals===0) return null;
                         const color = closerColor[name] || C.indigo;
                         const accent = isIntern ? C.green : C.pink;
                         return (
@@ -2049,9 +2051,21 @@ export default function Dashboard() {
                                 <div style={{fontSize:11,color:C.muted}}>{s.deals} Deals</div>
                               </div>
                             </div>
-                            <div style={{background:isIntern?"#0a1a10":"#1a0a10",borderRadius:8,padding:"10px 12px"}}>
-                              <div style={{fontSize:10,color:accent,letterSpacing:"1px",marginBottom:4}}>{isIntern?"INTERN":"EXTERN"} PROVISION</div>
-                              <div style={{fontSize:15,fontWeight:700,...mono(accent)}}>{fmt(s.cash)}</div>
+                            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                              <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                                <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
+                              </div>
+                              <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                                <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
+                              </div>
+                              {isIntern && (
+                                <div style={{background:isIntern?"#0a1a10":"#1a0a10",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                  <span style={{fontSize:10,color:accent,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
+                                  <span style={{fontSize:13,fontWeight:700,...mono(accent)}}>{fmt(s.provi)}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
