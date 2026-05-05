@@ -1469,7 +1469,7 @@ function parseCSVLine(line: string, sep: string): string[] {
   result.push(current.trim());
   return result;
 }
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").map(l => l.trim()).filter(Boolean);
   const parseEur = (s: string) => {
     if (!s) return 0;
     const clean = s.replace(/€/g,"").replace(/\s/g,"").replace(/\./g,"").replace(",",".").trim();
@@ -1517,6 +1517,8 @@ function parseCSVLine(line: string, sep: string): string[] {
 
   // Use header row to map column names to indices
   const headers = parseCSVLine(lines[headerIdx], sep).map(c => c.toLowerCase());
+  console.log("CSV Header found at line", headerIdx, ":", headers);
+  console.log("Total data lines:", lines.length - headerIdx - 1);
   const col = (names: string[]) => {
     for (const n of names) {
       const idx = headers.findIndex(h => h.includes(n.toLowerCase()));
@@ -1532,6 +1534,7 @@ function parseCSVLine(line: string, sep: string): string[] {
   const iCloser   = col(["closer","setter"]);
   const iScgVol   = col(["scg volumen","scg_volumen"]);
   const iScgCash  = col(["scg cash in","scg_cash_in"]);
+  console.log("Column indices - scgVol:", iScgVol, "scgCash:", iScgCash, "partner:", col(["partner"]), "date:", col(["date"]));
   const iMontano  = col(["montano"]);
   const iCem      = col(["cem"]);
   const iYves     = col(["yves"]);
