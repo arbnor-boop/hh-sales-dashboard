@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D9vdTtiglhv8rTmraXiH6nLr9dTLrQQjyQCG2SEkVXsUdganxtjmdRniRamAJx_e1Ek/pub?output=csv";
 
@@ -2091,22 +2091,41 @@ export default function Dashboard() {
             Kada:C.cyan, Sören:"#a78bfa", Rene:"#fb923c"
           };
           const INTERN_CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
-          const monatDeals = deals.filter(d => d.monat === selectedMonth);
+          const [closerView, setCloserView] = React.useState<"monat"|"tag">("monat");
+          const tageInMonat = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
+          const filterDeals = closerView==="tag"
+            ? deals.filter(d=>d.datum===selectedDatum)
+            : deals.filter(d=>d.monat===selectedMonth);
+
+          const headerSection = (
+            <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+              <h1 style={{margin:0,fontSize:21,fontWeight:700}}>{isIntern?"Closer Intern":"Closer Extern"}</h1>
+              <select value={selectedMonth} onChange={e=>{setSelectedMonth(e.target.value);const t=[...new Set(deals.filter(d=>d.monat===e.target.value).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
+                {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
+              </select>
+              <div style={{display:"flex",gap:4,background:"#0f0f1c",borderRadius:20,padding:3,border:`1px solid ${C.border}`}}>
+                {(["monat","tag"] as const).map(v=>(
+                  <button key={v} onClick={()=>setCloserView(v)} style={{padding:"4px 14px",borderRadius:16,fontSize:11,fontWeight:700,border:"none",cursor:"pointer",background:closerView===v?"#252550":"transparent",color:closerView===v?C.indigo:C.muted}}>
+                    {v==="monat"?"Monat":"Tag"}
+                  </button>
+                ))}
+              </div>
+              {closerView==="tag" && (
+                <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.amber,border:"1px solid #3a3a20",cursor:"pointer",outline:"none"}}>
+                  {tageInMonat.map(d=><option key={d} value={d}>{d.slice(0,5)}</option>)}
+                </select>
+              )}
+            </div>
+          );
 
           if (isIntern) {
-            const monatDeals = deals.filter(d=>d.monat===selectedMonth);
             return (
               <>
-                <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-                  <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Closer Intern</h1>
-                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
-                    {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
-                  </select>
-                </div>
+                {headerSection}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                   {INTERN_CLOSERS.map(name=>{
                     const key = name === "Sören" ? "soeren" : name.toLowerCase();
-                    const relevant = monatDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
+                    const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
                     if (relevant.length===0) return null;
                     const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
                     const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
@@ -2142,7 +2161,7 @@ export default function Dashboard() {
               </>
             );
           } else {
-            const externDeals = deals.filter(d => d.monat===selectedMonth && !d.intern);
+            const externDeals = filterDeals.filter(d => !d.intern);
             const closerMap: Record<string,{scgVol:number,scgCash:number,deals:number}> = {};
             externDeals.forEach(d => {
               const name = (d.setter||"").trim();
@@ -2155,13 +2174,8 @@ export default function Dashboard() {
             const closers = Object.entries(closerMap).sort((a,b)=>b[1].scgCash-a[1].scgCash);
             return (
               <>
-                <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-                  <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Closer Extern</h1>
-                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
-                    {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
-                  </select>
-                </div>
-                {closers.length===0 && <div style={{color:C.muted,fontSize:14}}>Keine externen Deals in {selectedMonth}</div>}
+                {headerSection}
+                {closers.length===0 && <div style={{color:C.muted,fontSize:14}}>Keine externen Deals</div>}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                   {closers.map(([name,s],i)=>{
                     const colors = [C.indigo,C.green,C.amber,C.pink,C.cyan,"#a78bfa","#fb923c","#38bdf8","#f43f5e","#84cc16"];
