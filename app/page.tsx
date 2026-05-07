@@ -1540,7 +1540,7 @@ function parseCSV(text: string): Deal[] {
       return {
         datum:cols[1]||"", monat, partner:(cols[0]||"").trim(),
         total:parseEur(cols[5]), ersteRate:parseEur(cols[6]),
-        intern:INTERN_PARTNERS.has((cols[0]||"").trim()),
+        intern:parseEur(cols[21])>0,
         setter:cols[7]||"",
         scgVol:parseEur(cols[8]), scgCash:parseEur(cols[11]),
         internVol:parseEur(cols[21]), internCash:parseEur(cols[22]),
@@ -1596,7 +1596,7 @@ function parseCSV(text: string): Deal[] {
       datum, monat, partner: partner.trim(),
       total: parseEur(g(cols,iTotal)),
       ersteRate: parseEur(g(cols,iErste)),
-      intern: INTERN_PARTNERS.has(partner.trim()),
+      intern: parseEur(g(cols,iInternVol))>0,
       setter: g(cols,iCloser),
       scgVol: parseEur(g(cols,iScgVol)),
       scgCash: parseEur(g(cols,iScgCash)),
