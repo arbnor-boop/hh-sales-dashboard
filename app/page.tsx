@@ -1665,7 +1665,7 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     const SETTERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
     const stats = SETTERS.map(name => {
       const key = name==="Sören"?"soeren":name.toLowerCase();
-      const relevant = src.filter(d=>{const v=(d as Record<string,unknown>)[key];return d.intern && typeof v==="number"&&v>0;});
+      const relevant = src.filter(d=>{const v=(d as Record<string,unknown>)[key];return d.internVol>0 && typeof v==="number"&&v>0;});
       const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
       const scgCash = relevant.reduce((a,d)=>a+d.scgCash,0);
       const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
@@ -1713,8 +1713,8 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     const cash = src.reduce((a,d)=>a+d.scgCash,0);
     const setter = ["montano","cem","yves","mert","kada","soeren","rene"];
     const setterSum = src.reduce((a,d)=>a+setter.reduce((b,s)=>{const v=(d as Record<string,unknown>)[s];return b+(typeof v==="number"?v:0);},0),0);
-    const intern = src.filter(d=>d.intern);
-    const extern = src.filter(d=>!d.intern);
+    const intern = src.filter(d=>d.internVol>0);
+    const extern = src.filter(d=>d.externVol>0);
     return `📅 ${label} (${datumFilter}):\n\n  Deals: ${src.length}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: ${fmt(setterSum)}\n  Netto Cash-IN: ${fmt(cash-setterSum)}\n\n  Intern: ${intern.length} Deals | ${fmt(intern.reduce((a,d)=>a+d.scgCash,0))}\n  Extern: ${extern.length} Deals | ${fmt(extern.reduce((a,d)=>a+d.scgCash,0))}`;
   }
 
@@ -1726,8 +1726,8 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     const cash = src.reduce((a,d)=>a+d.scgCash,0);
     const setter = ["montano","cem","yves","mert","kada","soeren","rene"];
     const setterSum = src.reduce((a,d)=>a+setter.reduce((b,s)=>{const v=(d as Record<string,unknown>)[s];return b+(typeof v==="number"?v:0);},0),0);
-    const intern = src.filter(d=>d.intern);
-    const extern = src.filter(d=>!d.intern);
+    const intern = src.filter(d=>d.internVol>0);
+    const extern = src.filter(d=>d.externVol>0);
     return `📅 ${monatMatch} Übersicht:\n\n  Deals: ${src.length}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: ${fmt(setterSum)}\n  Netto Cash-IN: ${fmt(cash-setterSum)}\n\n  Intern: ${intern.length} Deals | ${fmt(intern.reduce((a,d)=>a+d.scgCash,0))}\n  Extern: ${extern.length} Deals | ${fmt(extern.reduce((a,d)=>a+d.scgCash,0))}`;
   }
 
@@ -1735,8 +1735,8 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   if (f.includes("wie viel") && f.includes("deal") || f.includes("wieviel deal") || f.includes("anzahl deal")) {
     const src = datumFilter ? getDatum(datumFilter) : monatMatch ? getMonat(monatMatch) : deals;
     const label = datumFilter ? (isHeute?"heute":"gestern") : monatMatch ? `im ${monatMatch}` : "gesamt";
-    const intern = src.filter(d=>d.intern).length;
-    const extern = src.filter(d=>!d.intern).length;
+    const intern = src.filter(d=>d.internVol>0).length;
+    const extern = src.filter(d=>d.externVol>0).length;
     return `📊 Deals ${label}:\n\n  Gesamt: ${src.length}\n  Intern: ${intern}\n  Extern: ${extern}`;
   }
 
@@ -1756,8 +1756,8 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   if (f.includes("intern") || f.includes("extern")) {
     const src = datumFilter ? getDatum(datumFilter) : monatMatch ? getMonat(monatMatch) : deals;
     const label = datumFilter ? (isHeute?"heute":"gestern") : monatMatch ? `im ${monatMatch}` : "gesamt";
-    const intern = src.filter(d=>d.intern);
-    const extern = src.filter(d=>!d.intern);
+    const intern = src.filter(d=>d.internVol>0);
+    const extern = src.filter(d=>d.externVol>0);
     const iVol = intern.reduce((a,d)=>a+d.internVol,0);
     const iCash = intern.reduce((a,d)=>a+d.internCash,0);
     const eVol = extern.reduce((a,d)=>a+d.externVol,0);
@@ -1905,12 +1905,12 @@ export default function Dashboard() {
   const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
 
   const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
-  const tagIntern    = useMemo(()=>tagRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[tagRows]);
-  const tagExtern    = useMemo(()=>tagRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[tagRows]);
+  const tagIntern    = useMemo(()=>tagRows.filter(r=>r.internVol>0),[tagRows]);
+  const tagExtern    = useMemo(()=>tagRows.filter(r=>r.externVol>0),[tagRows]);
 
   const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
-  const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
-  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
+  const monatsIntern = useMemo(()=>monatsRows.filter(r=>r.internVol>0),[monatsRows]);
+  const monatsExtern = useMemo(()=>monatsRows.filter(r=>r.externVol>0),[monatsRows]);
   const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
 
   if (!hydrated) return <div style={{minHeight:"100vh",background:"#07070f"}}/>;
@@ -2414,7 +2414,7 @@ export default function Dashboard() {
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                   {INTERN_CLOSERS.map(name=>{
                     const key = name === "Sören" ? "soeren" : name.toLowerCase();
-                    const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
+                    const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.internVol>0 && typeof v==="number" && v>0; });
                     if (relevant.length===0) return null;
                     const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
                     const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
@@ -2450,7 +2450,7 @@ export default function Dashboard() {
               </>
             );
           } else {
-            const externDeals = filterDeals.filter(d => !d.intern);
+            const externDeals = filterDeals.filter(d => d.externVol>0);
             const closerMap: Record<string,{scgVol:number,scgCash:number,deals:number}> = {};
             externDeals.forEach(d => {
               const name = (d.setter||"").trim();
