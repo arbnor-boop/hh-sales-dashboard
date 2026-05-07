@@ -1851,28 +1851,8 @@ export default function Dashboard() {
   const deals = uploadedDeals ?? DEALS;
 
   useEffect(() => {
-    async function fetchSheetData() {
-      try {
-        const res = await fetch(SHEET_URL + "&cachebust=" + Date.now());
-        const text = await res.text();
-        console.log("Fetched CSV, length:", text.length, "first 200 chars:", text.substring(0, 200));
-        const parsed = parseCSV(text);
-        console.log("Parsed deals:", parsed.length, "first deal:", parsed[0]);
-        if (parsed.length > 0) {
-          setUploadedDeals(parsed);
-          setUploadStatus("success");
-        } else {
-          console.error("No deals parsed from CSV!");
-          setUploadStatus("error");
-        }
-      } catch(e) {
-        console.error("Fetch error:", e);
-        setUploadStatus("error");
-      }
-    }
-    fetchSheetData();
-    const interval = setInterval(fetchSheetData, 2 * 60 * 1000);
-    return () => clearInterval(interval);
+    // Auto-fetch deaktiviert - hardcodierte DEALS werden verwendet
+    // (Live-fetch hatte falsche Daten geliefert)
   }, []);
 
   const C = {
