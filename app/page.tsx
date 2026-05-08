@@ -6,7 +6,8 @@ const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
-  "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
+  "Hamann & Kollegen Immobilien GmbH","Hamann &amp; Kollegen Immobilien GmbH",
+  "Hamann & Kollegen Immobilien GmbH ","Candidate-flow"
 ]);
 
 const SETTER = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
@@ -1455,6 +1456,10 @@ function sumRows(rows:PRow[]):PRow {
   }),{partner:"",total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0});
 }
 
+function decodeHtml(s: string): string {
+  return s.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+}
+
 function parseCSVLine(line: string, sep: string): string[] {
   if (sep !== ",") return line.split(sep).map(c => c.replace(/^"|"$/g,"").trim());
   const result: string[] = [];
@@ -1477,7 +1482,7 @@ function parseCSVLine(line: string, sep: string): string[] {
 }
 
 function parseCSV(text: string): Deal[] {
-  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").replace(/\u00a0/g," ").split("\n").map(l => l.trim()).filter(Boolean);
   const parseEur = (s: string) => {
     if (!s) return 0;
     // Remove all non-numeric chars except comma and minus
@@ -1565,8 +1570,8 @@ function parseCSV(text: string): Deal[] {
 
   return lines.slice(headerIdx + 1).map(line => {
     const cols = parseCSVLine(line, sep);
-    const datum = g(cols, iDate);
-    const partner = g(cols, iPartner);
+    const datum = decodeHtml(g(cols, iDate));
+    const partner = decodeHtml(g(cols, iPartner));
     if (!datum || !partner || !/^\d{2}\.\d{2}\.\d{4}/.test(datum)) return null;
     const dateParts = datum.split(".");
     const monat = `${MONTH_MAP[dateParts[1]]||dateParts[1]} ${dateParts[2]||"2026"}`;
@@ -1574,8 +1579,8 @@ function parseCSV(text: string): Deal[] {
       datum, monat, partner: partner.trim(),
       total: parseEur(g(cols,iTotal)),
       ersteRate: parseEur(g(cols,iErste)),
-      intern: INTERN_PARTNERS.has(partner.trim()),
-      setter: g(cols,iCloser),
+      intern: INTERN_PARTNERS.has(partner.trim()) || INTERN_PARTNERS.has(decodeHtml(partner.trim())),
+      setter: decodeHtml(g(cols,iCloser)),
       scgVol: parseEur(g(cols,iScgVol)),
       scgCash: parseEur(g(cols,iScgCash)),
       internVol: parseEur(g(cols,iInternVol)),
