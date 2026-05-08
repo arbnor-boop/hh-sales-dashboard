@@ -2450,7 +2450,11 @@ export default function Dashboard() {
               </>
             );
           } else {
-            const externDeals = filterDeals.filter(d => !d.intern);
+            const externDeals = filterDeals.filter(d => {
+              const setter = (d.setter||"").trim();
+              const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel"];
+              return setter && !SETTER_NAMES.includes(setter);
+            });
             const closerMap: Record<string,{scgVol:number,scgCash:number,deals:number}> = {};
             externDeals.forEach(d => {
               const name = (d.setter||"").trim();
