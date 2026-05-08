@@ -13,6 +13,11 @@ const INTERN_PARTNERS = new Set([
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
   "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
+function isInternCloser(setter: string): boolean {
+  const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel"];
+  return SETTER_NAMES.includes(setter.trim());
+}
+
 function isInternPartner(name: string): boolean {
   const n = name.trim().replace(/\s+/g," ");
   return INTERN_PARTNERS.has(n) || INTERN_PARTNERS.has(decodeHtml(n));
@@ -1898,12 +1903,12 @@ export default function Dashboard() {
   const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
 
   const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
-  const tagIntern    = useMemo(()=>tagRows.filter(r=>isInternPartner(r.partner)),[tagRows]);
-  const tagExtern    = useMemo(()=>tagRows.filter(r=>!isInternPartner(r.partner)),[tagRows]);
+  const tagIntern    = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter))),[selectedDatum,deals]);
+  const tagExtern    = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter))),[selectedDatum,deals]);
 
   const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
-  const monatsIntern = useMemo(()=>monatsRows.filter(r=>isInternPartner(r.partner)),[monatsRows]);
-  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!isInternPartner(r.partner)),[monatsRows]);
+  const monatsIntern = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter))),[selectedMonth,deals]);
+  const monatsExtern = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter))),[selectedMonth,deals]);
   const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
 
   if (!hydrated) return <div style={{minHeight:"100vh",background:"#07070f"}}/>;
@@ -2289,8 +2294,8 @@ export default function Dashboard() {
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#1a1a2e",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.intern))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
-            <SumCard label="EXTERN" vol={sumRows(tagExtern).externVol} cash={sumRows(tagExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!d.intern))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
+            <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
+            <SumCard label="EXTERN" vol={sumRows(tagExtern).externVol} cash={sumRows(tagExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
             <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#0f0f1c" border="#2a2a50"/>
           </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
@@ -2304,8 +2309,8 @@ export default function Dashboard() {
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&d.intern))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
-            <SumCard label="EXTERN" vol={sumRows(monatsExtern).externVol} cash={sumRows(monatsExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!d.intern))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
+            <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
+            <SumCard label="EXTERN" vol={sumRows(monatsExtern).externVol} cash={sumRows(monatsExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
             <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol} cash={sumRows(monatsRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth))} color={C.indigo} bg="#0f0f1c" border="#2a2a50"/>
           </div>
           <InternTable rows={monatsIntern} label={selectedMonth}/>
