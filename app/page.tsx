@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D9vdTtiglhv8rTmraXiH6nLr9dTLrQQjyQCG2SEkVXsUdganxtjmdRniRamAJx_e1Ek/pub?output=csv";
+const SHEET_URL = "/api/sheet";
 
 async function fetchSheet() {
-  const url = SHEET_URL + "&t=" + Date.now();
-  const res = await fetch(url, {cache: "no-store"});
+  const res = await fetch(SHEET_URL + "?t=" + Date.now(), {cache: "no-store"});
   return res.text();
 }
 
