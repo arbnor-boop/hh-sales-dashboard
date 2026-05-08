@@ -14,7 +14,7 @@ const INTERN_PARTNERS = new Set([
   "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
 function isInternCloser(setter: string): boolean {
-  const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel","Petrit","Henrik"];
+  const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel"];
   return SETTER_NAMES.includes(setter.trim());
 }
 
@@ -2385,7 +2385,7 @@ export default function Dashboard() {
             Montano:C.indigo, Cem:C.green, Yves:C.amber, Mert:C.pink,
             Kada:C.cyan, Sören:"#a78bfa", Rene:"#fb923c"
           };
-          const INTERN_CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Petrit","Henrik"];
+          const INTERN_CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
           const tageInMonat = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           const filterDeals = closerView==="tag"
             ? deals.filter(d=>d.datum===selectedDatum)
