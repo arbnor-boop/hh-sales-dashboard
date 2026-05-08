@@ -1798,6 +1798,26 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   return `Ich kann dir bei folgenden Fragen helfen:\n\n📅 ZEIT\n• "Wie war heute?" / "Wie war gestern?"\n• "Wie war der [Monat]?"\n• "Vergleiche [Monat1] mit [Monat2]"\n\n🏆 RANKING\n• "Wer ist Top-Closer heute?"\n• "Wer ist Top-Partner heute?"\n• "Welcher Monat war am besten?"\n\n💰 ZAHLEN\n• "Umsatz heute" / "Umsatz im [Monat]"\n• "Netto heute" / "Netto im [Monat]"\n• "Wie viel Deals heute?"\n• "Intern vs Extern heute"\n\n🏢 PARTNER\n• "Wie viel hat [Partner] gemacht?"\n• "Wie viel hat Schippke im April gemacht?"\n\n📊 ÜBERSICHT\n• "Gesamtübersicht"`;
 }
 
+
+function getWeeksInMonth(monat: string, deals: Deal[]) {
+  const daten = [...new Set(deals.filter(d=>d.monat===monat).map(d=>d.datum))].sort();
+  if (daten.length === 0) return [];
+  const pd = (s: string) => { const [dd,mm,yy] = s.split(".").map(Number); return new Date(yy,mm-1,dd); };
+  const first = pd(daten[0]); const last = pd(daten[daten.length-1]);
+  let cur = new Date(first);
+  const dow = cur.getDay(); cur.setDate(cur.getDate() - (dow===0?6:dow-1));
+  const weeks: {label:string; dates:string[]}[] = [];
+  let wn = 1;
+  while (cur <= last) {
+    const ws = new Date(cur); const we = new Date(cur); we.setDate(we.getDate()+6);
+    const f = (d:Date) => String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0");
+    const wd = daten.filter(d=>{ const dt=pd(d); return dt>=ws&&dt<=we; });
+    if (wd.length>0) weeks.push({label:"Woche "+wn+" ("+f(ws)+" – "+f(we)+")", dates:wd});
+    cur.setDate(cur.getDate()+7); wn++;
+  }
+  return weeks;
+}
+
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -1823,11 +1843,12 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("tagesansicht");
+  const [activeTab, setActiveTab] = useState<"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("tagesansicht");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
   const [closerView, setCloserView] = useState<"monat"|"tag">("monat");
+  const [selectedWeek, setSelectedWeek] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -2166,7 +2187,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["tagesansicht","📅 Tagesansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
+          {([["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -2308,6 +2329,36 @@ export default function Dashboard() {
           <ExternTable rows={tagExtern} label={selectedDatum}/>
           <GesamtTable rows={tagRows} label={selectedDatum}/>
         </>)}
+
+
+        {activeTab==="wochenansicht"&&(()=>{
+          const weeks = getWeeksInMonth(selectedMonth, deals);
+          const week = weeks[selectedWeek] || weeks[0];
+          if (!week) return <div style={{color:C.muted,padding:20}}>Keine Daten für {selectedMonth}</div>;
+          const wd = deals.filter(d=>week.dates.includes(d.datum));
+          const wI = aggregate(wd.filter(d=>isInternCloser(d.setter)));
+          const wE = aggregate(wd.filter(d=>!isInternCloser(d.setter)));
+          const wA = aggregate(wd);
+          return (<>
+            <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+              <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Wochenansicht</h1>
+              <select value={selectedMonth} onChange={e=>{setSelectedMonth(e.target.value);setSelectedWeek(0);}} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
+                {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
+              </select>
+              <select value={selectedWeek} onChange={e=>setSelectedWeek(Number(e.target.value))} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.amber,border:"1px solid #3a3a20",cursor:"pointer",outline:"none"}}>
+                {weeks.map((w,i)=><option key={i} value={i}>{w.label}</option>)}
+              </select>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
+              <SumCard label="INTERN" vol={sumRows(wI).internVol} cash={sumRows(wI).internCash} netto={nettoFromDeals(wd.filter(d=>isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
+              <SumCard label="EXTERN" vol={sumRows(wE).externVol} cash={sumRows(wE).externCash} netto={nettoFromDeals(wd.filter(d=>!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
+              <SumCard label="GESAMT" vol={sumRows(wA).scgVol} cash={sumRows(wA).scgCash} netto={nettoFromDeals(wd)} color={C.indigo} bg="#0f0f1c" border="#2a2a50"/>
+            </div>
+            <InternTable rows={wI} label={week.label}/>
+            <ExternTable rows={wE} label={week.label}/>
+            <GesamtTable rows={wA} label={week.label}/>
+          </>);
+        })()}
 
         {activeTab==="monatsansicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
