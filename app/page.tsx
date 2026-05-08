@@ -2392,6 +2392,7 @@ export default function Dashboard() {
             Kada:C.cyan, Sören:"#a78bfa", Rene:"#fb923c"
           };
           const INTERN_CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
+          const INTERN_NO_PROVI = ["Petrit","Henrik"];
           const tageInMonat = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           const filterDeals = closerView==="tag"
             ? deals.filter(d=>d.datum===selectedDatum)
@@ -2425,7 +2426,7 @@ export default function Dashboard() {
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                   {INTERN_CLOSERS.map(name=>{
                     const key = name === "Sören" ? "soeren" : name.toLowerCase();
-                    const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return d.intern && typeof v==="number" && v>0; });
+                    const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return isInternCloser(d.setter) && typeof v==="number" && v>0; });
                     if (relevant.length===0) return null;
                     const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
                     const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
@@ -2452,6 +2453,34 @@ export default function Dashboard() {
                           <div style={{background:"#0a1a10",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {INTERN_NO_PROVI.map(name=>{
+                    const relevant = filterDeals.filter(d => isInternCloser(d.setter) && (d.setter||"").trim()===name);
+                    if (relevant.length===0) return null;
+                    const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
+                    const scgCash = relevant.reduce((a,d)=>a+d.scgCash,0);
+                    const color = "#94a3b8";
+                    return (
+                      <div key={name} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:18}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                          <div style={{width:34,height:34,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color}}>{name[0]}</div>
+                          <div>
+                            <div style={{fontSize:14,fontWeight:700,color:C.text}}>{name}</div>
+                            <div style={{fontSize:11,color:C.muted}}>{relevant.length} Deals</div>
+                          </div>
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                          <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
+                          </div>
+                          <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                            <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
                           </div>
                         </div>
                       </div>
