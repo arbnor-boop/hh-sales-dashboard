@@ -1462,9 +1462,15 @@ function parseCSVLine(line: string, sep: string): string[] {
   let inQuotes = false;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
-    if (ch === '"') { inQuotes = !inQuotes; }
-    else if (ch === ',' && !inQuotes) { result.push(current.trim()); current = ""; }
-    else { current += ch; }
+    if (ch === '"') {
+      if (inQuotes && line[i+1] === '"') { current += '"'; i++; } // escaped quote
+      else { inQuotes = !inQuotes; }
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
   }
   result.push(current.trim());
   return result;
@@ -1474,9 +1480,15 @@ function parseCSV(text: string): Deal[] {
   const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").map(l => l.trim()).filter(Boolean);
   const parseEur = (s: string) => {
     if (!s) return 0;
-    const clean = s.replace(/€/g,"").replace(/\s/g,"").replace(/\./g,"").replace(",",".").trim();
-    if (!clean || clean === "-") return 0;
-    return parseFloat(clean) || 0;
+    // Remove all non-numeric chars except comma and minus
+    const clean = s
+      .replace(/€/g,"").replace(/\s/g,"").replace(/\u00a0/g,"")
+      .replace(/\u202f/g,"").replace(/\u2009/g,"")
+      .trim();
+    if (!clean || clean === "-" || clean === "–") return 0;
+    // German format: 1.234,56 → remove dots, replace comma with dot
+    const normalized = clean.replace(/\./g,"").replace(",",".");
+    return parseFloat(normalized) || 0;
   };
   const MONTH_MAP: Record<string,string> = {
     "01":"Januar","02":"Februar","03":"März","04":"April","05":"Mai",
