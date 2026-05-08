@@ -14,8 +14,9 @@ const INTERN_PARTNERS = new Set([
   "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
 function isInternCloser(setter: string): boolean {
-  const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel"];
-  return SETTER_NAMES.includes(setter.trim());
+  const s = setter.trim().replace(/\s+/g," ");
+  const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel","Petrit","Henrik"];
+  return SETTER_NAMES.some(n => n.toLowerCase() === s.toLowerCase());
 }
 
 function isInternPartner(name: string): boolean {
@@ -1903,7 +1904,12 @@ export default function Dashboard() {
   const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
 
   const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
-  const tagIntern    = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter))),[selectedDatum,deals]);
+  const tagIntern    = useMemo(()=>{
+    const filtered = deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter));
+    console.log("Tag intern deals:", filtered.length, "setters:", [...new Set(filtered.map(d=>d.setter))]);
+    console.log("All setters on date:", [...new Set(deals.filter(d=>d.datum===selectedDatum).map(d=>JSON.stringify(d.setter)))]);
+    return aggregate(filtered);
+  },[selectedDatum,deals]);
   const tagExtern    = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter))),[selectedDatum,deals]);
 
   const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
