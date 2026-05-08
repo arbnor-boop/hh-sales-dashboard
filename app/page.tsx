@@ -1570,12 +1570,18 @@ function parseCSV(text: string): Deal[] {
   const iExternCash = col(["extern cash in","extern_cash_in"]);
 
   const g = (cols: string[], i: number) => i >= 0 ? (cols[i]||"") : "";
+  let skipped = 0;
 
   return lines.slice(headerIdx + 1).map(line => {
     const cols = parseCSVLine(line, sep);
-    const datum = decodeHtml(g(cols, iDate));
-    const partner = decodeHtml(g(cols, iPartner));
-    if (!datum || !partner || !/^\d{2}\.\d{2}\.\d{4}/.test(datum)) return null;
+    const datum = decodeHtml(g(cols, iDate)).trim();
+    const partner = decodeHtml(g(cols, iPartner)).trim();
+    // Accept dates like dd.mm.yyyy or d.m.yyyy
+    if (!datum || !partner || !/^\d{1,2}\.\d{1,2}\.\d{4}/.test(datum)) {
+      skipped++;
+      if (skipped <= 5) console.log("Skipped line:", {datum, partner, cols: cols.slice(0,3)});
+      return null;
+    }
     const dateParts = datum.split(".");
     const monat = `${MONTH_MAP[dateParts[1]]||dateParts[1]} ${dateParts[2]||"2026"}`;
     return {
