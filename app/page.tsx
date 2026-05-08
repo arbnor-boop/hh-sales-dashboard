@@ -3,6 +3,12 @@ import React, { useState, useMemo, useEffect } from "react";
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D9vdTtiglhv8rTmraXiH6nLr9dTLrQQjyQCG2SEkVXsUdganxtjmdRniRamAJx_e1Ek/pub?output=csv";
 
+async function fetchSheet() {
+  const url = SHEET_URL + "&t=" + Date.now();
+  const res = await fetch(url, {cache: "no-store"});
+  return res.text();
+}
+
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
@@ -1844,8 +1850,7 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchSheetData() {
       try {
-        const res = await fetch(SHEET_URL + "&cachebust=" + Date.now());
-        const text = await res.text();
+        const text = await fetchSheet();
         console.log("Fetched CSV, length:", text.length, "first 200 chars:", text.substring(0, 200));
         const parsed = parseCSV(text);
         console.log("Parsed deals:", parsed.length, "first deal:", parsed[0]);
@@ -2206,8 +2211,7 @@ export default function Dashboard() {
           <button onClick={async()=>{
             setUploadStatus("idle");
             try{
-              const res=await fetch(SHEET_URL);
-              const text=await res.text();
+              const text=await fetchSheet();
               const parsed=parseCSV(text);
               if(parsed.length>0){setUploadedDeals(parsed);setUploadStatus("success");}
               else{setUploadStatus("error");}
