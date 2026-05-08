@@ -6,9 +6,12 @@ const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
-  "Hamann & Kollegen Immobilien GmbH","Hamann &amp; Kollegen Immobilien GmbH",
-  "Hamann & Kollegen Immobilien GmbH ","Candidate-flow"
+  "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
+function isInternPartner(name: string): boolean {
+  const n = name.trim().replace(/\s+/g," ");
+  return INTERN_PARTNERS.has(n) || INTERN_PARTNERS.has(decodeHtml(n));
+}
 
 const SETTER = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
 
@@ -1432,7 +1435,7 @@ const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.
 function aggregate(deals:Deal[]):PRow[] {
   const map:Record<string,PRow> = {};
   for(const d of deals){
-    const k=d.partner;
+    const k=d.partner.trim().replace(/\s+/g," ");
     if(!map[k]) map[k]={partner:k,total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0};
     const r=map[k];
     r.total+=d.total; r.ersteRate+=d.ersteRate;
@@ -1523,7 +1526,7 @@ function parseCSV(text: string): Deal[] {
       return {
         datum:cols[1]||"", monat, partner:(cols[0]||"").trim(),
         total:parseEur(cols[5]), ersteRate:parseEur(cols[6]),
-        intern:INTERN_PARTNERS.has((cols[0]||"").trim()),
+        intern:isInternPartner(cols[0]||""),
         setter:cols[7]||"",
         scgVol:parseEur(cols[8]), scgCash:parseEur(cols[11]),
         internVol:parseEur(cols[21]), internCash:parseEur(cols[22]),
@@ -1579,8 +1582,7 @@ function parseCSV(text: string): Deal[] {
       datum, monat, partner: partner.trim(),
       total: parseEur(g(cols,iTotal)),
       ersteRate: parseEur(g(cols,iErste)),
-      intern: INTERN_PARTNERS.has(partner.trim()) || INTERN_PARTNERS.has(decodeHtml(partner.trim())),
-      setter: decodeHtml(g(cols,iCloser)),
+      intern: isInternPartner(partner),      setter: decodeHtml(g(cols,iCloser)),
       scgVol: parseEur(g(cols,iScgVol)),
       scgCash: parseEur(g(cols,iScgCash)),
       internVol: parseEur(g(cols,iInternVol)),
@@ -1886,12 +1888,12 @@ export default function Dashboard() {
   const tageImMonat = useMemo(()=>[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort(),[selectedMonth,deals]);
 
   const tagRows      = useMemo(()=>aggregate(deals.filter(d=>d.datum===selectedDatum)),[selectedDatum,deals]);
-  const tagIntern    = useMemo(()=>tagRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[tagRows]);
-  const tagExtern    = useMemo(()=>tagRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[tagRows]);
+  const tagIntern    = useMemo(()=>tagRows.filter(r=>isInternPartner(r.partner)),[tagRows]);
+  const tagExtern    = useMemo(()=>tagRows.filter(r=>!isInternPartner(r.partner)),[tagRows]);
 
   const monatsRows   = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth)),[selectedMonth,deals]);
-  const monatsIntern = useMemo(()=>monatsRows.filter(r=>INTERN_PARTNERS.has(r.partner)),[monatsRows]);
-  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!INTERN_PARTNERS.has(r.partner)),[monatsRows]);
+  const monatsIntern = useMemo(()=>monatsRows.filter(r=>isInternPartner(r.partner)),[monatsRows]);
+  const monatsExtern = useMemo(()=>monatsRows.filter(r=>!isInternPartner(r.partner)),[monatsRows]);
   const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
 
   if (!hydrated) return <div style={{minHeight:"100vh",background:"#07070f"}}/>;
