@@ -1787,6 +1787,96 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     return `💚 Netto Cash-IN ${label}:\n\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: - ${fmt(setterSum)}\n  ─────────────────\n  Netto: ${fmt(cash-setterSum)}`;
   }
 
+  // Diese Woche / Letzte Woche
+  if (f.includes("diese woche") || f.includes("letzte woche") || f.includes("diese woche")) {
+    const now = new Date();
+    const dow = now.getDay();
+    const monday = new Date(now); monday.setDate(now.getDate() - (dow===0?6:dow-1));
+    const isLetzte = f.includes("letzte");
+    if (isLetzte) monday.setDate(monday.getDate()-7);
+    const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+    const pad = (n:number) => String(n).padStart(2,'0');
+    const fmt2 = (d:Date) => `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+    const weekDates: string[] = [];
+    const cur = new Date(monday);
+    while (cur <= sunday) { weekDates.push(fmt2(cur)); cur.setDate(cur.getDate()+1); }
+    const src = deals.filter(d=>weekDates.includes(d.datum));
+    const label = isLetzte ? "letzte Woche" : "diese Woche";
+    const ws = `${pad(monday.getDate())}.${pad(monday.getMonth()+1)}`;
+    const we = `${pad(sunday.getDate())}.${pad(sunday.getMonth()+1)}`;
+    if (src.length===0) return `Keine Deals ${label} (${ws}–${we}) gefunden.`;
+    const vol = src.reduce((a,d)=>a+d.scgVol,0);
+    const cash = src.reduce((a,d)=>a+d.scgCash,0);
+    const setter = ["montano","cem","yves","mert","kada","soeren","rene"];
+    const setterSum = src.reduce((a,d)=>a+setter.reduce((b,s)=>{const v=(d as Record<string,unknown>)[s];return b+(typeof v==="number"?v:0);},0),0);
+    return `📅 ${label} (${ws} – ${we}):\n\n  Deals: ${src.length}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: ${fmt(setterSum)}\n  Netto Cash-IN: ${fmt(cash-setterSum)}`;
+  }
+
+  // Vergleich diese Woche mit letzter Woche
+  if ((f.includes("vergleich") || f.includes("vs")) && (f.includes("woche") || f.includes("kw"))) {
+    const now = new Date();
+    const dow = now.getDay();
+    const monday = new Date(now); monday.setDate(now.getDate() - (dow===0?6:dow-1));
+    const lastMonday = new Date(monday); lastMonday.setDate(monday.getDate()-7);
+    const pad = (n:number) => String(n).padStart(2,'0');
+    const fmt2 = (d:Date) => `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+    const getWeekDates = (start: Date) => { const dates=[]; const c=new Date(start); for(let i=0;i<7;i++){dates.push(fmt2(c));c.setDate(c.getDate()+1);} return dates; };
+    const thisWeekDeals = deals.filter(d=>getWeekDates(monday).includes(d.datum));
+    const lastWeekDeals = deals.filter(d=>getWeekDates(lastMonday).includes(d.datum));
+    const cash1 = lastWeekDeals.reduce((a,d)=>a+d.scgCash,0);
+    const cash2 = thisWeekDeals.reduce((a,d)=>a+d.scgCash,0);
+    const vol1 = lastWeekDeals.reduce((a,d)=>a+d.scgVol,0);
+    const vol2 = thisWeekDeals.reduce((a,d)=>a+d.scgVol,0);
+    const diff = cash2-cash1;
+    return `📊 Vergleich Woche:\n\nLetzte Woche:\n  Deals: ${lastWeekDeals.length}\n  SCG Cash IN: ${fmt(cash1)}\n  SCG Volumen: ${fmt(vol1)}\n\nDiese Woche:\n  Deals: ${thisWeekDeals.length}\n  SCG Cash IN: ${fmt(cash2)}\n  SCG Volumen: ${fmt(vol2)}\n\nUnterschied: ${diff>=0?"+":""}${fmt(diff)}`;
+  }
+
+  // Bester Tag
+  if ((f.includes("bester tag") || f.includes("besten tag")) ) {
+    const src = monatMatch ? getMonat(monatMatch) : deals;
+    const label = monatMatch ? `im ${monatMatch}` : "gesamt";
+    const byDay: Record<string,number> = {};
+    src.forEach(d=>{ byDay[d.datum]=(byDay[d.datum]||0)+d.scgCash; });
+    const sorted = Object.entries(byDay).sort((a,b)=>b[1]-a[1]);
+    if (sorted.length===0) return `Keine Daten ${label}.`;
+    return `🏆 Bester Tag ${label}:\n\n${sorted.slice(0,5).map(([d,v],i)=>`${i+1}. ${d}: ${fmt(v)}`).join("\n")}`;
+  }
+
+  // Durchschnitt pro Deal
+  if (f.includes("durchschnitt")) {
+    const src = datumFilter ? getDatum(datumFilter) : monatMatch ? getMonat(monatMatch) : deals;
+    const label = datumFilter ? (isHeute?"heute":"gestern") : monatMatch ? `im ${monatMatch}` : "gesamt";
+    if (src.length===0) return `Keine Daten ${label}.`;
+    const avgVol = src.reduce((a,d)=>a+d.scgVol,0)/src.length;
+    const avgCash = src.reduce((a,d)=>a+d.scgCash,0)/src.length;
+    const avgTotal = src.reduce((a,d)=>a+d.total,0)/src.length;
+    return `📊 Durchschnitt pro Deal ${label}:\n\n  Deals gesamt: ${src.length}\n  Ø Total: ${fmt(avgTotal)}\n  Ø SCG Volumen: ${fmt(avgVol)}\n  Ø SCG Cash IN: ${fmt(avgCash)}`;
+  }
+
+  // Wie viel fehlt bis Ziel
+  if (f.includes("fehlt") || f.includes("ziel")) {
+    const monat = monatMatch || "Mai";
+    const src = getMonat(monat);
+    const cash = src.reduce((a,d)=>a+d.scgCash,0);
+    const zielMatch = frage.match(/(\d[\d.,]+)/);
+    if (zielMatch) {
+      const ziel = parseFloat(zielMatch[1].replace(/\./g,"").replace(",","."));
+      const fehlt = ziel - cash;
+      return `🎯 Ziel-Tracking ${monat}:\n\n  Aktuell: ${fmt(cash)}\n  Ziel: ${fmt(ziel)}\n  ${fehlt>0?`Fehlt noch: ${fmt(fehlt)}`:`Ziel erreicht! +${fmt(Math.abs(fehlt))}`}`;
+    }
+    return `Bitte nenn ein Ziel, z.B. "Wie viel fehlt bis 100.000 im Mai?"`;
+  }
+
+  // Meiste Deals Partner
+  if (f.includes("meisten deals") || f.includes("meiste deals")) {
+    const src = monatMatch ? getMonat(monatMatch) : deals;
+    const label = monatMatch ? `im ${monatMatch}` : "gesamt";
+    const pm: Record<string,number> = {};
+    src.forEach(d=>{ pm[d.partner]=(pm[d.partner]||0)+1; });
+    const sorted = Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    return `🏆 Meiste Deals ${label}:\n\n${sorted.map(([p,n],i)=>`${i+1}. ${p}: ${n} Deals`).join("\n")}`;
+  }
+
   // Best month
   if (f.includes("besten") || f.includes("höchsten") || f.includes("meisten")) {
     const byMonth = MONTHS.map(m => {
@@ -1807,7 +1897,7 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     return `📊 Gesamtübersicht 2026:\n\n  Deals: ${deals.length}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Setter Provision: ${fmt(setterSum)}\n  Netto Cash-IN: ${fmt(cash-setterSum)}\n\nMonate:\n${MONTHS.map(m=>{const s=getMonat(m);const c=s.reduce((a,d)=>a+d.scgCash,0);return s.length?`  ${m}: ${fmt(c)} (${s.length} Deals)`:null;}).filter(Boolean).join("\n")}`;
   }
 
-  return `Ich kann dir bei folgenden Fragen helfen:\n\n📅 ZEIT\n• "Wie war heute?" / "Wie war gestern?"\n• "Wie war der [Monat]?"\n• "Vergleiche [Monat1] mit [Monat2]"\n\n🏆 RANKING\n• "Wer ist Top-Closer heute?"\n• "Wer ist Top-Partner heute?"\n• "Welcher Monat war am besten?"\n\n💰 ZAHLEN\n• "Umsatz heute" / "Umsatz im [Monat]"\n• "Netto heute" / "Netto im [Monat]"\n• "Wie viel Deals heute?"\n• "Intern vs Extern heute"\n\n🏢 PARTNER\n• "Wie viel hat [Partner] gemacht?"\n• "Wie viel hat Schippke im April gemacht?"\n\n📊 ÜBERSICHT\n• "Gesamtübersicht"`;
+  return `Ich kann dir bei folgenden Fragen helfen:\n\n📅 ZEIT\n• "Wie war heute?" / "Wie war gestern?"\n• "Wie war diese Woche?" / "Wie war letzte Woche?"\n• "Wie war der [Monat]?"\n• "Vergleiche diese Woche mit letzter Woche"\n• "Vergleiche [Monat1] mit [Monat2]"\n\n🏆 RANKING\n• "Wer ist Top-Closer heute?"\n• "Wer ist Top-Partner heute?"\n• "Welcher Monat war am besten?"\n• "Bester Tag im [Monat]?"\n• "Wer hat die meisten Deals im [Monat]?"\n\n💰 ZAHLEN\n• "Umsatz heute" / "Umsatz im [Monat]"\n• "Netto heute" / "Netto im [Monat]"\n• "Wie viel Deals heute?"\n• "Durchschnitt pro Deal im [Monat]"\n• "Wie viel fehlt bis 100.000 im Mai?"\n\n🏢 PARTNER\n• "Wie viel hat [Partner] gemacht?"\n• "Intern vs Extern heute"\n\n📊 ÜBERSICHT\n• "Gesamtübersicht"`;
 }
 
 export default function Dashboard() {
@@ -2262,7 +2352,7 @@ export default function Dashboard() {
               {chatMessages.length===0 && (
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:8}}>
                   <div style={{fontSize:12,color:C.muted,marginBottom:4}}>Beispiele:</div>
-                  {["Wer ist Top-Closer heute?","Wer ist Top-Partner heute?","Wie war heute?","Umsatz im April","Vergleiche März mit April","Welcher Monat war am besten?"].map(q=>(
+                  {["Wer ist Top-Closer heute?","Wer ist Top-Partner heute?","Wie war diese Woche?","Vergleiche diese Woche mit letzter Woche","Bester Tag im Mai?","Durchschnitt pro Deal im April","Wie viel fehlt bis 300.000 im Mai?","Wer hat die meisten Deals im April?"].map(q=>(
                     <button key={q} onClick={()=>sendChatMessage(q)} style={{padding:"10px 14px",borderRadius:8,fontSize:12,textAlign:"left",background:"#13132a",border:`1px solid ${C.border}`,color:C.text,cursor:"pointer"}}>
                       💡 {q}
                     </button>
