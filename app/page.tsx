@@ -1618,6 +1618,7 @@ function parseCSV(text: string): Deal[] {
 }
 
 const PASSWORD = "HHSales3!";
+const PASSWORD2 = "Sales!";
 
 function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   const f = frage.toLowerCase();
@@ -1902,6 +1903,7 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
 
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [selDash, setSelDash] = useState("sales");
   const [hydrated, setHydrated] = useState(false);
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState(false);
@@ -1914,8 +1916,9 @@ export default function Dashboard() {
   }, []);
 
   function doLogin() {
-    if (pwInput === PASSWORD) {
-      localStorage.setItem("hh_scg_auth", "1");
+    const pw = selDash === "firmen" ? PASSWORD2 : PASSWORD;
+    if (pwInput === pw) {
+      localStorage.setItem("hh_scg_auth", selDash);
       setLoggedIn(true);
     } else {
       setPwError(true);
@@ -2026,7 +2029,17 @@ export default function Dashboard() {
       <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
         <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:360,textAlign:"center"}}>
           <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
-          <div style={{fontSize:11,color:"#52526a",letterSpacing:"3px",marginBottom:32}}>SALES DASHBOARD</div>
+          <div style={{fontSize:11,color:"#52526a",letterSpacing:"3px",marginBottom:20}}>DASHBOARD</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+            <div onClick={()=>setSelDash("sales")} style={{padding:"12px",borderRadius:10,cursor:"pointer",textAlign:"center",background:selDash==="sales"?"#1e1e40":"#13132a",border:"2px solid "+(selDash==="sales"?"#818cf8":"#252550")}}>
+              <div style={{fontSize:18,marginBottom:4}}>{"\ud83d\udcca"}</div>
+              <div style={{fontSize:11,fontWeight:700,color:"#818cf8"}}>Sales</div>
+            </div>
+            <div onClick={()=>setSelDash("firmen")} style={{padding:"12px",borderRadius:10,cursor:"pointer",textAlign:"center",background:selDash==="firmen"?"#0a2a10":"#0a1a10",border:"2px solid "+(selDash==="firmen"?"#34d399":"#1a4a25")}}>
+              <div style={{fontSize:18,marginBottom:4}}>{"\ud83c\udfe2"}</div>
+              <div style={{fontSize:11,fontWeight:700,color:"#34d399"}}>4 Firmen</div>
+            </div>
+          </div>
           <input
             type="password"
             placeholder="Passwort"
@@ -2056,6 +2069,18 @@ export default function Dashboard() {
     );
   }
 
+  if (selDash === "firmen" && loggedIn) {
+    return (
+      <div style={{minHeight:"100vh",background:"#07070f",color:"#e8e8f0",fontFamily:"DM Sans,Inter,sans-serif",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:32,marginBottom:16}}>{"\ud83c\udfe2"}</div>
+          <div style={{fontSize:24,fontWeight:800,marginBottom:8}}>Jahresübersicht 4 Firmen</div>
+          <div style={{fontSize:14,color:"#52526a",marginBottom:24}}>April 2026 - wird geladen...</div>
+          <button onClick={()=>{localStorage.removeItem("hh_scg_auth");window.location.reload();}} style={{padding:"8px 20px",borderRadius:8,fontSize:12,color:"#52526a",background:"transparent",border:"1px solid #252538",cursor:"pointer"}}>Abmelden</button>
+        </div>
+      </div>
+    );
+  }
   // computed below
   function handleCSVUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
