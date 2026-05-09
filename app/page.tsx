@@ -1925,7 +1925,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"tagesansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("tagesansicht");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -2268,7 +2268,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["tagesansicht","📅 Tagesansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -2394,6 +2394,120 @@ export default function Dashboard() {
       )}
 
       <div style={{marginLeft:220,flex:1,padding:"28px 32px 64px",minWidth:0}}>
+
+        {activeTab==="dashboard"&&(()=>{
+          // Today
+          const today = new Date();
+          const pad = (n:number) => String(n).padStart(2,'0');
+          const todayStr = `${pad(today.getDate())}.${pad(today.getMonth()+1)}.${today.getFullYear()}`;
+          const todayDeals = deals.filter(d=>d.datum===todayStr);
+          const todayCash = todayDeals.reduce((a,d)=>a+d.scgCash,0);
+          const todayVol = todayDeals.reduce((a,d)=>a+d.scgVol,0);
+          const todayNetto = nettoFromDeals(todayDeals);
+          // This month
+          const months = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+          const curMonth = `${months[today.getMonth()]} ${today.getFullYear()}`;
+          const monthDeals = deals.filter(d=>d.monat===curMonth);
+          const monthCash = monthDeals.reduce((a,d)=>a+d.scgCash,0);
+          const monthVol = monthDeals.reduce((a,d)=>a+d.scgVol,0);
+          const monthNetto = nettoFromDeals(monthDeals);
+          // This week
+          const dow = today.getDay();
+          const monday = new Date(today); monday.setDate(today.getDate()-(dow===0?6:dow-1));
+          const weekDates: string[] = [];
+          const cur = new Date(monday);
+          for(let i=0;i<7;i++){weekDates.push(`${pad(cur.getDate())}.${pad(cur.getMonth()+1)}.${cur.getFullYear()}`);cur.setDate(cur.getDate()+1);}
+          const weekDeals = deals.filter(d=>weekDates.includes(d.datum));
+          const weekCash = weekDeals.reduce((a,d)=>a+d.scgCash,0);
+          const weekNetto = nettoFromDeals(weekDeals);
+          // Top closer today
+          const closerMap: Record<string,number> = {};
+          todayDeals.forEach(d=>{const s=(d.setter||"").trim();if(s)closerMap[s]=(closerMap[s]||0)+d.scgVol;});
+          const topCloser = Object.entries(closerMap).sort((a,b)=>b[1]-a[1])[0];
+          // Top partner today
+          const partnerMap: Record<string,number> = {};
+          todayDeals.forEach(d=>{partnerMap[d.partner]=(partnerMap[d.partner]||0)+d.scgCash;});
+          const topPartner = Object.entries(partnerMap).sort((a,b)=>b[1]-a[1])[0];
+          // Last month for comparison
+          const lastMonthIdx = today.getMonth()-1;
+          const lastMonth = lastMonthIdx>=0 ? `${months[lastMonthIdx]} ${today.getFullYear()}` : `${months[11]} ${today.getFullYear()-1}`;
+          const lastMonthCash = deals.filter(d=>d.monat===lastMonth).reduce((a,d)=>a+d.scgCash,0);
+          const monthDiff = lastMonthCash>0 ? ((monthCash-lastMonthCash)/lastMonthCash*100) : 0;
+
+          const KPICard = ({title,value,sub,color,icon}:{title:string,value:string,sub?:string,color:string,icon:string}) => (
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:20}}>
+              <div style={{fontSize:11,color:C.muted,letterSpacing:"1px",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+                <span>{icon}</span><span>{title}</span>
+              </div>
+              <div style={{fontSize:22,fontWeight:800,fontFamily:"'DM Mono',monospace",color}}>{value}</div>
+              {sub && <div style={{fontSize:11,color:C.muted,marginTop:4}}>{sub}</div>}
+            </div>
+          );
+
+          return (
+            <>
+              <div style={{marginBottom:28,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+                <div>
+                  <h1 style={{margin:0,fontSize:24,fontWeight:800}}>Guten Tag! 👋</h1>
+                  <div style={{fontSize:13,color:C.muted,marginTop:4}}>{todayStr} — Live Dashboard</div>
+                </div>
+                <div style={{padding:"6px 16px",borderRadius:20,background:"#0a1a10",border:"1px solid #1a4a25",fontSize:12,color:C.green,fontWeight:700}}>
+                  ● {deals.length} Deals geladen
+                </div>
+              </div>
+
+              {/* Heute */}
+              <div style={{fontSize:11,color:C.muted,letterSpacing:"2px",marginBottom:12,fontWeight:700}}>HEUTE — {todayStr}</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:28}}>
+                <KPICard title="DEALS HEUTE" value={String(todayDeals.length)} sub="Abgeschlossene Deals" color={C.indigo} icon="📋"/>
+                <KPICard title="SCG CASH IN" value={todayCash>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayCash):"—"} sub="Heute" color={C.cyan} icon="💰"/>
+                <KPICard title="NETTO CASH-IN" value={todayNetto>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayNetto):"—"} sub="Nach Provision" color={C.green} icon="✅"/>
+                <KPICard title="TOP CLOSER" value={topCloser?topCloser[0]:"—"} sub={topCloser?`${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(topCloser[1])} Vol.`:"Keine Deals"} color={C.amber} icon="🏆"/>
+                <KPICard title="TOP PARTNER" value={topPartner?topPartner[0]:"—"} sub={topPartner?`${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(topPartner[1])} Cash`:"Keine Deals"} color={C.pink} icon="🏢"/>
+              </div>
+
+              {/* Diese Woche */}
+              <div style={{fontSize:11,color:C.muted,letterSpacing:"2px",marginBottom:12,fontWeight:700}}>DIESE WOCHE</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:28}}>
+                <KPICard title="DEALS" value={String(weekDeals.length)} sub="Diese Woche" color={C.indigo} icon="📋"/>
+                <KPICard title="SCG CASH IN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(weekCash)} sub="Diese Woche" color={C.cyan} icon="💰"/>
+                <KPICard title="NETTO" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(weekNetto)} sub="Nach Provision" color={C.green} icon="✅"/>
+              </div>
+
+              {/* Dieser Monat */}
+              <div style={{fontSize:11,color:C.muted,letterSpacing:"2px",marginBottom:12,fontWeight:700}}>DIESER MONAT — {curMonth}</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:28}}>
+                <KPICard title="DEALS" value={String(monthDeals.length)} color={C.indigo} icon="📋"/>
+                <KPICard title="SCG VOLUMEN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthVol)} color={C.indigo} icon="📊"/>
+                <KPICard title="SCG CASH IN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthCash)} color={C.cyan} icon="💰"/>
+                <KPICard title="NETTO CASH-IN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthNetto)} sub="Nach Provision" color={C.green} icon="✅"/>
+                <KPICard title="VS LETZTER MONAT" value={`${monthDiff>=0?"+":""}${monthDiff.toFixed(1)}%`} sub={`${lastMonth}: ${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(lastMonthCash)}`} color={monthDiff>=0?C.green:C.pink} icon={monthDiff>=0?"📈":"📉"}/>
+              </div>
+
+              {/* Closer Rangliste Monat */}
+              <div style={{fontSize:11,color:C.muted,letterSpacing:"2px",marginBottom:12,fontWeight:700}}>CLOSER RANGLISTE — {curMonth}</div>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:28}}>
+                {(() => {
+                  const cm: Record<string,{vol:number,cash:number,cnt:number}> = {};
+                  monthDeals.forEach(d=>{const s=(d.setter||"").trim();if(s){if(!cm[s])cm[s]={vol:0,cash:0,cnt:0};cm[s].vol+=d.scgVol;cm[s].cash+=d.scgCash;cm[s].cnt+=1;}});
+                  const sorted = Object.entries(cm).sort((a,b)=>b[1].vol-a[1].vol).slice(0,7);
+                  const maxVol = sorted[0]?.[1]?.vol || 1;
+                  return sorted.map(([name,s],i)=>(
+                    <div key={name} style={{padding:"12px 20px",borderBottom:i<sorted.length-1?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:14}}>
+                      <div style={{width:24,fontSize:13,fontWeight:700,color:i===0?C.amber:C.muted}}>{i+1}</div>
+                      <div style={{width:120,fontSize:13,fontWeight:600,color:C.text}}>{name}</div>
+                      <div style={{flex:1,background:"#1a1a2e",borderRadius:4,height:6,overflow:"hidden"}}>
+                        <div style={{width:`${(s.vol/maxVol*100).toFixed(0)}%`,height:"100%",background:`linear-gradient(90deg,${C.indigo},${C.cyan})`,borderRadius:4}}/>
+                      </div>
+                      <div style={{width:120,textAlign:"right",fontSize:12,fontFamily:"'DM Mono',monospace",color:C.cyan}}>{new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(s.vol)}</div>
+                      <div style={{width:60,textAlign:"right",fontSize:11,color:C.muted}}>{s.cnt} Deals</div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </>
+          );
+        })()}
 
         {activeTab==="tagesansicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
