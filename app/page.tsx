@@ -1648,18 +1648,69 @@ const FDATA: FirmaData[] = [
     ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]]},
 ];
 
+const FIRMEN_NEW_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7ldyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
+
 function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [selFirma, setSelFirma] = useState<string|null>(null);
   const [selMonat, setSelMonat] = useState("April 2026");
-  const MONATE = ["April 2026", "Mai 2026", "Juni 2026", "Juli 2026", "August 2026", "September 2026", "Oktober 2026", "November 2026", "Dezember 2026"];
-  const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
-  const f = selFirma ? (FDATA.find(x=>x.firma===selFirma) ?? FDATA[0]) : null;
+  const [liveData, setLiveData] = useState<typeof FDATA | null>(null);
+  const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
   const C = {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",text:"#e8e8f0",muted:"#52526a",green:"#34d399",pink:"#f472b6",indigo:"#818cf8"};
+  const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
 
-  // Gesamtsaldo aller Firmen (EUR only for now)
-  const totalEin = FDATA.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
-  const totalAus = FDATA.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.aus,0);
+  useEffect(() => {
+    async function loadFirmenData() {
+      try {
+        const res = await fetch(FIRMEN_NEW_SHEET_URL + "&t=" + Date.now(), {cache:"no-store"});
+        const text = await res.text();
+        const rows = parseFirmenCSV(text);
+        if (rows.length === 0) { setLiveStatus("error"); return; }
+
+        const FIRMEN_CFG = [
+          {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR"},
+          {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF"},
+          {firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR"},
+          {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR"},
+        ];
+
+        const built = FIRMEN_CFG.map(cfg => {
+          const firmaRows = rows.filter(r => r.firma === cfg.firma);
+          const einRows = firmaRows.filter(r => r.betrag > 0);
+          const ausRows = firmaRows.filter(r => r.betrag < 0);
+          const ein = einRows.reduce((a,r) => a+r.betrag, 0);
+          const aus = ausRows.reduce((a,r) => a+r.betrag, 0);
+          // Build details - group by name
+          const einMap: Record<string,number> = {};
+          einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
+          const ausMap: Record<string,number> = {};
+          ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
+          return {
+            ...cfg, ein, aus,
+            einDetails: Object.entries(einMap).sort((a,b)=>b[1]-a[1]).slice(0,15) as [string,number][],
+            ausDetails: Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,20) as [string,number][],
+          };
+        });
+
+        setLiveData(built);
+        setLiveStatus("success");
+      } catch {
+        setLiveStatus("error");
+      }
+    }
+    loadFirmenData();
+    const iv = setInterval(loadFirmenData, 5 * 60 * 1000);
+    return () => clearInterval(iv);
+  }, []);
+
+  const data = liveData ?? FDATA;
+  const f = selFirma ? (data.find(x=>x.firma===selFirma) ?? data[0]) : null;
+
+  // Gesamtsaldo aller Firmen (EUR only)
+  const totalEin = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
+  const totalAus = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.aus,0);
   const totalSaldo = totalEin + totalAus;
+
+  const MONATE = [...new Set([...data.flatMap(fi=>(fi.einDetails||[]).map(()=>selMonat)), "April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"])];
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif"}}>
@@ -1669,8 +1720,14 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
           <div style={{fontSize:11,color:C.muted,letterSpacing:"2px"}}>{selMonat.toUpperCase()}</div>
         </div>
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <div style={{padding:"5px 12px",borderRadius:20,fontSize:11,fontWeight:700,
+            background:liveStatus==="success"?"#0a2a10":liveStatus==="error"?"#0a0a1a":"#13132a",
+            border:`1px solid ${liveStatus==="success"?"#1a5a25":"#252538"}`,
+            color:liveStatus==="success"?C.green:C.muted}}>
+            {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
+          </div>
           <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
-            {MONATE.map(m=><option key={m} value={m}>{m}</option>)}
+            {["April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"].map(m=><option key={m} value={m}>{m}</option>)}
           </select>
           {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:C.indigo,background:"transparent",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>← Zurück</button>}
           <button onClick={onLogout} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>Abmelden</button>
@@ -1697,7 +1754,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             </div>
             {/* Firma Karten */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
-            {FDATA.map(fi=>{
+            {data.map(fi=>{
               const saldo = fi.ein + fi.aus;
               return (
                 <div key={fi.firma} onClick={()=>setSelFirma(fi.firma)} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`3px solid ${fi.color}`,borderRadius:12,padding:24,cursor:"pointer"}}>
