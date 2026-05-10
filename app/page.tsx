@@ -1886,7 +1886,14 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
     return isNaN(n) ? null : n;
   };
 
-  const FIRMEN_MARKERS = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH","Hamann & Kollegen"];
+  const FIRMEN_MARKERS = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH","Hamann & Kollegen","Hamann+Kollegen","Hamann und Kollegen"];
+  const FIRMA_NORMALIZE = (s: string) => {
+    if (s.includes("Hamann")) return "Hamann & Kollegen Immobilien GmbH";
+    if (s.includes("Peak Revenue")) return "Peak Revenue AG";
+    if (s.includes("HP Venius")) return "HP Venius";
+    if (s.includes("HH Sales")) return "HH Sales Consulting Germany GmbH";
+    return s;
+  };
   const MONAT_MAP: Record<string,string> = {"01":"Januar","02":"Februar","03":"März","04":"April","05":"Mai","06":"Juni","07":"Juli","08":"August","09":"September","10":"Oktober","11":"November","12":"Dezember"};
   
   let currentFirma = "";
@@ -1899,7 +1906,7 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
     // Check if this line marks a new firma
     const firmaMatch = FIRMEN_MARKERS.find(f => cols[0]?.includes(f) || cols[0] === f);
     if (firmaMatch) {
-      currentFirma = firmaMatch === "Hamann & Kollegen" ? "Hamann & Kollegen Immobilien GmbH" : firmaMatch;
+      currentFirma = FIRMA_NORMALIZE(firmaMatch);
       inData = false;
       continue;
     }
