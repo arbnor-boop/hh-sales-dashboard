@@ -2070,33 +2070,132 @@ export default function Dashboard() {
   }
 
   if (selDash === "firmen" && loggedIn) {
+    const FDATA = [
+      {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR",
+       ein:367319.29, aus:-295063.03,
+       einDetails:[["No Limits Consulting Miete",1706.98],["Allianz Rückgabe",3649.71],["Everflow Excellence",16755.20],["Eitel Invest AG",16376.66],["Grundl Leadership",35394.78],["Schippke Partner",39214.00],["ECOM HOUSE",86933.04],["Arlind Nuhi",5623.87],["SocialNatives",2659.65],["Candidate Flow",94076.72],["AIRWALLEX",1916.95],["Hamann Kollegen",23972.85],["2B AHEAD",36248.74],["Sonstiges",2789.82]],
+       ausDetails:[["Löhne",-73125.16],["Finanzamt",-60021.49],["HP Venius Dubai",-49169.05],["Krankenkassen",-28878.74],["Dienstleistungen",-25300.00],["Miete",-21471.28],["Leasing",-13133.00],["Autoversicherung",-5055.25],["Reisekosten",-4687.41],["Software",-3524.37],["Lebensversicherung",-1352.00],["Versicherung",-1079.57],["Steuerberatung",-683.06],["Sonstiges",-5582.60]]},
+      {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF",
+       ein:118334.09, aus:-36311.21,
+       einDetails:[["Aktienkapital Zürich",99875.00],["Investmentpunk",3093.70],["Leon Ioakeim",4555.39],["Tax Angels",10810.00]],
+       ausDetails:[["Kapitaleinlage Hamann",-23320.88],["Steckel Legal Tax",-9080.40],["Reviso Treuhand",-1081.00],["Fechner Rechtsanwälte",-781.57],["Steuern",-590.00],["Software",-350.61],["Sonstiges",-1106.75]]},
+      {firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR",
+       ein:68514.40, aus:-65537.72,
+       einDetails:[["HH Sales Consulting",49019.49],["M S V T Marketing",15724.73],["CopeCart",3518.18],["NIKO DIECKHOFF",252.74]],
+       ausDetails:[["Sülei Tatli Lohn",-54480.00],["Lukas Jukic Lohn",-4370.00],["Taim Shakir Lohn",-3600.00],["Florian Schimpf Lohn",-2400.00],["FTA Steuer",-3021.50],["Transfer DTB",-2066.48],["Bankgebühren",-75.80],["Samuel Greif",-0.24],["Sonstiges",-524.70]]},
+      {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR",
+       ein:73861.00, aus:-23611.34,
+       einDetails:[["WHITE.IMMOBILIEN GMBH",48861.00],["Zahlung aus Ausland",25000.00]],
+       ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-556.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["Software",-55.06],["Sonstiges",-267.66]]},
+    ];
+    const [selFirma, setSelFirma] = React.useState(null);
+    const fmt = (n) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
+    const f = selFirma ? FDATA.find(x=>x.firma===selFirma) : null;
     return (
-      <div style={{minHeight:"100vh",background:"#07070f",color:"#e8e8f0",fontFamily:"DM Sans,Inter,sans-serif",display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div style={{textAlign:"center"}}>
-          <div style={{fontSize:32,marginBottom:16}}>{"\ud83c\udfe2"}</div>
-          <div style={{fontSize:24,fontWeight:800,marginBottom:8}}>Jahresübersicht 4 Firmen</div>
-          <div style={{fontSize:14,color:"#52526a",marginBottom:24}}>April 2026<div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:16,marginTop:24,width:'100%',maxWidth:700}}>
-<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #818cf8',borderRadius:12,padding:20}}>
-<div style={{fontSize:12,fontWeight:700,color:'#818cf8',marginBottom:12}}>HH Sales Consulting GmbH</div>
-<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 367.319,29 EUR</div>
-<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -295.063,03 EUR</div>
-<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 72.256,26 EUR</div></div>
-<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #34d399',borderRadius:12,padding:20}}>
-<div style={{fontSize:12,fontWeight:700,color:'#34d399',marginBottom:12}}>Peak Revenue AG</div>
-<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 118.334,09 CHF</div>
-<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -36.311,21 CHF</div>
-<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 82.022,88 CHF</div></div>
-<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #f59e0b',borderRadius:12,padding:20}}>
-<div style={{fontSize:12,fontWeight:700,color:'#f59e0b',marginBottom:12}}>HP Venius</div>
-<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 68.514,40 EUR</div>
-<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -65.537,72 EUR</div>
-<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 2.976,68 EUR</div></div>
-<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #f472b6',borderRadius:12,padding:20}}>
-<div style={{fontSize:12,fontWeight:700,color:'#f472b6',marginBottom:12}}>Hamann und Kollegen</div>
-<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 73.861,00 EUR</div>
-<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -23.611,34 EUR</div>
-<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 50.249,66 EUR</div></div></div></div>
-          <button onClick={()=>{localStorage.removeItem("hh_scg_auth");window.location.reload();}} style={{padding:"8px 20px",borderRadius:8,fontSize:12,color:"#52526a",background:"transparent",border:"1px solid #252538",cursor:"pointer"}}>Abmelden</button>
+      <div style={{minHeight:"100vh",background:"#07070f",color:"#e8e8f0",fontFamily:"DM Sans,Inter,sans-serif"}}>
+        <div style={{background:"#0b0b15",borderBottom:"1px solid #1c1c2e",padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:800}}>🏢 Jahresübersicht 4 Firmen</div>
+            <div style={{fontSize:11,color:"#52526a",letterSpacing:"2px"}}>APRIL 2026</div>
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:"#818cf8",background:"transparent",border:"1px solid #818cf8",cursor:"pointer"}}>← Zurück</button>}
+            <button onClick={()=>{localStorage.removeItem("hh_scg_auth");window.location.reload();}} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:"#52526a",background:"transparent",border:"1px solid #1c1c2e",cursor:"pointer"}}>Abmelden</button>
+          </div>
+        </div>
+        <div style={{padding:"28px 32px"}}>
+          {!selFirma ? (
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
+              {FDATA.map(fi=>{
+                const saldo = fi.ein + fi.aus;
+                return (
+                  <div key={fi.firma} onClick={()=>setSelFirma(fi.firma)} style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderTop:"3px solid "+fi.color,borderRadius:12,padding:24,cursor:"pointer"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                      <span style={{fontSize:24}}>{fi.icon}</span>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700,color:fi.color}}>{fi.short}</div>
+                        <div style={{fontSize:10,color:"#52526a"}}>April 2026 · {fi.currency}</div>
+                      </div>
+                    </div>
+                    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                      <div style={{display:"flex",justifyContent:"space-between"}}>
+                        <span style={{fontSize:11,color:"#52526a"}}>✅ Einnahmen</span>
+                        <span style={{fontSize:12,fontWeight:700,color:"#34d399",fontFamily:"monospace"}}>{fmt(fi.ein)} {fi.currency}</span>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"space-between"}}>
+                        <span style={{fontSize:11,color:"#52526a"}}>📤 Ausgaben</span>
+                        <span style={{fontSize:12,fontWeight:700,color:"#f472b6",fontFamily:"monospace"}}>{fmt(fi.aus)} {fi.currency}</span>
+                      </div>
+                      <div style={{height:1,background:"#1c1c2e"}}/>
+                      <div style={{display:"flex",justifyContent:"space-between"}}>
+                        <span style={{fontSize:12,fontWeight:700}}>💰 Saldo</span>
+                        <span style={{fontSize:14,fontWeight:800,color:saldo>=0?"#34d399":"#f472b6",fontFamily:"monospace"}}>{saldo>=0?"+":"-"}{fmt(saldo)} {fi.currency}</span>
+                      </div>
+                    </div>
+                    <div style={{marginTop:12,fontSize:10,color:"#52526a",textAlign:"right"}}>Details anzeigen →</div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+                <span style={{fontSize:28}}>{f.icon}</span>
+                <div>
+                  <div style={{fontSize:20,fontWeight:800,color:f.color}}>{f.short}</div>
+                  <div style={{fontSize:12,color:"#52526a"}}>April 2026 · {f.currency}</div>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
+                <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:16,textAlign:"center"}}>
+                  <div style={{fontSize:11,color:"#34d399",marginBottom:4}}>EINNAHMEN</div>
+                  <div style={{fontSize:22,fontWeight:800,color:"#34d399",fontFamily:"monospace"}}>{fmt(f.ein)}</div>
+                  <div style={{fontSize:11,color:"#52526a"}}>{f.currency}</div>
+                </div>
+                <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:16,textAlign:"center"}}>
+                  <div style={{fontSize:11,color:"#f472b6",marginBottom:4}}>AUSGABEN</div>
+                  <div style={{fontSize:22,fontWeight:800,color:"#f472b6",fontFamily:"monospace"}}>{fmt(f.aus)}</div>
+                  <div style={{fontSize:11,color:"#52526a"}}>{f.currency}</div>
+                </div>
+              </div>
+              <div style={{background:(f.ein+f.aus)>=0?"#0a2a10":"#2a0a10",border:"1px solid "+((f.ein+f.aus)>=0?"#1a5a25":"#5a1a25"),borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
+                <div style={{fontSize:11,color:"#52526a",marginBottom:4}}>NETTO SALDO</div>
+                <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?"#34d399":"#f472b6",fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmt(f.ein+f.aus)} {f.currency}</div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:"#34d399",marginBottom:12}}>✅ EINNAHMEN DETAIL</div>
+                  <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:12,overflow:"hidden"}}>
+                    {f.einDetails.map(([n,v],i)=>(
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?"1px solid #1c1c2e":"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                        <span style={{fontSize:11,color:"#e8e8f0"}}>{n}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:"#34d399",fontFamily:"monospace"}}>{fmt(v)} {f.currency}</span>
+                      </div>
+                    ))}
+                    <div style={{padding:"9px 14px",borderTop:"2px solid #1c1c2e",display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
+                      <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:12,fontWeight:800,color:"#34d399",fontFamily:"monospace"}}>{fmt(f.ein)} {f.currency}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:"#f472b6",marginBottom:12}}>📤 AUSGABEN DETAIL</div>
+                  <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:12,overflow:"hidden"}}>
+                    {f.ausDetails.map(([n,v],i)=>(
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?"1px solid #1c1c2e":"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                        <span style={{fontSize:11,color:"#e8e8f0"}}>{n}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:"#f472b6",fontFamily:"monospace"}}>{fmt(v)} {f.currency}</span>
+                      </div>
+                    ))}
+                    <div style={{padding:"9px 14px",borderTop:"2px solid #1c1c2e",display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
+                      <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:12,fontWeight:800,color:"#f472b6",fontFamily:"monospace"}}>{fmt(f.aus)} {f.currency}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
