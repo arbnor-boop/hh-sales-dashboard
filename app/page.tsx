@@ -2428,7 +2428,7 @@ export default function Dashboard() {
   }
 
   // Firmen Dashboard
-  if (dashboard === "firmen") {
+  if (selDash === "firmen") {
     return <FirmenDashboard onLogout={()=>{localStorage.removeItem("hh_scg_auth");setLoggedIn(false);setSelDash("sales");}}/>;
   }
 
