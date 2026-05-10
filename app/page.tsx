@@ -2075,7 +2075,7 @@ export default function Dashboard() {
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:32,marginBottom:16}}>{"\ud83c\udfe2"}</div>
           <div style={{fontSize:24,fontWeight:800,marginBottom:8}}>Jahresübersicht 4 Firmen</div>
-          <div style={{fontSize:14,color:"#52526a",marginBottom:24}}>April 2026 - wird geladen...</div>
+          <div style={{fontSize:14,color:"#52526a",marginBottom:24}}>April 2026 - geladen</div>
           <button onClick={()=>{localStorage.removeItem("hh_scg_auth");window.location.reload();}} style={{padding:"8px 20px",borderRadius:8,fontSize:12,color:"#52526a",background:"transparent",border:"1px solid #252538",cursor:"pointer"}}>Abmelden</button>
         </div>
       </div>
