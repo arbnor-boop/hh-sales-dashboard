@@ -1648,60 +1648,67 @@ const FDATA: FirmaData[] = [
     ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]]},
 ];
 
-const FIRMEN_NEW_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7ldyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
+const FIRMEN_NEW_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7IdyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
+
+const MONAT_TO_GID: Record<string,string> = {
+  "April 2026": "0",
+  "Mai 2026": "1",
+};
+
+function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string) {
+  const FIRMEN_CFG = [
+    {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR"},
+    {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF"},
+    {firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR"},
+    {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR"},
+  ];
+  return FIRMEN_CFG.map(cfg => {
+    const firmaRows = rows.filter(r => r.firma === cfg.firma && r.monat === monat);
+    const einRows = firmaRows.filter(r => r.betrag > 0);
+    const ausRows = firmaRows.filter(r => r.betrag < 0);
+    const ein = einRows.reduce((a,r) => a+r.betrag, 0);
+    const aus = ausRows.reduce((a,r) => a+r.betrag, 0);
+    const einMap: Record<string,number> = {};
+    einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
+    const ausMap: Record<string,number> = {};
+    ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
+    return {
+      ...cfg, ein, aus,
+      einDetails: Object.entries(einMap).sort((a,b)=>b[1]-a[1]).slice(0,15) as [string,number][],
+      ausDetails: Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,20) as [string,number][],
+    };
+  });
+}
 
 function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [selFirma, setSelFirma] = useState<string|null>(null);
   const [selMonat, setSelMonat] = useState("April 2026");
-  const [liveData, setLiveData] = useState<typeof FDATA | null>(null);
+  const [allRows, setAllRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
   const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
   const C = {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",text:"#e8e8f0",muted:"#52526a",green:"#34d399",pink:"#f472b6",indigo:"#818cf8"};
   const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
 
-  useEffect(() => {
-    async function loadFirmenData() {
-      try {
-        const res = await fetch("/api/firmen?t=" + Date.now(), {cache:"no-store"});
-        const text = await res.text();
-        const rows = parseFirmenCSV(text);
-        if (rows.length === 0) { setLiveStatus("error"); return; }
-
-        const FIRMEN_CFG = [
-          {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR"},
-          {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF"},
-          {firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR"},
-          {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR"},
-        ];
-
-        const built = FIRMEN_CFG.map(cfg => {
-          const firmaRows = rows.filter(r => r.firma === cfg.firma);
-          const einRows = firmaRows.filter(r => r.betrag > 0);
-          const ausRows = firmaRows.filter(r => r.betrag < 0);
-          const ein = einRows.reduce((a,r) => a+r.betrag, 0);
-          const aus = ausRows.reduce((a,r) => a+r.betrag, 0);
-          // Build details - group by name
-          const einMap: Record<string,number> = {};
-          einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
-          const ausMap: Record<string,number> = {};
-          ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
-          return {
-            ...cfg, ein, aus,
-            einDetails: Object.entries(einMap).sort((a,b)=>b[1]-a[1]).slice(0,15) as [string,number][],
-            ausDetails: Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,20) as [string,number][],
-          };
-        });
-
-        setLiveData(built);
-        setLiveStatus("success");
-      } catch {
-        setLiveStatus("error");
-      }
+  async function loadMonat(monat: string) {
+    const gid = MONAT_TO_GID[monat] ?? "0";
+    try {
+      const res = await fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"});
+      const text = await res.text();
+      const rows = parseFirmenCSV(text);
+      if (rows.length === 0) { setLiveStatus("error"); return; }
+      setAllRows(rows);
+      setLiveStatus("success");
+    } catch {
+      setLiveStatus("error");
     }
-    loadFirmenData();
-    const iv = setInterval(loadFirmenData, 5 * 60 * 1000);
-    return () => clearInterval(iv);
-  }, []);
+  }
 
+  useEffect(() => {
+    loadMonat(selMonat);
+    const iv = setInterval(() => loadMonat(selMonat), 5 * 60 * 1000);
+    return () => clearInterval(iv);
+  }, [selMonat]);
+
+  const liveData = allRows.length > 0 ? buildFirmenData(allRows, selMonat) : null;
   const data = liveData ?? FDATA;
   const f = selFirma ? (data.find(x=>x.firma===selFirma) ?? data[0]) : null;
 
@@ -1709,8 +1716,6 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const totalEin = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
   const totalAus = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.aus,0);
   const totalSaldo = totalEin + totalAus;
-
-  const MONATE = [...new Set([...data.flatMap(fi=>(fi.einDetails||[]).map(()=>selMonat)), "April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"])];
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif"}}>
