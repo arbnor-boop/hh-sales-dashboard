@@ -1763,7 +1763,6 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
     </div>
   );
 }
-const PASSWORD2 = "Sales!";
 const FIRMEN_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7ldyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
 
 async function fetchFirmenSheet(gid = "0") {
