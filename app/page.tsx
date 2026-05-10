@@ -1861,13 +1861,26 @@ async function fetchFirmenSheet(gid = "0") {
   return res.text();
 }
 
+function parseCSVLine2(line: string): string[] {
+  const cols: string[] = [];
+  let cur = ""; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ""; }
+    else { cur += c; }
+  }
+  cols.push(cur.trim());
+  return cols;
+}
+
 function parseFirmenCSV(text: string): {firma:string; datum:string; name:string; betrag:number; kategorie:string; monat:string}[] {
   const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
   const result: {firma:string; datum:string; name:string; betrag:number; kategorie:string; monat:string}[] = [];
   
   const parseNum = (s: string) => {
     if (!s) return null;
-    const clean = s.replace(/Fr\./g,"").replace(/€/g,"").replace(/\s/g,"").replace(/[\u00a0\u202f]/g,"").replace(/\./g,"").replace(",",".").replace("−","-").replace("–","-").trim();
+    const clean = s.replace(/Fr\./g,"").replace(/Fr /g,"").replace(/€/g,"").replace(/\s/g,"").replace(/[\u00a0\u202f]/g,"").replace(/\./g,"").replace(",",".").replace("−","-").replace("–","-").trim();
     if (!clean || clean==="-") return null;
     const n = parseFloat(clean);
     return isNaN(n) ? null : n;
@@ -1881,7 +1894,7 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const cols = line.split(",").map(c => c.replace(/^"|"$/g,"").trim());
+    const cols = parseCSVLine2(line);
     
     // Check if this line marks a new firma
     const firmaMatch = FIRMEN_MARKERS.find(f => cols[0]?.includes(f) || cols[0] === f);
@@ -1891,25 +1904,27 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
       continue;
     }
     
-    // Check if header row (Datum, Name, Betrag)
-    if (cols[0]?.toLowerCase() === "datum" || cols[5]?.toLowerCase() === "datum") {
+    // Check if header row
+    if (cols[0]?.toLowerCase() === "datum") {
       inData = true;
       continue;
     }
     
     if (!inData || !currentFirma) continue;
     
-    // Parse Einnahmen (cols 0-2) and Ausgaben (cols 5-8)
-    const einDatum = cols[0]; const einName = cols[1]; const einBetrag = parseNum(cols[2]);
-    const ausDatum = cols[5]; const ausName = cols[6]; const ausBetrag = parseNum(cols[7]); const ausKat = cols[8];
+    // Einnahmen: cols 0,1,2 — Ausgaben: cols 5,6,7,8
+    const einDatum = cols[0]||""; const einName = cols[1]||""; const einBetrag = parseNum(cols[2]||"");
+    const ausDatum = cols[5]||""; const ausName = cols[6]||""; const ausBetrag = parseNum(cols[7]||""); const ausKat = cols[8]||"";
     
-    if (einDatum && /\d{2}\.\d{2}\.\d{4}/.test(einDatum) && einBetrag !== null) {
-      const mm = einDatum.split(".")[1];
-      result.push({firma:currentFirma, datum:einDatum, name:einName||"", betrag:einBetrag, kategorie:"Einnahmen", monat:(MONAT_MAP[mm]||mm)+" "+einDatum.split(".")[2]});
+    if (einDatum && /\d{1,2}[\.\-]\d{2}[\.\-]\d{4}/.test(einDatum) && einBetrag !== null && einBetrag > 0) {
+      const parts = einDatum.replace(/-/g,".").split(".");
+      const mm = parts[1]; const yy = parts[2];
+      result.push({firma:currentFirma, datum:einDatum, name:einName, betrag:einBetrag, kategorie:"Einnahmen", monat:(MONAT_MAP[mm]||mm)+" "+yy});
     }
-    if (ausDatum && /\d{2}\.\d{2}\.\d{4}/.test(ausDatum) && ausBetrag !== null) {
-      const mm = ausDatum.split(".")[1];
-      result.push({firma:currentFirma, datum:ausDatum, name:ausName||"", betrag:ausBetrag, kategorie:ausKat||"Ausgaben", monat:(MONAT_MAP[mm]||mm)+" "+ausDatum.split(".")[2]});
+    if (ausDatum && /\d{1,2}[\.\-]\d{2}[\.\-]\d{4}/.test(ausDatum) && ausBetrag !== null && ausBetrag < 0) {
+      const parts = ausDatum.replace(/-/g,".").split(".");
+      const mm = parts[1]; const yy = parts[2];
+      result.push({firma:currentFirma, datum:ausDatum, name:ausName, betrag:ausBetrag, kategorie:ausKat||"Ausgaben", monat:(MONAT_MAP[mm]||mm)+" "+yy});
     }
   }
   return result;
