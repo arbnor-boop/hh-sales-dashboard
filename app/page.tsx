@@ -1618,6 +1618,240 @@ function parseCSV(text: string): Deal[] {
 }
 
 const PASSWORD = "HHSales3!";
+const PASSWORD2 = "Sales!";
+
+// ============================================================
+// FIRMEN DASHBOARD
+// ============================================================
+type FirmaData = {
+  firma: string; short: string; color: string; icon: string; currency: string;
+  ein: number; aus: number;
+  einDetails: [string, number][]; ausDetails: [string, number][];
+};
+
+const FDATA: FirmaData[] = [
+  { firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR",
+    ein:367319.29, aus:-295063.03,
+    einDetails:[["No Limits Consulting Miete",1706.98],["Allianz Rückgabe",3649.71],["Everflow Excellence",16755.20],["Eitel Invest AG",16376.66],["Grundl Leadership",35394.78],["Schippke Partner",39214.00],["ECOM HOUSE",86933.04],["Arlind Nuhi",5623.87],["SocialNatives",2659.65],["Candidate Flow",94076.72],["AIRWALLEX",1916.95],["Hamann Kollegen",23972.85],["2B AHEAD",36248.74],["Sonstiges",2789.82]],
+    ausDetails:[["Löhne",-73125.16],["Finanzamt",-60021.49],["HP Venius Dubai",-49169.05],["Krankenkassen",-28878.74],["Dienstleistungen",-25300.00],["Miete",-21471.28],["Leasing",-13133.00],["Autoversicherung",-5055.25],["Reisekosten",-4687.41],["Software",-3524.37],["Lebensversicherung",-1352.00],["Versicherung",-1079.57],["Steuerberatung",-683.06],["Sonstiges",-5582.60]]},
+  { firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF",
+    ein:118334.09, aus:-36361.29,
+    einDetails:[["Aktienkapital Zürich",99875.00],["Investmentpunk",3093.70],["Leon Ioakeim",4555.39],["Tax Angels",10810.00]],
+    ausDetails:[["Kapitaleinlage Hamann",-23320.88],["Steckel Legal Tax",-9080.40],["Reviso Treuhand",-1081.00],["Fechner Rechtsanwälte",-781.57],["Steuern",-590.00],["Software",-306.47],["Sonstiges",-1201.97]]},
+  { firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR",
+    ein:68515.14, aus:-70017.52,
+    einDetails:[["HH Sales Consulting",49019.49],["M S V T Marketing",15724.73],["CopeCart",3518.18],["NIKO DIECKHOFF",252.74]],
+    ausDetails:[["Sülei Tatli Lohn",-54480.00],["Lukas Jukic Lohn",-4370.00],["Taim Shakir Lohn",-3600.00],["Florian Schimpf Lohn",-2400.00],["FTA Steuer",-3021.50],["Transfer DTB 1",-1605.00],["Transfer DTB 2",-461.48],["Bankgebühren",-75.80],["Sonstiges",-3.74]]},
+  { firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR",
+    ein:73861.00, aus:-25605.48,
+    einDetails:[["WHITE.IMMOBILIEN GMBH",48861.00],["Zahlung aus Ausland",25000.00]],
+    ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]]},
+];
+
+function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
+  const [selFirma, setSelFirma] = useState<string|null>(null);
+  const [selMonat, setSelMonat] = useState("April 2026");
+  const MONATE = ["April 2026", "Mai 2026", "Juni 2026", "Juli 2026", "August 2026", "September 2026", "Oktober 2026", "November 2026", "Dezember 2026"];
+  const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
+  const f = selFirma ? (FDATA.find(x=>x.firma===selFirma) ?? FDATA[0]) : null;
+  const C = {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",text:"#e8e8f0",muted:"#52526a",green:"#34d399",pink:"#f472b6",indigo:"#818cf8"};
+
+  // Gesamtsaldo aller Firmen (EUR only for now)
+  const totalEin = FDATA.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
+  const totalAus = FDATA.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.aus,0);
+  const totalSaldo = totalEin + totalAus;
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif"}}>
+      <div style={{background:C.sidebar,borderBottom:`1px solid ${C.border}`,padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
+        <div>
+          <div style={{fontSize:18,fontWeight:800}}>🏢 Jahresübersicht 4 Firmen</div>
+          <div style={{fontSize:11,color:C.muted,letterSpacing:"2px"}}>{selMonat.toUpperCase()}</div>
+        </div>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
+            {MONATE.map(m=><option key={m} value={m}>{m}</option>)}
+          </select>
+          {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:C.indigo,background:"transparent",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>← Zurück</button>}
+          <button onClick={onLogout} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>Abmelden</button>
+        </div>
+      </div>
+      <div style={{padding:"28px 32px"}}>
+        {!selFirma ? (
+          <>
+            {/* Gesamtsaldo */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:28}}>
+              <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
+                <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (EUR)</div>
+                <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(totalEin)}</div>
+              </div>
+              <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:20,textAlign:"center"}}>
+                <div style={{fontSize:11,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
+                <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
+              </div>
+              <div style={{background:totalSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${totalSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
+                <div style={{fontSize:11,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
+                <div style={{fontSize:24,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
+                <div style={{fontSize:10,color:C.muted,marginTop:4}}>excl. Peak Revenue (CHF)</div>
+              </div>
+            </div>
+            {/* Firma Karten */}
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
+            {FDATA.map(fi=>{
+              const saldo = fi.ein + fi.aus;
+              return (
+                <div key={fi.firma} onClick={()=>setSelFirma(fi.firma)} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`3px solid ${fi.color}`,borderRadius:12,padding:24,cursor:"pointer"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+                    <span style={{fontSize:24}}>{fi.icon}</span>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:700,color:fi.color}}>{fi.short}</div>
+                      <div style={{fontSize:10,color:C.muted}}>April 2026 · {fi.currency}</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between"}}>
+                      <span style={{fontSize:11,color:C.muted}}>✅ Einnahmen</span>
+                      <span style={{fontSize:12,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between"}}>
+                      <span style={{fontSize:11,color:C.muted}}>📤 Ausgaben</span>
+                      <span style={{fontSize:12,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
+                    </div>
+                    <div style={{height:1,background:C.border}}/>
+                    <div style={{display:"flex",justifyContent:"space-between"}}>
+                      <span style={{fontSize:12,fontWeight:700}}>💰 Saldo</span>
+                      <span style={{fontSize:14,fontWeight:800,color:saldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{saldo>=0?"+":"-"}{fmtN(saldo)} {fi.currency}</span>
+                    </div>
+                  </div>
+                  <div style={{marginTop:12,fontSize:10,color:C.muted,textAlign:"right"}}>Details anzeigen →</div>
+                </div>
+              );
+            })}
+            </div>
+          </>
+        ) : f ? (
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+              <span style={{fontSize:28}}>{f.icon}</span>
+              <div>
+                <div style={{fontSize:20,fontWeight:800,color:f.color}}>{f.short}</div>
+                <div style={{fontSize:12,color:C.muted}}>April 2026 · {f.currency}</div>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
+              <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:16,textAlign:"center"}}>
+                <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
+                <div style={{fontSize:22,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)}</div>
+                <div style={{fontSize:11,color:C.muted}}>{f.currency}</div>
+              </div>
+              <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:16,textAlign:"center"}}>
+                <div style={{fontSize:11,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>AUSGABEN</div>
+                <div style={{fontSize:22,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)}</div>
+                <div style={{fontSize:11,color:C.muted}}>{f.currency}</div>
+              </div>
+            </div>
+            <div style={{background:(f.ein+f.aus)>=0?"#0a2a10":"#2a0a10",border:`1px solid ${(f.ein+f.aus)>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
+              <div style={{fontSize:11,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
+              <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                  {f.einDetails.map(([n,v],i)=>(
+                    <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                      <span style={{fontSize:11,color:C.text}}>{n}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                    </div>
+                  ))}
+                  <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
+                    <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                    <span style={{fontSize:12,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                  {f.ausDetails.map(([n,v],i)=>(
+                    <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                      <span style={{fontSize:11,color:C.text}}>{n}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                    </div>
+                  ))}
+                  <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
+                    <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                    <span style={{fontSize:12,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+const FIRMEN_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7ldyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
+
+async function fetchFirmenSheet(gid = "0") {
+  const res = await fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache: "no-store"});
+  return res.text();
+}
+
+function parseFirmenCSV(text: string): {firma:string; datum:string; name:string; betrag:number; kategorie:string; monat:string}[] {
+  const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+  const result: {firma:string; datum:string; name:string; betrag:number; kategorie:string; monat:string}[] = [];
+  
+  const parseNum = (s: string) => {
+    if (!s) return null;
+    const clean = s.replace(/Fr\./g,"").replace(/€/g,"").replace(/\s/g,"").replace(/[\u00a0\u202f]/g,"").replace(/\./g,"").replace(",",".").replace("−","-").replace("–","-").trim();
+    if (!clean || clean==="-") return null;
+    const n = parseFloat(clean);
+    return isNaN(n) ? null : n;
+  };
+
+  const FIRMEN_MARKERS = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH","Hamann & Kollegen"];
+  const MONAT_MAP: Record<string,string> = {"01":"Januar","02":"Februar","03":"März","04":"April","05":"Mai","06":"Juni","07":"Juli","08":"August","09":"September","10":"Oktober","11":"November","12":"Dezember"};
+  
+  let currentFirma = "";
+  let inData = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cols = line.split(",").map(c => c.replace(/^"|"$/g,"").trim());
+    
+    // Check if this line marks a new firma
+    const firmaMatch = FIRMEN_MARKERS.find(f => cols[0]?.includes(f) || cols[0] === f);
+    if (firmaMatch) {
+      currentFirma = firmaMatch === "Hamann & Kollegen" ? "Hamann & Kollegen Immobilien GmbH" : firmaMatch;
+      inData = false;
+      continue;
+    }
+    
+    // Check if header row (Datum, Name, Betrag)
+    if (cols[0]?.toLowerCase() === "datum" || cols[5]?.toLowerCase() === "datum") {
+      inData = true;
+      continue;
+    }
+    
+    if (!inData || !currentFirma) continue;
+    
+    // Parse Einnahmen (cols 0-2) and Ausgaben (cols 5-8)
+    const einDatum = cols[0]; const einName = cols[1]; const einBetrag = parseNum(cols[2]);
+    const ausDatum = cols[5]; const ausName = cols[6]; const ausBetrag = parseNum(cols[7]); const ausKat = cols[8];
+    
+    if (einDatum && /\d{2}\.\d{2}\.\d{4}/.test(einDatum) && einBetrag !== null) {
+      const mm = einDatum.split(".")[1];
+      result.push({firma:currentFirma, datum:einDatum, name:einName||"", betrag:einBetrag, kategorie:"Einnahmen", monat:(MONAT_MAP[mm]||mm)+" "+einDatum.split(".")[2]});
+    }
+    if (ausDatum && /\d{2}\.\d{2}\.\d{4}/.test(ausDatum) && ausBetrag !== null) {
+      const mm = ausDatum.split(".")[1];
+      result.push({firma:currentFirma, datum:ausDatum, name:ausName||"", betrag:ausBetrag, kategorie:ausKat||"Ausgaben", monat:(MONAT_MAP[mm]||mm)+" "+ausDatum.split(".")[2]});
+    }
+  }
+  return result;
+}
 
 function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   const f = frage.toLowerCase();
@@ -1900,22 +2134,172 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   return `Ich kann dir bei folgenden Fragen helfen:\n\n📅 ZEIT\n• "Wie war heute?" / "Wie war gestern?"\n• "Wie war diese Woche?" / "Wie war letzte Woche?"\n• "Wie war der [Monat]?"\n• "Vergleiche diese Woche mit letzter Woche"\n• "Vergleiche [Monat1] mit [Monat2]"\n\n🏆 RANKING\n• "Wer ist Top-Closer heute?"\n• "Wer ist Top-Partner heute?"\n• "Welcher Monat war am besten?"\n• "Bester Tag im [Monat]?"\n• "Wer hat die meisten Deals im [Monat]?"\n\n💰 ZAHLEN\n• "Umsatz heute" / "Umsatz im [Monat]"\n• "Netto heute" / "Netto im [Monat]"\n• "Wie viel Deals heute?"\n• "Durchschnitt pro Deal im [Monat]"\n• "Wie viel fehlt bis 100.000 im Mai?"\n\n🏢 PARTNER\n• "Wie viel hat [Partner] gemacht?"\n• "Intern vs Extern heute"\n\n📊 ÜBERSICHT\n• "Gesamtübersicht"`;
 }
 
+// ============================================================
+// FIRMEN DASHBOARD
+// ============================================================
+
+type Buchung = {datum:string; name:string; betrag:number; kategorie:string; firma:string;};
+
+const FIRMEN_DATEN: Buchung[] = [
+  // HH Sales Consulting Germany GmbH - Einnahmen
+  ...[
+    ["01.04.2026","No Limits Consulting GmbH Miete",1706.98],["01.04.2026","Allianz Rückgabe Kfz",3649.71],
+    ["02.04.2026","Everflow Excellence GmbH",16755.20],["07.04.2026","Eitel Invest AG 2026-86",10376.66],
+    ["07.04.2026","Eitel Invest AG 2026-84",6000.00],["07.04.2026","enercity AG",101.73],
+    ["09.04.2026","Grundl Leadership Institut",35394.78],["10.04.2026","Schippke + Partner",39214.00],
+    ["10.04.2026","ECOM HOUSE GmbH",5355.00],["13.04.2026","enercity AG",295.00],["13.04.2026","enercity AG",18.00],
+    ["14.04.2026","medien.com Temmer Bansal",750.00],["14.04.2026","HEALING HUMANS GMBH",1069.74],
+    ["14.04.2026","ECOM HOUSE GmbH 2",81678.04],["15.04.2026","Arlind Nuhi",5623.87],
+    ["15.04.2026","SocialNatives GmbH",2659.65],["17.04.2026","Candidate Flow GmbH",94076.72],
+    ["20.04.2026","AIRWALLEX",1916.95],["27.04.2026","Commerzbank DB",197.80],
+    ["27.04.2026","AOK BW Erstattung",120.00],["27.04.2026","AOK BW Erstattung 2",116.13],
+    ["28.04.2026","Hamann + Kollegen 1",9972.85],["28.04.2026","Hamann + Kollegen 2",9000.00],
+    ["28.04.2026","Hamann + Kollegen 3",5000.00],["28.04.2026","2B AHEAD THINKTANK",36248.74],
+    ["28.04.2026","Commerzbank CLAUDE.AI",21.74],
+  ].map(([d,n,b]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:"Einnahmen",firma:"HH Sales Consulting Germany GmbH"})),
+  // HH Sales - Ausgaben
+  ...[
+    ["01.04.2026","Allianz Kfz-Versicherung",-2068.45,"Autoversicherung"],["01.04.2026","Lebensversicherung 1",-676.00,"Lebensversicherung"],
+    ["01.04.2026","Lebensversicherung 2",-676.00,"Lebensversicherung"],["01.04.2026","ARAG Rechtsschutz",-267.17,"Versicherung"],
+    ["01.04.2026","Webflow",-30.56,"Software"],["01.04.2026","Henrik Rückerstattung",-1579.41,"Reisekosten"],
+    ["02.04.2026","flaschenpost",-123.43,"Sonstiges"],["02.04.2026","Arbnor DB Bahn",-63.00,"Reisekosten"],
+    ["02.04.2026","Recruitee",-321.30,"Software"],["07.04.2026","easybill",-20.23,"Software"],
+    ["07.04.2026","Porsche Leasing 1",-3872.92,"Leasing"],["07.04.2026","Porsche Leasing 2",-5691.83,"Leasing"],
+    ["07.04.2026","Google Workspace",-207.05,"Software"],["07.04.2026","Google Workspace 2",-16.20,"Software"],
+    ["07.04.2026","Google Workspace 3",-60.75,"Software"],["07.04.2026","STITCHDATA",-87.75,"Software"],
+    ["07.04.2026","Google CLOUD",-27.50,"Software"],["07.04.2026","Google Workspace 4",-29.40,"Software"],
+    ["07.04.2026","Tankstelle Lehrte",-115.32,"Tankstelle"],["07.04.2026","Miete Büro",-12484.16,"Miete"],
+    ["07.04.2026","enercity Strom",-313.00,"Strom"],["08.04.2026","SLACK",-66.19,"Software"],
+    ["08.04.2026","Cem Fahrtkosten",-225.90,"Reisekosten"],["09.04.2026","Markel Insurance",-1079.57,"Versicherung"],
+    ["09.04.2026","Stefan Michalea",-3332.00,"Dienstleistung"],["09.04.2026","enercity 2",-27.26,"Strom"],
+    ["10.04.2026","CLOSE CRM",-43.56,"Software"],["13.04.2026","monday.com",-144.94,"Software"],
+    ["13.04.2026","ZOOM",-207.99,"Software"],["13.04.2026","HEM Tankstelle",-110.22,"Tankstelle"],
+    ["13.04.2026","CALENDLY",-193.26,"Software"],["13.04.2026","IONOS",-511.80,"Software"],
+    ["13.04.2026","Henrik Hotel",-1355.00,"Reisekosten"],["13.04.2026","Skalator Barwary",-5593.00,"Dienstleistung"],
+    ["13.04.2026","Stefan Michalea 2",-10710.00,"Dienstleistung"],["14.04.2026","Telekom",-139.05,"Telekommunikation"],
+    ["14.04.2026","ANTHROPIC",-46.20,"Software"],["14.04.2026","Collection Business",-8987.12,"Miete"],
+    ["15.04.2026","Finanzamt USt",-38216.89,"Finanzamt"],["15.04.2026","ZAPIER",-190.82,"Software"],
+    ["15.04.2026","CLOSE CRM 2",-34.86,"Software"],["15.04.2026","PINEAPPLE CONSULT",-1500.00,"Dienstleistung"],
+    ["15.04.2026","BD Berlin Tax",-107.10,"Steuerberatung"],["15.04.2026","Arbnor Restaurant",-114.40,"Reisekosten"],
+    ["16.04.2026","Finanzamt Lohnst",-21804.60,"Finanzamt"],["16.04.2026","CLAUDE.AI 1",-21.74,"Software"],
+    ["16.04.2026","CLOSE CRM 3",-59.00,"Software"],["16.04.2026","CLAUDE.AI 2",-21.74,"Software"],
+    ["16.04.2026","HP Venius Dubai",-49169.05,"Auslandsüberweisung"],["17.04.2026","CLAUDE.AI 3",-21.42,"Software"],
+    ["17.04.2026","ZOOM 2",-32.66,"Software"],["17.04.2026","BD Berlin Tax 2",-575.96,"Steuerberatung"],
+    ["20.04.2026","flaschenpost 2",-163.60,"Sonstiges"],["20.04.2026","BKK Debeka",-1461.72,"Krankenkasse"],
+    ["20.04.2026","AOK NordWest",-3187.08,"Krankenkasse"],["20.04.2026","R+V BKK",-1373.10,"Krankenkasse"],
+    ["20.04.2026","EK Hanseatische KK",-5980.62,"Krankenkasse"],["20.04.2026","AOK Gesundheitskasse",-10508.02,"Krankenkasse"],
+    ["20.04.2026","AOK BW KK",-1382.40,"Krankenkasse"],["20.04.2026","Deutsche Rentenvers.",-1818.80,"Krankenkasse"],
+    ["20.04.2026","TK",-1361.40,"Krankenkasse"],["20.04.2026","hkk",-1805.60,"Krankenkasse"],
+    ["20.04.2026","Aral",-104.02,"Tankstelle"],["20.04.2026","ZOOM 3",-16.34,"Software"],
+    ["20.04.2026","CLOSE CRM 4",-385.64,"Software"],["20.04.2026","Elektro Schwichow",-70.02,"Sonstiges"],
+    ["20.04.2026","Cem Lohn",-5901.50,"Lohn"],["20.04.2026","Daniel Lohn",-2586.09,"Lohn"],
+    ["20.04.2026","Rene Lohn",-4505.25,"Lohn"],["20.04.2026","Yves Lohn",-3557.17,"Lohn"],
+    ["20.04.2026","Semir Lohn",-2053.55,"Lohn"],["20.04.2026","Melih Mert Lohn",-4466.51,"Lohn"],
+    ["20.04.2026","Dinh Huy Lohn",-3640.08,"Lohn"],["20.04.2026","Fatmire Lohn",-1732.47,"Lohn"],
+    ["20.04.2026","Montano Lohn",-8598.35,"Lohn"],["20.04.2026","Sören Lohn",-2609.79,"Lohn"],
+    ["20.04.2026","Donika Lohn",-2277.94,"Lohn"],["20.04.2026","Arbnor Lohn",-5459.78,"Lohn"],
+    ["20.04.2026","Henrik Lohn",-19604.91,"Lohn"],["20.04.2026","Jose Leonardo Lohn",-2030.29,"Lohn"],
+    ["20.04.2026","Adrian Kurtesi Lohn",-2053.49,"Lohn"],["20.04.2026","Yannick Koch Lohn",-2047.99,"Lohn"],
+    ["21.04.2026","Telekom 2",-3.94,"Telekommunikation"],["22.04.2026","Allianz H-PL 604",-2986.80,"Autoversicherung"],
+    ["22.04.2026","VIMEO",-37.44,"Software"],["23.04.2026","Kfz-Steuer",-592.00,"Steuer"],
+    ["23.04.2026","Booking.com",-244.98,"Reisekosten"],["23.04.2026","DB Bahn 1",-47.99,"Reisekosten"],
+    ["23.04.2026","DB Bahn 2",-108.49,"Reisekosten"],["23.04.2026","OneCal",-51.91,"Software"],
+    ["23.04.2026","DB Bahn 3",-156.68,"Reisekosten"],["24.04.2026","JotForm",-47.11,"Software"],
+    ["27.04.2026","Telekom Mobil",-71.34,"Telekommunikation"],["27.04.2026","DB Bahn 4",-73.69,"Reisekosten"],
+    ["27.04.2026","CLAUDE.AI 4",-21.74,"Software"],["27.04.2026","CLAUDE.AI 5",-91.38,"Software"],
+    ["27.04.2026","DB Bahn 5",-168.49,"Reisekosten"],["27.04.2026","DB Bahn 6",-61.99,"Reisekosten"],
+    ["27.04.2026","DB Bahn 7",-203.30,"Reisekosten"],["27.04.2026","ATLASSIAN",-55.88,"Software"],
+    ["27.04.2026","COOKIEBOT",-8.33,"Software"],["27.04.2026","Hotel Booking",-159.29,"Reisekosten"],
+    ["27.04.2026","JUMPSHARE",-26.09,"Software"],["27.04.2026","HEM Tankstelle 2",-96.30,"Tankstelle"],
+    ["27.04.2026","Stadtmauer Restaurant",-69.80,"Reisekosten"],["27.04.2026","Vodafone",-80.18,"Telekommunikation"],
+    ["27.04.2026","Moritz Winter",-4165.00,"Dienstleistung"],["28.04.2026","Semir Taxi",-55.00,"Reisekosten"],
+    ["28.04.2026","Henrik App Store",-5247.90,"Sonstiges"],["29.04.2026","HOSTINGER",-20.81,"Software"],
+    ["29.04.2026","CLAUDE.AI 6",-21.74,"Software"],["29.04.2026","Mercedes Leasing",-2089.08,"Leasing"],
+    ["29.04.2026","VW Leasing",-1479.17,"Leasing"],["30.04.2026","CLAUDE.AI 7",-21.74,"Software"],
+    ["30.04.2026","Recruitee 2",-321.30,"Software"],["30.04.2026","Kontoführung",-57.90,"Bank"],
+  ].map(([d,n,b,k]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:k as string,firma:"HH Sales Consulting Germany GmbH"})),
+  // Peak Revenue AG - Einnahmen (CHF)
+  ...[
+    ["23.03.2026","Aktienkapitaleinzahlung",99875.00],["14.04.2026","Investmentpunk",3093.70],
+    ["17.04.2026","Leon Ioakeim",4555.39],["30.04.2026","Tax Angels Sebastian Engel",10810.00],
+  ].map(([d,n,b]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:"Einnahmen",firma:"Peak Revenue AG"})),
+  // Peak Revenue AG - Ausgaben (CHF)
+  ...[
+    ["07.04.2026","Kapitaleinlage Hamann & Kollegen",-23320.88,"Kapitaleinlage"],
+    ["13.04.2026","Kanton Nidwalden Steuern",-590.00,"Steuer"],
+    ["14.04.2026","Steckel Legal & Tax",-9080.40,"Steuerberatung"],
+    ["22.04.2026","SLACK",-20.79,"Software"],["23.04.2026","NORDINA HOME",-159.00,"Sonstiges"],
+    ["24.04.2026","Fechner Rechtsanwälte",-781.57,"Rechtsberatung"],
+    ["24.04.2026","LOVABLE",-23.27,"Software"],["24.04.2026","PERPLEXITY.AI",-170.74,"Software"],
+    ["24.04.2026","AIRTABLE",-19.02,"Software"],["24.04.2026","N8N",-60.38,"Software"],
+    ["24.04.2026","FIGMA",-17.13,"Software"],["24.04.2026","MANUS AI",-34.27,"Software"],
+    ["24.04.2026","Reviso Treuhand",-1081.00,"Steuerberatung"],["29.04.2026","OPENAI",-25.86,"Software"],
+    ["29.04.2026","IKEA",-942.90,"Sonstiges"],["29.04.2026","HOSTINGER",-10.08,"Software"],
+    ["29.04.2026","Zahlungsverkehrspreise",-24.00,"Bank"],
+  ].map(([d,n,b,k]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:k as string,firma:"Peak Revenue AG"})),
+  // HP Venius - Einnahmen (€)
+  ...[
+    ["09.04.2026","CopeCart",3518.18],["03.04.2026","NIKO DIECKHOFF FZCO",252.74],
+    ["16.04.2026","M S V T MARKETING MANAGEMENT",15724.73],["17.04.2026","HH Sales Consulting Germany GmbH",49019.49],
+  ].map(([d,n,b]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:"Einnahmen",firma:"HP Venius"})),
+  // HP Venius - Ausgaben
+  ...[
+    ["03.04.2026","Bankgebühren",-72.19,"Bankgebühren"],["03.04.2026","VAT Bankgebühren",-3.61,"Bankgebühren"],
+    ["17.04.2026","Transfer DTB",-1605.00,"Überweisung"],["23.04.2026","Samuel Greif Lohn",-0.24,"Lohn"],
+    ["23.04.2026","Florian Schimpf Lohn",-2400.00,"Lohn"],["23.04.2026","Taim Shakir Lohn",-3600.00,"Lohn"],
+    ["23.04.2026","Lukas Jukic Lohn",-4370.00,"Lohn"],["23.04.2026","Sülei Tatli Lohn",-54480.00,"Lohn"],
+    ["23.04.2026","FTA Tax Payment",-3021.50,"Steuer"],["23.04.2026","Transfer DTB 2",-461.48,"Überweisung"],
+  ].map(([d,n,b,k]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:k as string,firma:"HP Venius"})),
+  // Hamann & Kollegen - Einnahmen
+  ...[
+    ["07.04.2026","Zahlung aus dem Ausland",25000.00],["27.04.2026","WHITE.IMMOBILIEN GMBH",48861.00],
+  ].map(([d,n,b]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:"Einnahmen",firma:"Hamann & Kollegen Immobilien GmbH"})),
+  // Hamann & Kollegen - Ausgaben
+  ...[
+    ["09.04.2026","KROOS I KOLLEGEN",-808.74,"Dienstleistung"],["15.04.2026","AMTSGERICHT HANNOVER",-300.00,"Gebühren"],
+    ["22.04.2026","CLOSE CRM",-34.64,"Software"],["23.04.2026","CLOSE CRM 2",-116.39,"Software"],
+    ["24.04.2026","WEBFLOW",-18.54,"Software"],["27.04.2026","FACEBK Ads 1",-20.00,"Marketing"],
+    ["27.04.2026","FACEBK Ads 2",-20.00,"Marketing"],["27.04.2026","FACEBK Ads 3",-153.00,"Marketing"],
+    ["27.04.2026","FACEBK Ads 4",-20.00,"Marketing"],["27.04.2026","FACEBK Ads 5",-153.00,"Marketing"],
+    ["27.04.2026","FACEBK Ads 6",-20.00,"Marketing"],["27.04.2026","FACEBK Ads 7",-150.00,"Marketing"],
+    ["27.04.2026","PIXELFLOW",-16.52,"Software"],["27.04.2026","HH SCG Ausgaben 1",-9972.85,"Dienstleistung"],
+    ["27.04.2026","HH SCG Ausgaben 2",-9000.00,"Dienstleistung"],["27.04.2026","HH SCG Ausgaben 3",-5000.00,"Dienstleistung"],
+  ].map(([d,n,b,k]) => ({datum:d as string,name:n as string,betrag:b as number,kategorie:k as string,firma:"Hamann & Kollegen Immobilien GmbH"})),
+];
+
+const FIRMEN_LIST = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH"];
+const FIRMEN_COLORS: Record<string,string> = {
+  "HH Sales Consulting Germany GmbH": "#818cf8",
+  "Peak Revenue AG": "#34d399",
+  "HP Venius": "#f59e0b",
+  "Hamann & Kollegen Immobilien GmbH": "#f472b6",
+};
+const FIRMEN_SHORT: Record<string,string> = {
+  "HH Sales Consulting Germany GmbH": "HH SCG",
+  "Peak Revenue AG": "Peak Revenue",
+  "HP Venius": "HP Venius",
+  "Hamann & Kollegen Immobilien GmbH": "Hamann & Kollegen",
+};
+
+
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [selDash, setSelDash] = useState<"sales"|"firmen">("sales");
   const [hydrated, setHydrated] = useState(false);
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("hh_scg_auth") === "1") {
-      setLoggedIn(true);
-    }
+    const auth = localStorage.getItem("hh_scg_auth");
+    if (auth === "sales") { setSelDash("sales"); setLoggedIn(true); }
+    else if (auth === "firmen") { setSelDash("firmen"); setLoggedIn(true); }
     setHydrated(true);
   }, []);
 
   function doLogin() {
-    if (pwInput === PASSWORD) {
-      localStorage.setItem("hh_scg_auth", "1");
+    const pw = selDash === "firmen" ? PASSWORD2 : PASSWORD;
+    if (pwInput === pw) {
+      localStorage.setItem("hh_scg_auth", selDash);
       setLoggedIn(true);
     } else {
       setPwError(true);
@@ -2021,36 +2405,52 @@ export default function Dashboard() {
 
   if (!hydrated) return <div style={{minHeight:"100vh",background:"#07070f"}}/>;
 
+  if (loggedIn && selDash === "firmen") return <FirmenDashboard onLogout={()=>{localStorage.removeItem("hh_scg_auth");setLoggedIn(false);setSelDash("sales");}}/>;
+
   if (!loggedIn) {
     return (
       <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
-        <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:360,textAlign:"center"}}>
+        <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:400,textAlign:"center"}}>
           <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
-          <div style={{fontSize:11,color:"#52526a",letterSpacing:"3px",marginBottom:32}}>SALES DASHBOARD</div>
-          <input
-            type="password"
-            placeholder="Passwort"
-            value={pwInput}
-            onChange={e=>{setPwInput(e.target.value);setPwError(false);}}
-            onKeyDown={e=>{if(e.key==="Enter") doLogin();}}
-            style={{
-              width:"100%",padding:"12px 16px",borderRadius:8,fontSize:14,
-              background:"#07070f",border:`1px solid ${pwError?"#f87171":"#252538"}`,
-              color:"#e8e8f0",outline:"none",boxSizing:"border-box",marginBottom:8,
-            }}
-            autoFocus
-          />
-          {pwError && <div style={{color:"#f87171",fontSize:12,marginBottom:8}}>Falsches Passwort</div>}
-          <button
-            onClick={doLogin}
-            style={{
-              width:"100%",padding:"12px",borderRadius:8,fontSize:14,fontWeight:700,
-              background:"linear-gradient(135deg,#4f46e5,#818cf8)",color:"#fff",
-              border:"none",cursor:"pointer",marginTop:4,
-            }}
-          >
-            Anmelden
-          </button>
+          <div style={{fontSize:11,color:"#52526a",letterSpacing:"3px",marginBottom:24}}>DASHBOARD</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+            <div onClick={()=>setSelDash("sales")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
+              background:selDash==="sales"?"#1e1e40":"#13132a",
+              border:`2px solid ${selDash==="sales"?"#818cf8":"#252550"}`}}>
+              <div style={{fontSize:20,marginBottom:6}}>📊</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#818cf8"}}>Sales Dashboard</div>
+              <div style={{fontSize:10,color:"#52526a",marginTop:2}}>HH SCG Sales</div>
+            </div>
+            <div onClick={()=>setSelDash("firmen")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
+              background:selDash==="firmen"?"#0a2a10":"#0a1a10",
+              border:`2px solid ${selDash==="firmen"?"#34d399":"#1a4a25"}`}}>
+              <div style={{fontSize:20,marginBottom:6}}>🏢</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#34d399"}}>Jahresübersicht</div>
+              <div style={{fontSize:10,color:"#52526a",marginTop:2}}>4 Firmen</div>
+            </div>
+          </div>
+          {selDash && (
+            <>
+              <input
+                type="password"
+                placeholder={`Passwort für ${selDash==="sales"?"Sales Dashboard":"Jahresübersicht"}`}
+                value={pwInput}
+                onChange={e=>{setPwInput(e.target.value);setPwError(false);}}
+                onKeyDown={e=>{if(e.key==="Enter") doLogin();}}
+                style={{width:"100%",padding:"12px 16px",borderRadius:8,fontSize:14,
+                  background:"#07070f",border:`1px solid ${pwError?"#f87171":"#252538"}`,
+                  color:"#e8e8f0",outline:"none",boxSizing:"border-box",marginBottom:8}}
+                autoFocus
+              />
+              {pwError && <div style={{color:"#f87171",fontSize:12,marginBottom:8}}>Falsches Passwort</div>}
+              <button onClick={doLogin} style={{width:"100%",padding:"12px",borderRadius:8,fontSize:14,fontWeight:700,
+                background:selDash==="sales"?"linear-gradient(135deg,#4f46e5,#818cf8)":"linear-gradient(135deg,#059669,#34d399)",
+                color:"#fff",border:"none",cursor:"pointer",marginTop:4}}>
+                Anmelden
+              </button>
+            </>
+          )}
+          {false && <div style={{fontSize:12,color:"#52526a"}}>Bitte Dashboard auswählen</div>}
         </div>
       </div>
     );
