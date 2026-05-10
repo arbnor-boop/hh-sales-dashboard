@@ -1652,7 +1652,14 @@ const FIRMEN_NEW_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ
 
 const MONAT_TO_GID: Record<string,string> = {
   "April 2026": "0",
-  "Mai 2026": "1",
+  "Mai 2026": "494571505",
+  "Juni 2026": "225408471",
+  "Juli 2026": "17042631",
+  "August 2026": "487893367",
+  "September 2026": "650407477",
+  "Oktober 2026": "62636800",
+  "November 2026": "1316786435",
+  "Dezember 2026": "379786663",
 };
 
 function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string) {
@@ -1886,7 +1893,7 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
     return isNaN(n) ? null : n;
   };
 
-  const FIRMEN_MARKERS = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH","Hamann & Kollegen","Hamann+Kollegen","Hamann und Kollegen"];
+  const FIRMEN_MARKERS = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH","Hamann & Kollegen","Hamann + Kollegen","Hamann+Kollegen","Hamann und Kollegen"];
   const FIRMA_NORMALIZE = (s: string) => {
     if (s.includes("Hamann")) return "Hamann & Kollegen Immobilien GmbH";
     if (s.includes("Peak Revenue")) return "Peak Revenue AG";
