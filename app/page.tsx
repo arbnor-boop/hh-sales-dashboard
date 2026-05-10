@@ -2075,7 +2075,27 @@ export default function Dashboard() {
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:32,marginBottom:16}}>{"\ud83c\udfe2"}</div>
           <div style={{fontSize:24,fontWeight:800,marginBottom:8}}>Jahresübersicht 4 Firmen</div>
-          <div style={{fontSize:14,color:"#52526a",marginBottom:24}}>April 2026 - geladen</div>
+          <div style={{fontSize:14,color:"#52526a",marginBottom:24}}>April 2026<div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:16,marginTop:24,width:'100%',maxWidth:700}}>
+<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #818cf8',borderRadius:12,padding:20}}>
+<div style={{fontSize:12,fontWeight:700,color:'#818cf8',marginBottom:12}}>HH Sales Consulting GmbH</div>
+<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 367.319,29 EUR</div>
+<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -295.063,03 EUR</div>
+<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 72.256,26 EUR</div></div>
+<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #34d399',borderRadius:12,padding:20}}>
+<div style={{fontSize:12,fontWeight:700,color:'#34d399',marginBottom:12}}>Peak Revenue AG</div>
+<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 118.334,09 CHF</div>
+<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -36.311,21 CHF</div>
+<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 82.022,88 CHF</div></div>
+<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #f59e0b',borderRadius:12,padding:20}}>
+<div style={{fontSize:12,fontWeight:700,color:'#f59e0b',marginBottom:12}}>HP Venius</div>
+<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 68.514,40 EUR</div>
+<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -65.537,72 EUR</div>
+<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 2.976,68 EUR</div></div>
+<div style={{background:'#0f0f1c',border:'1px solid #1c1c2e',borderTop:'3px solid #f472b6',borderRadius:12,padding:20}}>
+<div style={{fontSize:12,fontWeight:700,color:'#f472b6',marginBottom:12}}>Hamann und Kollegen</div>
+<div style={{fontSize:11,color:'#34d399',marginBottom:4}}>Einnahmen: 73.861,00 EUR</div>
+<div style={{fontSize:11,color:'#f472b6',marginBottom:8}}>Ausgaben: -23.611,34 EUR</div>
+<div style={{fontSize:15,fontWeight:800,color:'#34d399'}}>Saldo: 50.249,66 EUR</div></div></div></div>
           <button onClick={()=>{localStorage.removeItem("hh_scg_auth");window.location.reload();}} style={{padding:"8px 20px",borderRadius:8,fontSize:12,color:"#52526a",background:"transparent",border:"1px solid #252538",cursor:"pointer"}}>Abmelden</button>
         </div>
       </div>
