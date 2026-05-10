@@ -2090,7 +2090,7 @@ export default function Dashboard() {
     ];
     const [selFirma, setSelFirma] = useState<string|null>(null);
     const fmt = (n:number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
-    const f = selFirma ? FDATA.find(x=>x.firma===selFirma) : null;
+    const f = selFirma ? FDATA.find(x=>x.firma===selFirma) ?? null : null;
     return (
       <div style={{minHeight:"100vh",background:"#07070f",color:"#e8e8f0",fontFamily:"DM Sans,Inter,sans-serif"}}>
         <div style={{background:"#0b0b15",borderBottom:"1px solid #1c1c2e",padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
