@@ -2089,7 +2089,7 @@ export default function Dashboard() {
        ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-556.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["Software",-55.06],["Sonstiges",-267.66]]},
     ];
     const [selFirma, setSelFirma] = useState(null);
-    const fmt = (n) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
+    const fmt = (n:number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
     const f = selFirma ? FDATA.find(x=>x.firma===selFirma) : null;
     return (
       <div style={{minHeight:"100vh",background:"#07070f",color:"#e8e8f0",fontFamily:"DM Sans,Inter,sans-serif"}}>
