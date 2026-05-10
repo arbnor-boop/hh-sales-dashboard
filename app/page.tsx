@@ -1623,7 +1623,6 @@ const PASSWORD2 = "Sales!";
 function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   const f = frage.toLowerCase();
   const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-  const fmt = (n:number|string) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n));
 const _fmt = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(n);
 
   // Today/yesterday support
