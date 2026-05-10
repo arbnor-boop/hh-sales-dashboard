@@ -1661,7 +1661,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   useEffect(() => {
     async function loadFirmenData() {
       try {
-        const res = await fetch(FIRMEN_NEW_SHEET_URL + "&t=" + Date.now(), {cache:"no-store"});
+        const res = await fetch("/api/firmen?t=" + Date.now(), {cache:"no-store"});
         const text = await res.text();
         const rows = parseFirmenCSV(text);
         if (rows.length === 0) { setLiveStatus("error"); return; }
