@@ -2088,7 +2088,7 @@ export default function Dashboard() {
        einDetails:[["WHITE.IMMOBILIEN GMBH",48861.00],["Zahlung aus Ausland",25000.00]],
        ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-556.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["Software",-55.06],["Sonstiges",-267.66]]},
     ];
-    const [selFirma, setSelFirma] = useState(null);
+    const [selFirma, setSelFirma] = useState<string|null>(null);
     const fmt = (n:number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
     const f = selFirma ? FDATA.find(x=>x.firma===selFirma) : null;
     return (
