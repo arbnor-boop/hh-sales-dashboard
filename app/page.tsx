@@ -1908,6 +1908,7 @@ export default function Dashboard() {
   const [hydrated, setHydrated] = useState(false);
   const [pwInput, setPwInput] = useState("");
   const [pwError, setPwError] = useState(false);
+  const [selFirma, setSelFirma] = useState<string|null>(null);
 
   useEffect(() => {
     if (localStorage.getItem("hh_scg_auth") === "1") {
