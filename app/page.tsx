@@ -1623,7 +1623,8 @@ const PASSWORD2 = "Sales!";
 function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   const f = frage.toLowerCase();
   const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
-  const fmt = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(n);
+  const fmt = (n:number|string) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n));
+const _fmt = (n:number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"}).format(n);
 
   // Today/yesterday support
   const today = new Date();
@@ -2089,7 +2090,8 @@ export default function Dashboard() {
        ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-556.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["Software",-55.06],["Sonstiges",-267.66]]},
     ];
     const [selFirma, setSelFirma] = useState<string|null>(null);
-    const fmt = (n:number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
+    const fmt = (n:number|string) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n));
+const _fmt = (n:number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
     const f = selFirma ? (FDATA.find(x=>x.firma===selFirma) || FDATA[0]) : FDATA[0];
     return (
       <div style={{minHeight:"100vh",background:"#07070f",color:"#e8e8f0",fontFamily:"DM Sans,Inter,sans-serif"}}>
