@@ -1748,8 +1748,9 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
       <div style={{padding:"28px 32px"}}>
         {!selFirma ? (
           <>
-            {/* Gesamtsaldo */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:28}}>
+            {/* Gesamtsaldo EUR */}
+            <div style={{fontSize:10,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>EUR FIRMEN</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:16}}>
               <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(totalEin)}</div>
@@ -1761,9 +1762,33 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div style={{background:totalSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${totalSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:11,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
                 <div style={{fontSize:24,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
-                <div style={{fontSize:10,color:C.muted,marginTop:4}}>excl. Peak Revenue (CHF)</div>
               </div>
             </div>
+            {/* Gesamtsaldo CHF */}
+            {(() => {
+              const chfEin = data.filter(fi=>fi.currency==="CHF").reduce((a,fi)=>a+fi.ein,0);
+              const chfAus = data.filter(fi=>fi.currency==="CHF").reduce((a,fi)=>a+fi.aus,0);
+              const chfSaldo = chfEin + chfAus;
+              return (
+                <>
+                  <div style={{fontSize:10,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>CHF FIRMEN</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:28}}>
+                    <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
+                      <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (CHF)</div>
+                      <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(chfEin)}</div>
+                    </div>
+                    <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:20,textAlign:"center"}}>
+                      <div style={{fontSize:11,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
+                      <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
+                    </div>
+                    <div style={{background:chfSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${chfSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
+                      <div style={{fontSize:11,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
+                      <div style={{fontSize:24,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
             {/* Firma Karten */}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:20}}>
             {data.map(fi=>{
@@ -1774,7 +1799,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     <span style={{fontSize:24}}>{fi.icon}</span>
                     <div>
                       <div style={{fontSize:13,fontWeight:700,color:fi.color}}>{fi.short}</div>
-                      <div style={{fontSize:10,color:C.muted}}>April 2026 · {fi.currency}</div>
+                      <div style={{fontSize:10,color:C.muted}}>{selMonat} · {fi.currency}</div>
                     </div>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -1804,7 +1829,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <span style={{fontSize:28}}>{f.icon}</span>
               <div>
                 <div style={{fontSize:20,fontWeight:800,color:f.color}}>{f.short}</div>
-                <div style={{fontSize:12,color:C.muted}}>April 2026 · {f.currency}</div>
+                <div style={{fontSize:12,color:C.muted}}>{selMonat} · {f.currency}</div>
               </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
