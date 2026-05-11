@@ -1627,7 +1627,7 @@ type FirmaData = {
   firma: string; short: string; color: string; icon: string; currency: string;
   ein: number; aus: number;
   einDetails: [string, number][]; ausDetails: [string, number][];
-  bwaKategorien?: {kat: string; icon: string; items: string[]}[];
+  bwaKategorien: {kat: string; icon: string; items: string[]}[];
 };
 
 const FDATA: FirmaData[] = [
