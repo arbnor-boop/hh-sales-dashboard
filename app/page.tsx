@@ -1638,8 +1638,8 @@ const FDATA: FirmaData[] = [
     bwaKategorien:[
       {kat:"Gehälter & Löhne", icon:"👥", items:["Lohn","Gehalt"]},
       {kat:"Steuern & Finanzamt", icon:"🏛️", items:["Steuer","Finanzamt","Steuerberatung"]},
-      {kat:"Miete & Nebenkosten", icon:"🏠", items:["Miete"]},
-      {kat:"Leasing & Fahrzeuge", icon:"🚗", items:["Leasing","Autoversicherung"]},
+      {kat:"Miete & Nebenkosten", icon:"🏠", items:["Miete","Strom"]},
+      {kat:"Leasing & Fahrzeuge", icon:"🚗", items:["Leasing","Autoversicherung","Tankstelle"]},
       {kat:"Krankenkassen", icon:"🏥", items:["Krankenkasse"]},
       {kat:"Versicherungen", icon:"🛡️", items:["Versicherung","Lebensversicherung"]},
       {kat:"Tools & Software", icon:"🛠️", items:["Software"]},
