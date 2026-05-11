@@ -1627,25 +1627,58 @@ type FirmaData = {
   firma: string; short: string; color: string; icon: string; currency: string;
   ein: number; aus: number;
   einDetails: [string, number][]; ausDetails: [string, number][];
+  bwaKategorien?: {kat: string; icon: string; items: string[]}[];
 };
 
 const FDATA: FirmaData[] = [
   { firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR",
     ein:367319.29, aus:-295063.03,
     einDetails:[["No Limits Consulting Miete",1706.98],["Allianz Rückgabe",3649.71],["Everflow Excellence",16755.20],["Eitel Invest AG",16376.66],["Grundl Leadership",35394.78],["Schippke Partner",39214.00],["ECOM HOUSE",86933.04],["Arlind Nuhi",5623.87],["SocialNatives",2659.65],["Candidate Flow",94076.72],["AIRWALLEX",1916.95],["Hamann Kollegen",23972.85],["2B AHEAD",36248.74],["Sonstiges",2789.82]],
-    ausDetails:[["Löhne",-73125.16],["Finanzamt",-60021.49],["HP Venius Dubai",-49169.05],["Krankenkassen",-28878.74],["Dienstleistungen",-25300.00],["Miete",-21471.28],["Leasing",-13133.00],["Autoversicherung",-5055.25],["Reisekosten",-4687.41],["Software",-3524.37],["Lebensversicherung",-1352.00],["Versicherung",-1079.57],["Steuerberatung",-683.06],["Sonstiges",-5582.60]]},
+    ausDetails:[["Löhne",-73125.16],["Finanzamt",-60021.49],["HP Venius Dubai",-49169.05],["Krankenkassen",-28878.74],["Dienstleistungen",-25300.00],["Miete",-21471.28],["Leasing",-13133.00],["Autoversicherung",-5055.25],["Reisekosten",-4687.41],["Software",-3524.37],["Lebensversicherung",-1352.00],["Versicherung",-1079.57],["Steuerberatung",-683.06],["Sonstiges",-5582.60]],
+    bwaKategorien:[
+      {kat:"Gehälter & Löhne", icon:"👥", items:["Löhne"]},
+      {kat:"Steuern & Finanzamt", icon:"🏛️", items:["Finanzamt","Steuerberatung"]},
+      {kat:"Miete & Nebenkosten", icon:"🏠", items:["Miete"]},
+      {kat:"Leasing & Fahrzeuge", icon:"🚗", items:["Leasing","Autoversicherung"]},
+      {kat:"Krankenkassen", icon:"🏥", items:["Krankenkassen"]},
+      {kat:"Versicherungen", icon:"🛡️", items:["Lebensversicherung","Versicherung"]},
+      {kat:"Tools & Software", icon:"🛠️", items:["Software"]},
+      {kat:"Reisekosten", icon:"✈️", items:["Reisekosten"]},
+      {kat:"Dienstleistungen", icon:"🔧", items:["Dienstleistungen","HP Venius Dubai"]},
+      {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
+    ]},
   { firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF",
     ein:118334.09, aus:-36361.29,
     einDetails:[["Aktienkapital Zürich",99875.00],["Investmentpunk",3093.70],["Leon Ioakeim",4555.39],["Tax Angels",10810.00]],
-    ausDetails:[["Kapitaleinlage Hamann",-23320.88],["Steckel Legal Tax",-9080.40],["Reviso Treuhand",-1081.00],["Fechner Rechtsanwälte",-781.57],["Steuern",-590.00],["Software",-306.47],["Sonstiges",-1201.97]]},
+    ausDetails:[["Kapitaleinlage Hamann",-23320.88],["Steckel Legal Tax",-9080.40],["Reviso Treuhand",-1081.00],["Fechner Rechtsanwälte",-781.57],["Steuern",-590.00],["Software",-306.47],["Sonstiges",-1201.97]],
+    bwaKategorien:[
+      {kat:"Steuern & Abgaben", icon:"🏛️", items:["Steuern","Reviso Treuhand","Steckel Legal Tax"]},
+      {kat:"Rechtsberatung", icon:"⚖️", items:["Fechner Rechtsanwälte"]},
+      {kat:"Kapitaleinlagen", icon:"💼", items:["Kapitaleinlage Hamann"]},
+      {kat:"Tools & Software", icon:"🛠️", items:["Software"]},
+      {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
+    ]},
   { firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR",
     ein:68515.14, aus:-70017.52,
     einDetails:[["HH Sales Consulting",49019.49],["M S V T Marketing",15724.73],["CopeCart",3518.18],["NIKO DIECKHOFF",252.74]],
-    ausDetails:[["Sülei Tatli Lohn",-54480.00],["Lukas Jukic Lohn",-4370.00],["Taim Shakir Lohn",-3600.00],["Florian Schimpf Lohn",-2400.00],["FTA Steuer",-3021.50],["Transfer DTB 1",-1605.00],["Transfer DTB 2",-461.48],["Bankgebühren",-75.80],["Sonstiges",-3.74]]},
+    ausDetails:[["Sülei Tatli Lohn",-54480.00],["Lukas Jukic Lohn",-4370.00],["Taim Shakir Lohn",-3600.00],["Florian Schimpf Lohn",-2400.00],["FTA Steuer",-3021.50],["Transfer DTB 1",-1605.00],["Transfer DTB 2",-461.48],["Bankgebühren",-75.80],["Sonstiges",-3.74]],
+    bwaKategorien:[
+      {kat:"Gehälter & Löhne", icon:"👥", items:["Sülei Tatli Lohn","Lukas Jukic Lohn","Taim Shakir Lohn","Florian Schimpf Lohn"]},
+      {kat:"Steuern & Abgaben", icon:"🏛️", items:["FTA Steuer"]},
+      {kat:"Überweisungen", icon:"💸", items:["Transfer DTB 1","Transfer DTB 2"]},
+      {kat:"Bankgebühren", icon:"🏦", items:["Bankgebühren"]},
+      {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
+    ]},
   { firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR",
     ein:73861.00, aus:-25605.48,
     einDetails:[["WHITE.IMMOBILIEN GMBH",48861.00],["Zahlung aus Ausland",25000.00]],
-    ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]]},
+    ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]],
+    bwaKategorien:[
+      {kat:"Dienstleistungen", icon:"🔧", items:["HH SCG Zahlungen","KROOS KOLLEGEN"]},
+      {kat:"Marketing & Werbung", icon:"📣", items:["Facebook Ads"]},
+      {kat:"Tools & Software", icon:"🛠️", items:["CLOSE CRM","PIXELFLOW","WEBFLOW"]},
+      {kat:"Gebühren & Abgaben", icon:"🏛️", items:["AMTSGERICHT","Kontoführung"]},
+    ]},
 ];
 
 const FIRMEN_NEW_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7IdyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
@@ -1689,6 +1722,7 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
 
 function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [selFirma, setSelFirma] = useState<string|null>(null);
+  const [detailTab, setDetailTab] = useState<"uebersicht"|"bwa">("uebersicht");
   const [selMonat, setSelMonat] = useState("April 2026");
   const [allRows, setAllRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
   const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
@@ -1825,13 +1859,24 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
           </>
         ) : f ? (
           <div>
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}>
+            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:20}}>
               <span style={{fontSize:28}}>{f.icon}</span>
               <div>
                 <div style={{fontSize:20,fontWeight:800,color:f.color}}>{f.short}</div>
                 <div style={{fontSize:12,color:C.muted}}>{selMonat} · {f.currency}</div>
               </div>
             </div>
+            {/* Tabs */}
+            <div style={{display:"flex",gap:8,marginBottom:24}}>
+              {(["uebersicht","bwa"] as const).map(tab=>(
+                <button key={tab} onClick={()=>setDetailTab(tab)} style={{padding:"8px 20px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",border:"none",
+                  background:detailTab===tab?f.color:"#1a1a2e",
+                  color:detailTab===tab?"#fff":C.muted}}>
+                  {tab==="uebersicht"?"📊 Übersicht":"📋 BWA"}
+                </button>
+              ))}
+            </div>
+            {/* KPI Cards */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
               <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
@@ -1848,38 +1893,70 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div style={{fontSize:11,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
               <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
-              <div>
-                <div style={{fontSize:12,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
-                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                  {f.einDetails.map(([n,v],i)=>(
-                    <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                      <span style={{fontSize:11,color:C.text}}>{n}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+
+            {detailTab==="uebersicht" ? (
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
+                  <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                    {f.einDetails.map(([n,v],i)=>(
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                        <span style={{fontSize:11,color:C.text}}>{n}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                      </div>
+                    ))}
+                    <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
+                      <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:12,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
                     </div>
-                  ))}
-                  <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                    <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
-                    <span style={{fontSize:12,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
+                  <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                    {f.ausDetails.map(([n,v],i)=>(
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                        <span style={{fontSize:11,color:C.text}}>{n}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                      </div>
+                    ))}
+                    <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
+                      <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:12,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                    </div>
                   </div>
                 </div>
               </div>
+            ) : (
               <div>
-                <div style={{fontSize:12,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
-                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                  {f.ausDetails.map(([n,v],i)=>(
-                    <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                      <span style={{fontSize:11,color:C.text}}>{n}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
-                    </div>
-                  ))}
-                  <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                    <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
-                    <span style={{fontSize:12,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
-                  </div>
+                <div style={{fontSize:12,fontWeight:700,color:C.muted,marginBottom:16,letterSpacing:"1px"}}>📋 BWA — {f.short} — {selMonat}</div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16}}>
+                  {(f.bwaKategorien || []).map(({kat,icon,items})=>{
+                    const total = f.ausDetails.filter(([n])=>items.includes(n)).reduce((a,[,v])=>a+v,0);
+                    const rows = f.ausDetails.filter(([n])=>items.includes(n));
+                    if (rows.length===0) return null;
+                    return (
+                      <div key={kat} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                        <div style={{padding:"12px 16px",background:"#0a0a18",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <span style={{fontSize:13,fontWeight:700}}>{icon} {kat}</span>
+                          <span style={{fontSize:13,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
+                        </div>
+                        {rows.map(([n,v],i)=>(
+                          <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+                            <span style={{fontSize:11,color:C.muted}}>{n}</span>
+                            <span style={{fontSize:11,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{marginTop:20,background:"#0a0a18",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:13,fontWeight:700}}>📊 Gesamt Ausgaben</span>
+                  <span style={{fontSize:16,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         ) : null}
       </div>
