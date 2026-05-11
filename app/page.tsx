@@ -1695,7 +1695,7 @@ const MONAT_TO_GID: Record<string,string> = {
   "Dezember 2026": "379786663",
 };
 
-function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string) {
+function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string): FirmaData[] {
   const FIRMEN_CFG = [
     {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR"},
     {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF"},
