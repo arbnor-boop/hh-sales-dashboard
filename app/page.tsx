@@ -1716,6 +1716,7 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
       ...cfg, ein, aus,
       einDetails: Object.entries(einMap).sort((a,b)=>b[1]-a[1]).slice(0,15) as [string,number][],
       ausDetails: Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,20) as [string,number][],
+      bwaKategorien: FDATA.find(x=>x.firma===firma)?.bwaKategorien || [],
     };
   });
 }
