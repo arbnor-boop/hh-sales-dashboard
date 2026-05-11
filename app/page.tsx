@@ -2045,7 +2045,7 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
     if (ausDatum && /\d{1,2}[\.\-]\d{2}[\.\-]\d{4}/.test(ausDatum) && ausBetrag !== null && ausBetrag < 0) {
       const parts = ausDatum.replace(/-/g,".").split(".");
       const mm = parts[1]; const yy = parts[2];
-      result.push({firma:currentFirma, datum:ausDatum, name:ausName, betrag:ausBetrag, kategorie:ausKat||"Ausgaben", monat:(MONAT_MAP[mm]||mm)+" "+yy});
+      const kat = (ausKat&&ausKat!=="Ja"&&ausKat!=="Nein"&&ausKat!=="ja"&&ausKat!=="nein") ? ausKat : "Ausgaben"; result.push({firma:currentFirma, datum:ausDatum, name:ausName, betrag:ausBetrag, kategorie:kat, monat:(MONAT_MAP[mm]||mm)+" "+yy});
     }
   }
   return result;
