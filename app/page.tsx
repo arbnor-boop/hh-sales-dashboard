@@ -1698,11 +1698,11 @@ const MONAT_TO_GID: Record<string,string> = {
 // Keyword-based BWA auto-categorizer — verified against real April 2026 bookings
 const BWA_KEYWORD_MAP: Record<string, {kat: string; icon: string; keywords: string[]}[]> = {
   "HH Sales Consulting Germany GmbH": [
-    {kat:"Gehälter & Löhne", icon:"👥", keywords:[
-      "lohn","gehalt","salary",
-    ]},
     {kat:"Steuern & Finanzamt", icon:"🏛️", keywords:[
       "finanzamt","landeshauptkasse","lohnst","ums.st","steuerber","bd berlin digital tax","digital tax","steuer",
+    ]},
+    {kat:"Gehälter & Löhne", icon:"👥", keywords:[
+      "lohn","gehalt","salary",
     ]},
     {kat:"Miete & Nebenkosten", icon:"🏠", keywords:[
       "miete","collection business centers","aik immobilien","nebenkosten","enercity","strom",
@@ -1811,7 +1811,7 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
     einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
     const ausMap: Record<string,number> = {};
     ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
-    const ausDetails = Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,30) as [string,number][];
+    const ausDetails = Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,60) as [string,number][];
     const catDefs = BWA_KEYWORD_MAP[cfg.firma] || [];
     const catMap: Record<string, [string,number][]> = {};
     for (const [name, val] of ausDetails) {
