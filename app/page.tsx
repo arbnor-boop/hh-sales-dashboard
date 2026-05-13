@@ -1695,45 +1695,91 @@ const MONAT_TO_GID: Record<string,string> = {
   "Dezember 2026": "379786663",
 };
 
-// Keyword-based BWA auto-categorizer
-// Maps firm -> category -> keywords (case-insensitive substring match)
+// Keyword-based BWA auto-categorizer — verified against real April 2026 bookings
 const BWA_KEYWORD_MAP: Record<string, {kat: string; icon: string; keywords: string[]}[]> = {
   "HH Sales Consulting Germany GmbH": [
-    {kat:"Gehälter & Löhne",    icon:"👥", keywords:["lohn","gehalt","salary","personal"]},
-    {kat:"Steuern & Finanzamt", icon:"🏛️", keywords:["finanzamt","steuer","steuerber"]},
-    {kat:"Miete & Nebenkosten", icon:"🏠", keywords:["miete","nebenkosten","strom","heizung","nebenk"]},
-    {kat:"Leasing & Fahrzeuge", icon:"🚗", keywords:["leasing","kfz","fahrzeug","autoversicherung","auto vers","pkw"]},
-    {kat:"Krankenkassen",       icon:"🏥", keywords:["krankenkasse","kk ","bkk","tkk","aok","barmer","debeka kranken","ikk"]},
-    {kat:"Versicherungen",      icon:"🛡️", keywords:["versicherung","lebensversicherung","haftpflicht","berufsunfähigkeit"]},
-    {kat:"Tools & Software",    icon:"🛠️", keywords:["software","saas","close crm","slack","notion","zoom","microsoft","adobe","google workspace","hostinger","app store","play store","1password","pipedrive","hubspot","clickup","asana","monday","figma","canva","deepl","grammarly","chatgpt","openai","anthropic","midjourney","zapier","make.com","airtable","typeform","calendly","loom","miro","webflow","pixelflow","wix","shopify"]},
-    {kat:"Reisekosten",         icon:"✈️", keywords:["reise","flug","hotel","airbnb","bahn","db bahn","taxi","uber","mietwagen","parkhaus","parken","bahnticket","zugticket","fährticket"]},
-    {kat:"Dienstleistungen",    icon:"🔧", keywords:["hp venius","dienstleist","beratung","consulting","agentur","freelance","honorar","subunternehm"]},
-    {kat:"Büro & Ausstattung",  icon:"🖥️", keywords:["büro","office","drucker","toner","papier","schreibwaren","ikea","amazon","hardware","laptop","monitor","headset","kamera","elektro"]},
-    {kat:"Marketing & Werbung", icon:"📣", keywords:["facebook ads","google ads","instagram","tiktok","youtube","linkedin ads","meta ads","werbung","marketing","ads ","newsletter","mailchimp","klaviyo"]},
-    {kat:"Bankgebühren",        icon:"🏦", keywords:["bankgebühr","kontoführung","überziehungszins","kartengebühr","wise fee","paypal fee","stripe fee","airwallex fee"]},
-    {kat:"Sonstiges",           icon:"📦", keywords:[]},
+    {kat:"Gehälter & Löhne", icon:"👥", keywords:[
+      "lohn","gehalt","salary",
+    ]},
+    {kat:"Steuern & Finanzamt", icon:"🏛️", keywords:[
+      "finanzamt","landeshauptkasse","lohnst","ums.st","steuerber","bd berlin digital tax","digital tax","steuer",
+    ]},
+    {kat:"Miete & Nebenkosten", icon:"🏠", keywords:[
+      "miete","collection business centers","aik immobilien","nebenkosten","enercity","strom",
+    ]},
+    {kat:"Leasing & Fahrzeuge", icon:"🚗", keywords:[
+      "leasing","porsche financial","mercedes-benz leasing","vw leasing","kfz-steuer","bundeskasse kfz","autoversicherung","kfz-versiche",
+    ]},
+    {kat:"Krankenkassen & Sozialabgaben", icon:"🏥", keywords:[
+      "krankenkasse","krankenkass","bkk","aok","debeka","techniker","hkk","handelskrankenkasse","hanseatische","r+v betriebs","deutsche rentenversicherung","rentenversicherung",
+    ]},
+    {kat:"Versicherungen", icon:"🛡️", keywords:[
+      "lebensvers","arag","rechtsschutz","markel insurance","versicherung","insurance",
+    ]},
+    {kat:"Tools & Software", icon:"🛠️", keywords:[
+      "close crm","slack","zoom","google workspace","google cloud","monday","calendly","zapier","anthropic","claude.ai","webflow","pixelflow","hostinger","ionos","atlassian","jotform","vimeo","vmo*vimeo","jumpshare","cookiebot","paddle","easybill","recruitee","stitchdata","figma","airtable","notion","adobe","microsoft","openai","1password","hubspot","clickup","asana","miro","typeform","loom","shopify","wix","canva","deepl","grammarly","chatgpt","midjourney","make.com","pipedrive","app store","play store","telekom","vodafone","o2 ","mobilfunk","festnetz",
+    ]},
+    {kat:"Reisekosten", icon:"✈️", keywords:[
+      "reise","rückerstattung","db vertrieb","deutsche bahn","partners on booking","booking.com","hotel","airbnb","tankstelle","sb-tank","aral","hem tank","taxi","uber","mietwagen","parkhaus","flug","bahnticket","fahrtkosten","bahn)",
+    ]},
+    {kat:"Dienstleistungen", icon:"🔧", keywords:[
+      "hp venius","skalator","stefan michalea","moritz winter","pineapple consult","dienstleist","beratung","consulting","agentur","freelance","honorar","subunternehm",
+    ]},
+    {kat:"Marketing & Werbung", icon:"📣", keywords:[
+      "facebook ads","facebk","paypal *facebook","google ads","meta ads","instagram","tiktok","linkedin ads","werbung","marketing ads",
+    ]},
+    {kat:"Bankgebühren", icon:"🏦", keywords:[
+      "kontoführung","bankgebühr","bank ","wise fee","paypal fee","stripe fee","airwallex fee",
+    ]},
+    {kat:"Sonstiges", icon:"📦", keywords:[]},
   ],
   "Peak Revenue AG": [
-    {kat:"Steuern & Abgaben",   icon:"🏛️", keywords:["steuer","steuern","tax","reviso","treuhand","steckel","finanzbehörde","finanzamt"]},
-    {kat:"Rechtsberatung",      icon:"⚖️", keywords:["rechtsanwalt","anwalt","legal","notar","kanzlei","gericht","fechner","amtsgericht"]},
-    {kat:"Kapitaleinlagen",     icon:"💼", keywords:["kapitaleinlage","einlage","kapital hamann","hamann einlage","aktienkapital","stammkapital"]},
-    {kat:"Tools & Software",    icon:"🛠️", keywords:["software","saas","slack","notion","zoom","microsoft","adobe","hostinger","close crm","webflow","pixelflow","app store"]},
-    {kat:"Bankgebühren",        icon:"🏦", keywords:["bankgebühr","kontoführung","wise","paypal fee","stripe fee"]},
-    {kat:"Sonstiges",           icon:"📦", keywords:[]},
+    {kat:"Steuern & Abgaben", icon:"🏛️", keywords:[
+      "steuer","steuern","tax","finanzverwaltung","nidwalden","reviso","treuhand","steckel",
+    ]},
+    {kat:"Rechtsberatung", icon:"⚖️", keywords:[
+      "rechtsanwalt","anwalt","legal","notar","kanzlei","gericht","fechner",
+    ]},
+    {kat:"Kapitaleinlagen", icon:"💼", keywords:[
+      "kapitaleinlage","einlage","aktienkapital","stammkapital",
+    ]},
+    {kat:"Tools & Software", icon:"🛠️", keywords:[
+      "slack","notion","zoom","microsoft","adobe","hostinger","close crm","webflow","pixelflow","app store","figma","airtable","lovable","perplexity","paddle","n8n","manus ai","openai","anthropic","claude","canva","loom","miro","typeform","calendly","zapier","atlassian","jotform","vimeo","jumpshare","monday","ionos","chatgpt","midjourney","make.com","1password","hubspot",
+    ]},
+    {kat:"Bankgebühren", icon:"🏦", keywords:[
+      "bankgebühr","kontoführung","zahlungsverkehrspreis","wise","paypal fee","stripe fee",
+    ]},
+    {kat:"Sonstiges", icon:"📦", keywords:[]},
   ],
   "HP Venius": [
-    {kat:"Gehälter & Löhne",   icon:"👥", keywords:["lohn","gehalt","salary","tatli","jukic","shakir","schimpf","personal"]},
-    {kat:"Steuern & Abgaben",  icon:"🏛️", keywords:["steuer","fta","finanzamt","tax"]},
-    {kat:"Überweisungen",      icon:"💸", keywords:["transfer","überweisung","dtb","übertrag"]},
-    {kat:"Bankgebühren",       icon:"🏦", keywords:["bankgebühr","kontoführung","gebühr","wise fee"]},
-    {kat:"Sonstiges",          icon:"📦", keywords:[]},
+    {kat:"Gehälter & Löhne", icon:"👥", keywords:[
+      "lohn","gehalt","salary","tatli","jukic","shakir","schimpf","greif",
+    ]},
+    {kat:"Steuern & Abgaben", icon:"🏛️", keywords:[
+      "fta","federal tax","tax authority","value added tax","vat","steuer",
+    ]},
+    {kat:"Überweisungen", icon:"💸", keywords:[
+      "transfer","überweisung","dtb","übertrag",
+    ]},
+    {kat:"Bankgebühren", icon:"🏦", keywords:[
+      "bankgebühr","kontoführung","maintenance of balance","min bal fee","balance fee","wise fee","seg pfa",
+    ]},
+    {kat:"Sonstiges", icon:"📦", keywords:[]},
   ],
   "Hamann & Kollegen Immobilien GmbH": [
-    {kat:"Dienstleistungen",   icon:"🔧", keywords:["hh scg","hh sales","kroos","dienstleist","beratung","consulting","honorar"]},
-    {kat:"Marketing & Werbung",icon:"📣", keywords:["facebook ads","google ads","meta ads","werbung","marketing","instagram ads"]},
-    {kat:"Tools & Software",   icon:"🛠️", keywords:["close crm","pixelflow","webflow","software","saas","slack","notion","hostinger","app store"]},
-    {kat:"Gebühren & Abgaben", icon:"🏛️", keywords:["amtsgericht","gericht","notar","notargebühr","grundbuch","kontoführung","bankgebühr"]},
-    {kat:"Sonstiges",          icon:"📦", keywords:[]},
+    {kat:"Dienstleistungen", icon:"🔧", keywords:[
+      "hh scg","hh sales","kroos","dienstleist","beratung","consulting","honorar",
+    ]},
+    {kat:"Marketing & Werbung", icon:"📣", keywords:[
+      "facebook ads","facebk","google ads","meta ads","instagram","tiktok","linkedin ads","werbung","marketing",
+    ]},
+    {kat:"Tools & Software", icon:"🛠️", keywords:[
+      "close crm","pixelflow","webflow","software","saas","slack","notion","hostinger","app store","atlassian","zapier","monday","zoom","figma","airtable","canva","loom","miro","typeform","calendly","jotform","vimeo","jumpshare","ionos","chatgpt","openai","anthropic","claude","paddle","lovable","perplexity",
+    ]},
+    {kat:"Gebühren & Abgaben", icon:"🏛️", keywords:[
+      "amtsgericht","gericht","notar","notargebühr","grundbuch","kontoführung","bankgebühr",
+    ]},
+    {kat:"Sonstiges", icon:"📦", keywords:[]},
   ],
 };
 
@@ -1742,7 +1788,7 @@ function autoKategorisiere(name: string, firma: string): string {
   if (!cats) return "Sonstiges";
   const n = name.toLowerCase();
   for (const cat of cats) {
-    if (cat.keywords.length === 0) continue; // skip Sonstiges sentinel
+    if (cat.keywords.length === 0) continue;
     if (cat.keywords.some(kw => n.includes(kw.toLowerCase()))) return cat.kat;
   }
   return "Sonstiges";
@@ -1765,22 +1811,17 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
     einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
     const ausMap: Record<string,number> = {};
     ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
-
-    // Build bwaKategorien dynamically from actual ausDetails using keyword matching
-    const ausDetails = Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,20) as [string,number][];
+    const ausDetails = Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,30) as [string,number][];
     const catDefs = BWA_KEYWORD_MAP[cfg.firma] || [];
-    // Group ausDetails by category
     const catMap: Record<string, [string,number][]> = {};
     for (const [name, val] of ausDetails) {
       const kat = autoKategorisiere(name, cfg.firma);
       if (!catMap[kat]) catMap[kat] = [];
       catMap[kat].push([name, val]);
     }
-    // Build bwaKategorien in defined order, skip empty cats (except Sonstiges shows if has items)
     const bwaKategorien = catDefs
       .map(({kat, icon}) => ({kat, icon, items: (catMap[kat]||[]).map(([n])=>n)}))
       .filter(c => c.items.length > 0);
-
     return {
       ...cfg, ein, aus,
       einDetails: Object.entries(einMap).sort((a,b)=>b[1]-a[1]).slice(0,15) as [string,number][],
