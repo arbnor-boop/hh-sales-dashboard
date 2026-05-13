@@ -2052,12 +2052,29 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                           <span style={{fontSize:15,fontWeight:700}}>{icon} {kat}</span>
                           <span style={{fontSize:15,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
                         </div>
-                        {rows.map(([n,v],i)=>(
-                          <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                            <span style={{fontSize:13,color:C.muted}}>{n}</span>
-                            <span style={{fontSize:13,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                        {rows.map(([n,v],i)=>{
+                          const shortName = n
+                            .replace(/End-to-End-Ref\..*$/i,"")
+                            .replace(/End-To-End-Ref\..*$/i,"")
+                            .replace(/Mandatsref.*$/i,"")
+                            .replace(/Gläubiger-ID.*$/i,"")
+                            .replace(/SEPA-BASISLASTSCHRIFT.*$/i,"")
+                            .replace(/Karte Nr\..*$/i,"")
+                            .replace(/Kartenzahlung.*$/i,"")
+                            .replace(/\bDE\d{2}\w+\b/g,"")
+                            .replace(/\bAE\d{2}\w+\b/g,"")
+                            .replace(/GENODEM\w+|DRESDEFF\w+|COBADEFF\w+|NOLADE\w+|SPKHDE\w+|HASPDE\w+|WIBADE\w+|SOLADE\w+|REVODEB\w+|NTSBDEB\w+|SOBKDEB\w+|COKSDE\w+|FNOMDEB\w+|SSKMDEMMXXX|TRWIBEB\w+|PBNKDEFF\w+|VOWADE\w+|HELADEF\w+|DEUTDEDB\w+|VOHADE\w+|GENODEF\w+/g,"")
+                            .replace(/\s{2,}/g," ")
+                            .replace(/,\s*$/,"")
+                            .trim()
+                            .slice(0,45);
+                          return (
+                          <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
+                            <span style={{fontSize:13,color:"#ffffff",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{shortName}</span>
+                            <span style={{fontSize:13,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     );
                   })}
