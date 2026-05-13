@@ -1636,25 +1636,28 @@ const FDATA: FirmaData[] = [
     einDetails:[["No Limits Consulting Miete",1706.98],["Allianz Rückgabe",3649.71],["Everflow Excellence",16755.20],["Eitel Invest AG",16376.66],["Grundl Leadership",35394.78],["Schippke Partner",39214.00],["ECOM HOUSE",86933.04],["Arlind Nuhi",5623.87],["SocialNatives",2659.65],["Candidate Flow",94076.72],["AIRWALLEX",1916.95],["Hamann Kollegen",23972.85],["2B AHEAD",36248.74],["Sonstiges",2789.82]],
     ausDetails:[["Löhne",-73125.16],["Finanzamt",-60021.49],["HP Venius Dubai",-49169.05],["Krankenkassen",-28878.74],["Dienstleistungen",-25300.00],["Miete",-21471.28],["Leasing",-13133.00],["Autoversicherung",-5055.25],["Reisekosten",-4687.41],["Software",-3524.37],["Lebensversicherung",-1352.00],["Versicherung",-1079.57],["Steuerberatung",-683.06],["Sonstiges",-5582.60]],
     bwaKategorien:[
-      {kat:"Gehälter & Löhne", icon:"👥", items:["Löhne"]},
-      {kat:"Steuern & Finanzamt", icon:"🏛️", items:["Finanzamt","Steuerberatung"]},
-      {kat:"Miete & Nebenkosten", icon:"🏠", items:["Miete"]},
-      {kat:"Leasing & Fahrzeuge", icon:"🚗", items:["Leasing","Autoversicherung"]},
-      {kat:"Krankenkassen", icon:"🏥", items:["Krankenkassen"]},
-      {kat:"Versicherungen", icon:"🛡️", items:["Lebensversicherung","Versicherung"]},
+      {kat:"Gehälter & Löhne", icon:"👥", items:["Löhne","Lohn","Gehalt"]},
+      {kat:"Steuern & Finanzamt", icon:"🏛️", items:["Finanzamt","Steuerberatung","Steuer"]},
+      {kat:"Krankenkassen", icon:"🏥", items:["Krankenkassen","Krankenkasse"]},
+      {kat:"Dienstleistungen", icon:"🔧", items:["Dienstleistungen","Dienstleistung","HP Venius Dubai"]},
+      {kat:"Miete & Nebenkosten", icon:"🏠", items:["Miete","Strom"]},
+      {kat:"Leasing & Fahrzeuge", icon:"🚗", items:["Leasing","Autoversicherung","Tankstelle"]},
+      {kat:"Versicherungen", icon:"🛡️", items:["Versicherung","Lebensversicherung","Rechtsschutzversicherungen"]},
       {kat:"Tools & Software", icon:"🛠️", items:["Software"]},
       {kat:"Reisekosten", icon:"✈️", items:["Reisekosten"]},
-      {kat:"Dienstleistungen", icon:"🔧", items:["Dienstleistungen","HP Venius Dubai"]},
-      {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
+      {kat:"Marketing", icon:"📣", items:["Marketing"]},
+      {kat:"Telekommunikation", icon:"📱", items:["Telekommunikation"]},
+      {kat:"Bankgebühren", icon:"🏦", items:["Bank","Bankgebühren"]},
+      {kat:"Sonstiges", icon:"📦", items:["Sonstiges","Ausgaben"]},
     ]},
   { firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF",
     ein:118334.09, aus:-36361.29,
     einDetails:[["Aktienkapital Zürich",99875.00],["Investmentpunk",3093.70],["Leon Ioakeim",4555.39],["Tax Angels",10810.00]],
     ausDetails:[["Kapitaleinlage Hamann",-23320.88],["Steckel Legal Tax",-9080.40],["Reviso Treuhand",-1081.00],["Fechner Rechtsanwälte",-781.57],["Steuern",-590.00],["Software",-306.47],["Sonstiges",-1201.97]],
     bwaKategorien:[
-      {kat:"Steuern & Abgaben", icon:"🏛️", items:["Steuern","Reviso Treuhand","Steckel Legal Tax"]},
-      {kat:"Rechtsberatung", icon:"⚖️", items:["Fechner Rechtsanwälte"]},
-      {kat:"Kapitaleinlagen", icon:"💼", items:["Kapitaleinlage Hamann"]},
+      {kat:"Steuern & Abgaben", icon:"🏛️", items:["Steuer","Reviso Treuhand","Steckel Legal Tax"]},
+      {kat:"Rechtsberatung", icon:"⚖️", items:["Rechtsberatung","Fechner Rechtsanwälte"]},
+      {kat:"Kapitaleinlagen", icon:"💼", items:["Kapitaleinlage","Kapitaleinlage Hamann"]},
       {kat:"Tools & Software", icon:"🛠️", items:["Software"]},
       {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
     ]},
@@ -1663,10 +1666,10 @@ const FDATA: FirmaData[] = [
     einDetails:[["HH Sales Consulting",49019.49],["M S V T Marketing",15724.73],["CopeCart",3518.18],["NIKO DIECKHOFF",252.74]],
     ausDetails:[["Sülei Tatli Lohn",-54480.00],["Lukas Jukic Lohn",-4370.00],["Taim Shakir Lohn",-3600.00],["Florian Schimpf Lohn",-2400.00],["FTA Steuer",-3021.50],["Transfer DTB 1",-1605.00],["Transfer DTB 2",-461.48],["Bankgebühren",-75.80],["Sonstiges",-3.74]],
     bwaKategorien:[
-      {kat:"Gehälter & Löhne", icon:"👥", items:["Sülei Tatli Lohn","Lukas Jukic Lohn","Taim Shakir Lohn","Florian Schimpf Lohn"]},
-      {kat:"Steuern & Abgaben", icon:"🏛️", items:["FTA Steuer"]},
-      {kat:"Überweisungen", icon:"💸", items:["Transfer DTB 1","Transfer DTB 2"]},
-      {kat:"Bankgebühren", icon:"🏦", items:["Bankgebühren"]},
+      {kat:"Gehälter & Löhne", icon:"👥", items:["Lohn","Gehalt"]},
+      {kat:"Steuern & Abgaben", icon:"🏛️", items:["Steuer","FTA Steuer"]},
+      {kat:"Überweisungen", icon:"💸", items:["Überweisung","Auslandsüberweisung"]},
+      {kat:"Bankgebühren", icon:"🏦", items:["Bank","Bankgebühren"]},
       {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
     ]},
   { firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR",
@@ -1674,10 +1677,11 @@ const FDATA: FirmaData[] = [
     einDetails:[["WHITE.IMMOBILIEN GMBH",48861.00],["Zahlung aus Ausland",25000.00]],
     ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]],
     bwaKategorien:[
-      {kat:"Dienstleistungen", icon:"🔧", items:["HH SCG Zahlungen","KROOS KOLLEGEN"]},
-      {kat:"Marketing & Werbung", icon:"📣", items:["Facebook Ads"]},
-      {kat:"Tools & Software", icon:"🛠️", items:["CLOSE CRM","PIXELFLOW","WEBFLOW"]},
-      {kat:"Gebühren & Abgaben", icon:"🏛️", items:["AMTSGERICHT","Kontoführung"]},
+      {kat:"Dienstleistungen", icon:"🔧", items:["Dienstleistung"]},
+      {kat:"Marketing & Werbung", icon:"📣", items:["Marketing"]},
+      {kat:"Tools & Software", icon:"🛠️", items:["Software"]},
+      {kat:"Gebühren & Abgaben", icon:"🏛️", items:["Gebühren","Kontoführung"]},
+      {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
     ]},
 ];
 
@@ -1695,7 +1699,7 @@ const MONAT_TO_GID: Record<string,string> = {
   "Dezember 2026": "379786663",
 };
 
-function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string) {
+function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string): FirmaData[] {
   const FIRMEN_CFG = [
     {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR"},
     {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF"},
@@ -1711,13 +1715,43 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
     const einMap: Record<string,number> = {};
     einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
     const ausMap: Record<string,number> = {};
-    ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
+    ausRows.forEach(r => { const k = r.kategorie||r.name; ausMap[k] = (ausMap[k]||0) + r.betrag; });
     return {
       ...cfg, ein, aus,
       einDetails: Object.entries(einMap).sort((a,b)=>b[1]-a[1]).slice(0,15) as [string,number][],
       ausDetails: Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,20) as [string,number][],
+      bwaKategorien: FDATA.find(x=>x.firma===cfg.firma)?.bwaKategorien || [],
     };
   });
+}
+
+
+function BwaKategorie({kat,icon,total,currency,rows,txRows,C,fmtN}: {kat:string;icon:string;total:number;currency:string;rows:[string,number][];txRows:{datum:string;name:string;betrag:number}[];C:any;fmtN:(n:number)=>string}) {
+  const [open, setOpen] = React.useState(false);
+  const hasDetails = txRows.length > 0;
+  return (
+    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+      <div onClick={()=>hasDetails&&setOpen(o=>!o)} style={{padding:"12px 16px",background:"#0a0a18",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:hasDetails?"pointer":"default"}}>
+        <span style={{fontSize:13,fontWeight:700}}>{icon} {kat}</span>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:13,fontWeight:800,color:"#f472b6",fontFamily:"monospace"}}>{fmtN(total)} {currency}</span>
+          {hasDetails && <span style={{fontSize:11,color:"#818cf8"}}>{open?"▲":"▼"}</span>}
+        </div>
+      </div>
+      {!open && rows.map(([n,v],i)=>(
+        <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
+          <span style={{fontSize:11,color:C.muted}}>{n}</span>
+          <span style={{fontSize:11,color:"#f472b6",fontFamily:"monospace"}}>{fmtN(v)} {currency}</span>
+        </div>
+      ))}
+      {open && txRows.map((r,i)=>(
+        <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
+          <span style={{fontSize:10,color:C.muted,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.datum} — {r.name}</span>
+          <span style={{fontSize:11,color:"#f472b6",fontFamily:"monospace",whiteSpace:"nowrap"}}>{fmtN(r.betrag)} {currency}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
@@ -1726,7 +1760,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [selMonat, setSelMonat] = useState("April 2026");
   const [allRows, setAllRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
   const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
-  const C = {bg:"#f0f2f5",sidebar:"#ffffff",card:"#ffffff",border:"#e2e8f0",text:"#1a202c",muted:"#64748b",green:"#059669",pink:"#dc2626",indigo:"#4f46e5"};
+  const C = {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",text:"#e8e8f0",muted:"#52526a",green:"#34d399",pink:"#f472b6",indigo:"#818cf8"};
   const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
 
   async function loadMonat(monat: string) {
@@ -1751,7 +1785,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
 
   const liveData = allRows.length > 0 ? buildFirmenData(allRows, selMonat) : null;
   const data = liveData ?? FDATA;
-  const f: FirmaData|null = selFirma ? (data.find(x=>x.firma===selFirma) as FirmaData ?? data[0] as FirmaData) : null;
+  const f = selFirma ? (data.find(x=>x.firma===selFirma) ?? data[0]) : null;
 
   // Gesamtsaldo aller Firmen (EUR only)
   const totalEin = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
@@ -1762,39 +1796,39 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif"}}>
       <div style={{background:C.sidebar,borderBottom:`1px solid ${C.border}`,padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div>
-          <div style={{fontSize:20,fontWeight:800}}>🏢 Jahresübersicht 4 Firmen</div>
-          <div style={{fontSize:13,color:C.muted,letterSpacing:"2px"}}>{selMonat.toUpperCase()}</div>
+          <div style={{fontSize:18,fontWeight:800}}>🏢 Jahresübersicht 4 Firmen</div>
+          <div style={{fontSize:11,color:C.muted,letterSpacing:"2px"}}>{selMonat.toUpperCase()}</div>
         </div>
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
-          <div style={{padding:"5px 12px",borderRadius:20,fontSize:13,fontWeight:700,
+          <div style={{padding:"5px 12px",borderRadius:20,fontSize:11,fontWeight:700,
             background:liveStatus==="success"?"#0a2a10":liveStatus==="error"?"#0a0a1a":"#13132a",
             border:`1px solid ${liveStatus==="success"?"#1a5a25":"#252538"}`,
             color:liveStatus==="success"?C.green:C.muted}}>
             {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
           </div>
-          <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
+          <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
             {["April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"].map(m=><option key={m} value={m}>{m}</option>)}
           </select>
-          {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,color:C.indigo,background:"transparent",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>← Zurück</button>}
-          <button onClick={onLogout} style={{padding:"6px 14px",borderRadius:8,fontSize:14,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>Abmelden</button>
+          {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:C.indigo,background:"transparent",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>← Zurück</button>}
+          <button onClick={onLogout} style={{padding:"6px 14px",borderRadius:8,fontSize:12,color:C.muted,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>Abmelden</button>
         </div>
       </div>
       <div style={{padding:"28px 32px"}}>
         {!selFirma ? (
           <>
             {/* Gesamtsaldo EUR */}
-            <div style={{fontSize:12,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>EUR FIRMEN</div>
+            <div style={{fontSize:10,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>EUR FIRMEN</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:16}}>
               <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
-                <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (EUR)</div>
+                <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(totalEin)}</div>
               </div>
               <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:20,textAlign:"center"}}>
-                <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
+                <div style={{fontSize:11,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
               </div>
               <div style={{background:totalSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${totalSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
-                <div style={{fontSize:13,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
+                <div style={{fontSize:11,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
                 <div style={{fontSize:24,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
               </div>
             </div>
@@ -1805,18 +1839,18 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               const chfSaldo = chfEin + chfAus;
               return (
                 <>
-                  <div style={{fontSize:12,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>CHF FIRMEN</div>
+                  <div style={{fontSize:10,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>CHF FIRMEN</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:28}}>
                     <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
-                      <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (CHF)</div>
+                      <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (CHF)</div>
                       <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(chfEin)}</div>
                     </div>
                     <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:20,textAlign:"center"}}>
-                      <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
+                      <div style={{fontSize:11,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
                       <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
                     </div>
                     <div style={{background:chfSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${chfSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
-                      <div style={{fontSize:13,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
+                      <div style={{fontSize:11,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
                       <div style={{fontSize:24,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
                     </div>
                   </div>
@@ -1832,26 +1866,26 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
                     <span style={{fontSize:24}}>{fi.icon}</span>
                     <div>
-                      <div style={{fontSize:15,fontWeight:700,color:fi.color}}>{fi.short}</div>
-                      <div style={{fontSize:12,color:C.muted}}>{selMonat} · {fi.currency}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:fi.color}}>{fi.short}</div>
+                      <div style={{fontSize:10,color:C.muted}}>{selMonat} · {fi.currency}</div>
                     </div>
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{fontSize:13,color:C.muted}}>✅ Einnahmen</span>
-                      <span style={{fontSize:14,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
+                      <span style={{fontSize:11,color:C.muted}}>✅ Einnahmen</span>
+                      <span style={{fontSize:12,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
                     </div>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{fontSize:13,color:C.muted}}>📤 Ausgaben</span>
-                      <span style={{fontSize:14,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
+                      <span style={{fontSize:11,color:C.muted}}>📤 Ausgaben</span>
+                      <span style={{fontSize:12,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
                     </div>
                     <div style={{height:1,background:C.border}}/>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{fontSize:14,fontWeight:700}}>💰 Saldo</span>
-                      <span style={{fontSize:16,fontWeight:800,color:saldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{saldo>=0?"+":"-"}{fmtN(saldo)} {fi.currency}</span>
+                      <span style={{fontSize:12,fontWeight:700}}>💰 Saldo</span>
+                      <span style={{fontSize:14,fontWeight:800,color:saldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{saldo>=0?"+":"-"}{fmtN(saldo)} {fi.currency}</span>
                     </div>
                   </div>
-                  <div style={{marginTop:12,fontSize:12,color:C.muted,textAlign:"right"}}>Details anzeigen →</div>
+                  <div style={{marginTop:12,fontSize:10,color:C.muted,textAlign:"right"}}>Details anzeigen →</div>
                 </div>
               );
             })}
@@ -1863,13 +1897,13 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <span style={{fontSize:28}}>{f.icon}</span>
               <div>
                 <div style={{fontSize:20,fontWeight:800,color:f.color}}>{f.short}</div>
-                <div style={{fontSize:14,color:C.muted}}>{selMonat} · {f.currency}</div>
+                <div style={{fontSize:12,color:C.muted}}>{selMonat} · {f.currency}</div>
               </div>
             </div>
             {/* Tabs */}
             <div style={{display:"flex",gap:8,marginBottom:24}}>
               {(["uebersicht","bwa"] as const).map(tab=>(
-                <button key={tab} onClick={()=>setDetailTab(tab)} style={{padding:"8px 20px",borderRadius:20,fontSize:14,fontWeight:700,cursor:"pointer",border:"none",
+                <button key={tab} onClick={()=>setDetailTab(tab)} style={{padding:"8px 20px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",border:"none",
                   background:detailTab===tab?f.color:"#1a1a2e",
                   color:detailTab===tab?"#fff":C.muted}}>
                   {tab==="uebersicht"?"📊 Übersicht":"📋 BWA"}
@@ -1879,81 +1913,72 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             {/* KPI Cards */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
               <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:16,textAlign:"center"}}>
-                <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
+                <div style={{fontSize:11,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
                 <div style={{fontSize:22,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)}</div>
-                <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
+                <div style={{fontSize:11,color:C.muted}}>{f.currency}</div>
               </div>
               <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:16,textAlign:"center"}}>
-                <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>AUSGABEN</div>
+                <div style={{fontSize:11,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>AUSGABEN</div>
                 <div style={{fontSize:22,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)}</div>
-                <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
+                <div style={{fontSize:11,color:C.muted}}>{f.currency}</div>
               </div>
             </div>
             <div style={{background:(f.ein+f.aus)>=0?"#0a2a10":"#2a0a10",border:`1px solid ${(f.ein+f.aus)>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
-              <div style={{fontSize:13,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
               <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
             </div>
 
             {detailTab==="uebersicht" ? (
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
                 <div>
-                  <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
                   <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.einDetails.map(([n,v],i)=>(
                       <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                        <span style={{fontSize:13,color:C.text}}>{n}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                        <span style={{fontSize:11,color:C.text}}>{n}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
                       </div>
                     ))}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                      <span style={{fontSize:13,fontWeight:700}}>Gesamt</span>
-                      <span style={{fontSize:14,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
+                      <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:12,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div style={{fontSize:14,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
                   <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.ausDetails.map(([n,v],i)=>(
                       <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                        <span style={{fontSize:13,color:C.text}}>{n}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                        <span style={{fontSize:11,color:C.text}}>{n}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
                       </div>
                     ))}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                      <span style={{fontSize:13,fontWeight:700}}>Gesamt</span>
-                      <span style={{fontSize:14,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                      <span style={{fontSize:11,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:12,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
               <div>
-                <div style={{fontSize:14,fontWeight:700,color:C.muted,marginBottom:16,letterSpacing:"1px"}}>📋 BWA — {f.short} — {selMonat}</div>
+                <div style={{fontSize:12,fontWeight:700,color:C.muted,marginBottom:16,letterSpacing:"1px"}}>📋 BWA — {f.short} — {selMonat}</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16}}>
-                  {(f?.bwaKategorien ?? []).map(({kat,icon,items})=>{
+                  {(f?.bwaKategorien || []).map(({kat,icon,items})=>{
                     const total = f.ausDetails.filter(([n])=>items.includes(n)).reduce((a,[,v])=>a+v,0);
                     const rows = f.ausDetails.filter(([n])=>items.includes(n));
                     if (rows.length===0) return null;
+                    // Echte Transaktionen aus allRows
+                    const txRows = allRows.filter(r=>r.firma===f.firma && r.monat===selMonat && r.betrag<0 && items.includes(r.kategorie));
                     return (
-                      <div key={kat} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                        <div style={{padding:"12px 16px",background:"#0a0a18",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                          <span style={{fontSize:15,fontWeight:700}}>{icon} {kat}</span>
-                          <span style={{fontSize:15,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
-                        </div>
-                        {rows.map(([n,v],i)=>(
-                          <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                            <span style={{fontSize:13,color:C.muted}}>{n}</span>
-                            <span style={{fontSize:13,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
-                          </div>
-                        ))}
-                      </div>
+                      <BwaKategorie key={kat} kat={kat} icon={icon} total={total} currency={f.currency} rows={rows} txRows={txRows} C={C} fmtN={fmtN} />
                     );
                   })}
                 </div>
                 <div style={{marginTop:20,background:"#0a0a18",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:15,fontWeight:700}}>📊 Gesamt Ausgaben</span>
-                  <span style={{fontSize:18,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                  <span style={{fontSize:13,fontWeight:700}}>📊 Gesamt Ausgaben</span>
+                  <span style={{fontSize:16,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                 </div>
               </div>
             )}
@@ -2040,7 +2065,24 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
     if (ausDatum && /\d{1,2}[\.\-]\d{2}[\.\-]\d{4}/.test(ausDatum) && ausBetrag !== null && ausBetrag < 0) {
       const parts = ausDatum.replace(/-/g,".").split(".");
       const mm = parts[1]; const yy = parts[2];
-      result.push({firma:currentFirma, datum:ausDatum, name:ausName, betrag:ausBetrag, kategorie:ausKat||"Ausgaben", monat:(MONAT_MAP[mm]||mm)+" "+yy});
+      const rawKat = (ausKat&&ausKat!=="Ja"&&ausKat!=="Nein"&&ausKat!=="ja"&&ausKat!=="nein") ? ausKat : "";
+      const n = ausName.toLowerCase();
+      const autoKat = !rawKat ? (
+        n.includes("lohn") || n.includes("gehalt") ? "Lohn" :
+        n.includes("finanzamt") || n.includes("steuer") || n.includes("tax") || n.includes("kfz-steuer") ? "Steuer" :
+        n.includes("krankenkasse") || n.includes("aok") || n.includes("tkk") || n.includes("barmer") ? "Krankenkasse" :
+        n.includes("miete") ? "Miete" :
+        n.includes("leasing") ? "Leasing" :
+        n.includes("versicherung") ? "Versicherung" :
+        n.includes("db vertrieb") || n.includes("deutsche bahn") || n.includes("db bahn") || n.includes("booking.com") || n.includes("hotel") || n.includes("taxi") || n.includes("restaurant") || n.includes("rückerstattung") ? "Reisekosten" :
+        n.includes("telekom") || n.includes("vodafone") || n.includes("mobilfunk") ? "Telekommunikation" :
+        n.includes("tankstelle") || n.includes("aral") || n.includes("hem ") ? "Tankstelle" :
+        n.includes("claude") || n.includes("software") || n.includes("google workspace") || n.includes("zoom") || n.includes("slack") || n.includes("close crm") || n.includes("atlassian") || n.includes("webflow") || n.includes("hostinger") || n.includes("zapier") || n.includes("monday") || n.includes("vimeo") || n.includes("calendly") || n.includes("ionos") || n.includes("anthropic") || n.includes("recruitee") || n.includes("jotform") || n.includes("jumpshare") || n.includes("cookiebot") || n.includes("stitchdata") || n.includes("figma") || n.includes("airtable") || n.includes("openai") || n.includes("perplexity") || n.includes("lovable") || n.includes("manus") || n.includes("n8n") || n.includes("onecal") || n.includes("easybill") ? "Software" :
+        n.includes("hp venius") || n.includes("stefan michalea") || n.includes("skalator") || n.includes("pineapple") || n.includes("moritz winter") || n.includes("bd berlin") || n.includes("dienstleist") ? "Dienstleistung" :
+        n.includes("facebook") || n.includes("facebk") || n.includes("marketing") ? "Marketing" :
+        "Sonstiges"
+      ) : rawKat;
+      result.push({firma:currentFirma, datum:ausDatum, name:ausName, betrag:ausBetrag, kategorie:autoKat, monat:(MONAT_MAP[mm]||mm)+" "+yy});
     }
   }
   return result;
