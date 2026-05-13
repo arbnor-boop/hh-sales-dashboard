@@ -2010,12 +2010,15 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
                   <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                    {f.einDetails.map(([n,v],i)=>(
-                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                        <span style={{fontSize:13,color:C.text}}>{n}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                    {f.einDetails.map(([n,v],i)=>{
+                      const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
+                      return (
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
+                        <span style={{fontSize:13,color:"#ffffff",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
+                        <span style={{fontSize:13,fontWeight:700,color:C.green,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
-                    ))}
+                      );
+                    })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
                       <span style={{fontSize:13,fontWeight:700}}>Gesamt</span>
                       <span style={{fontSize:14,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
@@ -2025,12 +2028,15 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
                   <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                    {f.ausDetails.map(([n,v],i)=>(
-                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",background:i%2===0?"transparent":"#0c0c1a"}}>
-                        <span style={{fontSize:13,color:C.text}}>{n}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(v)} {f.currency}</span>
+                    {f.ausDetails.map(([n,v],i)=>{
+                      const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\bAE\d{2}\w+\b/g,"").replace(/GENODEM\w+|DRESDEFF\w+|COBADEFF\w+|NOLADE\w+|SPKHDE\w+|HASPDE\w+|WIBADE\w+|SOLADE\w+|REVODEB\w+|NTSBDEB\w+|SOBKDEB\w+|COKSDE\w+|FNOMDEB\w+|SSKMDEMMXXX|TRWIBEB\w+|PBNKDEFF\w+|VOWADE\w+|HELADEF\w+|DEUTDEDB\w+|VOHADE\w+|GENODEF\w+/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
+                      return (
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
+                        <span style={{fontSize:13,color:"#ffffff",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
+                        <span style={{fontSize:13,fontWeight:700,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
-                    ))}
+                      );
+                    })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
                       <span style={{fontSize:13,fontWeight:700}}>Gesamt</span>
                       <span style={{fontSize:14,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
