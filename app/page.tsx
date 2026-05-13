@@ -1751,7 +1751,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
 
   const liveData = allRows.length > 0 ? buildFirmenData(allRows, selMonat) : null;
   const data = liveData ?? FDATA;
-  const f = selFirma ? (data.find(x=>x.firma===selFirma) ?? data[0]) : null;
+  const f: FirmaData|null = selFirma ? (data.find(x=>x.firma===selFirma) as FirmaData ?? data[0] as FirmaData) : null;
 
   // Gesamtsaldo aller Firmen (EUR only)
   const totalEin = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
