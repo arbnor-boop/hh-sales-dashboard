@@ -1931,7 +1931,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div>
                 <div style={{fontSize:14,fontWeight:700,color:C.muted,marginBottom:16,letterSpacing:"1px"}}>📋 BWA — {f.short} — {selMonat}</div>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16}}>
-                  {(f.bwaKategorien || []).map(({kat,icon,items})=>{
+                  {(f?.bwaKategorien ?? []).map(({kat,icon,items})=>{
                     const total = f.ausDetails.filter(([n])=>items.includes(n)).reduce((a,[,v])=>a+v,0);
                     const rows = f.ausDetails.filter(([n])=>items.includes(n));
                     if (rows.length===0) return null;
