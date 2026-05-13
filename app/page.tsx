@@ -2009,7 +2009,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
-                  <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                  <div style={{background:"#0d0d1f",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.einDetails.map(([n,v],i)=>{
                       const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
                       return (
@@ -2020,14 +2020,14 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       );
                     })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                      <span style={{fontSize:13,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>Gesamt</span>
                       <span style={{fontSize:14,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
-                  <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                  <div style={{background:"#0d0d1f",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.ausDetails.map(([n,v],i)=>{
                       const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\bAE\d{2}\w+\b/g,"").replace(/GENODEM\w+|DRESDEFF\w+|COBADEFF\w+|NOLADE\w+|SPKHDE\w+|HASPDE\w+|WIBADE\w+|SOLADE\w+|REVODEB\w+|NTSBDEB\w+|SOBKDEB\w+|COKSDE\w+|FNOMDEB\w+|SSKMDEMMXXX|TRWIBEB\w+|PBNKDEFF\w+|VOWADE\w+|HELADEF\w+|DEUTDEDB\w+|VOHADE\w+|GENODEF\w+/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
                       return (
@@ -2038,7 +2038,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       );
                     })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                      <span style={{fontSize:13,fontWeight:700}}>Gesamt</span>
+                      <span style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>Gesamt</span>
                       <span style={{fontSize:14,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                     </div>
                   </div>
@@ -2053,9 +2053,9 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     const rows = f.ausDetails.filter(([n])=>items.includes(n));
                     if (rows.length===0) return null;
                     return (
-                      <div key={kat} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                      <div key={kat} style={{background:"#0d0d1f",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                         <div style={{padding:"12px 16px",background:"#0a0a18",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                          <span style={{fontSize:15,fontWeight:700}}>{icon} {kat}</span>
+                          <span style={{fontSize:15,fontWeight:700,color:"#ffffff"}}>{icon} {kat}</span>
                           <span style={{fontSize:15,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
                         </div>
                         {rows.map(([n,v],i)=>{
@@ -2086,7 +2086,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   })}
                 </div>
                 <div style={{marginTop:20,background:"#0a0a18",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:15,fontWeight:700}}>📊 Gesamt Ausgaben</span>
+                  <span style={{fontSize:15,fontWeight:700,color:"#ffffff"}}>📊 Gesamt Ausgaben</span>
                   <span style={{fontSize:18,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                 </div>
               </div>
