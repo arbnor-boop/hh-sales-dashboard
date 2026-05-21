@@ -3252,6 +3252,73 @@ export default function Dashboard() {
           <GesamtTable rows={tagRows} label={selectedDatum}/>
         </>)}
 
+        {activeTab==="wochenansicht"&&(()=>{
+          const weeks: Record<string,{scgVol:number,scgCash:number,netto:number,deals:number}> = {};
+          deals.forEach(d=>{
+            const [day,month,year] = d.datum.split(".").map(Number);
+            if(isNaN(day)||isNaN(month)||isNaN(year)) return;
+            const date = new Date(year,month-1,day);
+            const startOfYear = new Date(year,0,1);
+            const weekNum = Math.ceil(((date.getTime()-startOfYear.getTime())/(86400000)+startOfYear.getDay()+1)/7);
+            const key = `KW ${weekNum} · ${year}`;
+            if(!weeks[key]) weeks[key]={scgVol:0,scgCash:0,netto:0,deals:0};
+            weeks[key].scgVol+=d.scgVol;
+            weeks[key].scgCash+=d.scgCash;
+            weeks[key].netto+=d.netto||0;
+            weeks[key].deals+=1;
+          });
+          const sorted = Object.entries(weeks).sort((a,b)=>a[0].localeCompare(b[0]));
+          const maxCash = Math.max(...sorted.map(([,v])=>v.scgCash),1);
+          return (
+            <div>
+              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>Wochenübersicht 2026</h2>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                <div style={{padding:"14px 20px",borderBottom:`1px solid ${C.border}`,fontSize:11,color:C.muted,letterSpacing:"2px",fontWeight:700}}>SCG CASH IN · ALLE WOCHEN</div>
+                <div style={{padding:24,display:"flex",alignItems:"flex-end",gap:8,height:200,overflowX:"auto"}}>
+                  {sorted.map(([kw,v])=>(
+                    <div key={kw} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,minWidth:80}}>
+                      <div style={{fontSize:11,color:C.muted,fontWeight:600}}>{fmt0(v.scgCash)}</div>
+                      <div style={{width:64,background:C.indigo,borderRadius:"4px 4px 0 0",height:`${Math.max(8,(v.scgCash/maxCash)*140)}px`}}/>
+                      <div style={{fontSize:10,color:C.text,fontWeight:600,textAlign:"center"}}>{kw}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginTop:24,background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr style={{background:"#e8ddd0"}}>
+                      <th style={{...TH,textAlign:"left"}}>WOCHE</th>
+                      <th style={{...TH,textAlign:"right"}}>DEALS</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG VOLUMEN</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
+                      <th style={{...TH,textAlign:"right"}}>NETTO</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sorted.map(([kw,v],i)=>(
+                      <tr key={kw} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
+                        <td style={{...TD,fontWeight:700,color:C.text}}>{kw}</td>
+                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{v.deals}</td>
+                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(v.scgVol)}</td>
+                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(v.scgCash)}</td>
+                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(v.netto)}</td>
+                      </tr>
+                    ))}
+                    <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+                      <td style={{...TD,fontWeight:700,color:C.text}}>Gesamt</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{sorted.reduce((a,[,v])=>a+v.deals,0)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sorted.reduce((a,[,v])=>a+v.scgVol,0))}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sorted.reduce((a,[,v])=>a+v.scgCash,0))}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sorted.reduce((a,[,v])=>a+v.netto,0))}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
+
         {activeTab==="monatsansicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Monatsansicht</h1>
@@ -3281,9 +3348,9 @@ export default function Dashboard() {
                 const isSel=m===selectedMonth;
                 return(
                   <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}}>
-                    <div style={{fontSize:10,...mono(isSel?C.amber:C.muted)}}>{fmt0(cash)}</div>
-                    <div style={{width:"100%",height:Math.max((cash/maxC)*130,3),background:isSel?"linear-gradient(180deg,#818cf8,#4f46e5)":"#e0d8cc",borderRadius:"4px 4px 0 0"}}/>
-                    <div style={{fontSize:11,color:isSel?C.text:C.muted,fontWeight:isSel?700:400,textAlign:"center"}}>{m.split(" ")[0].slice(0,3)}</div>
+                    <div style={{fontSize:10,...mono("#1a1208")}}>{fmt0(cash)}</div>
+                    <div style={{width:"100%",height:Math.max((cash/maxC)*130,3),background:isSel?"linear-gradient(180deg,#5c4a2a,#3a2e1a)":"#b0a090",borderRadius:"4px 4px 0 0"}}/>
+                    <div style={{fontSize:11,color:"#1a1208",fontWeight:isSel?700:400,textAlign:"center"}}>{m.split(" ")[0].slice(0,3)}</div>
                   </div>
                 );
               })}
@@ -3293,10 +3360,10 @@ export default function Dashboard() {
             <table style={{width:"100%",borderCollapse:"collapse"}}>
               <thead><tr>
                 <th style={TH}>Monat</th>
-                <th style={{...TH,textAlign:"right",color:C.indigo}}>SCG Volumen</th>
-                <th style={{...TH,textAlign:"right",color:C.cyan}}>SCG Cash IN</th>
-                <th style={{...TH,textAlign:"right",color:C.green}}>Intern Vol</th>
-                <th style={{...TH,textAlign:"right",color:C.pink}}>Extern Vol</th>
+                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>SCG Volumen</th>
+                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>SCG Cash IN</th>
+                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>Intern Vol</th>
+                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>Extern Vol</th>
                 <th style={{...TH,textAlign:"right"}}>Deals</th>
                 <th style={{...TH,textAlign:"right"}}>Cash-Rate</th>
               </tr></thead>
@@ -3311,7 +3378,7 @@ export default function Dashboard() {
                   const dealCount=deals.filter(d=>d.monat===m).length;
                   const isSel=m===selectedMonth;
                   return(
-                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#e0d8cc":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
+                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#d4c9b8":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
                       <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text}}>{m}</td>
                       <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
                       <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
