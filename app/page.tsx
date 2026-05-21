@@ -3055,7 +3055,7 @@ export default function Dashboard() {
               if(parsed.length>0){setUploadedDeals(parsed);setUploadStatus("success");}
               else{setUploadStatus("error");}
             }catch{setUploadStatus("error");}
-          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#e8ddd0",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
+          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#1a1208",background:"#e8ddd0",border:`1px solid #c4b9a8`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
           <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#5c4a2a",background:"#e8ddd0",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
@@ -3253,71 +3253,77 @@ export default function Dashboard() {
         </>)}
 
         {activeTab==="wochenansicht"&&(()=>{
-          const weekDeals: Record<string,Deal[]> = {};
+          // Group deals by month then by KW
+          const monthWeekDeals: Record<string, Record<string, Deal[]>> = {};
           deals.forEach(d=>{
             const [day,month,year] = d.datum.split(".").map(Number);
             if(isNaN(day)||isNaN(month)||isNaN(year)) return;
             const date = new Date(year,month-1,day);
             const startOfYear = new Date(year,0,1);
             const weekNum = Math.ceil(((date.getTime()-startOfYear.getTime())/(86400000)+startOfYear.getDay()+1)/7);
-            const key = `KW ${weekNum} · ${year}`;
-            if(!weekDeals[key]) weekDeals[key]=[];
-            weekDeals[key].push(d);
+            const kw = `KW ${String(weekNum).padStart(2,"0")}`;
+            const mo = d.monat;
+            if(!monthWeekDeals[mo]) monthWeekDeals[mo]={};
+            if(!monthWeekDeals[mo][kw]) monthWeekDeals[mo][kw]=[];
+            monthWeekDeals[mo][kw].push(d);
           });
-          const weeks = Object.fromEntries(Object.entries(weekDeals).map(([k,ds])=>([k,{
-            scgVol:ds.reduce((a,d)=>a+d.scgVol,0),
-            scgCash:ds.reduce((a,d)=>a+d.scgCash,0),
-            netto:nettoFromDeals(ds),
-            deals:ds.length,
-          }])));
-          const sorted = Object.entries(weeks).sort((a,b)=>a[0].localeCompare(b[0]));
-          const maxCash = Math.max(...sorted.map(([,v])=>v.scgCash),1);
+          const sortedMonths = Object.keys(monthWeekDeals).sort((a,b)=>{
+            const MONTHS=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+            const [am,ay]=a.split(" "); const [bm,by]=b.split(" ");
+            return Number(ay)-Number(by)||MONTHS.indexOf(am)-MONTHS.indexOf(bm);
+          });
           return (
             <div>
               <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>Wochenübersicht 2026</h2>
-              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                <div style={{padding:"14px 20px",borderBottom:`1px solid ${C.border}`,fontSize:11,color:C.muted,letterSpacing:"2px",fontWeight:700}}>SCG CASH IN · ALLE WOCHEN</div>
-                <div style={{padding:24,display:"flex",alignItems:"flex-end",gap:8,height:200,overflowX:"auto"}}>
-                  {sorted.map(([kw,v])=>(
-                    <div key={kw} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,minWidth:80}}>
-                      <div style={{fontSize:11,color:C.muted,fontWeight:600}}>{fmt0(v.scgCash)}</div>
-                      <div style={{width:64,background:C.indigo,borderRadius:"4px 4px 0 0",height:`${Math.max(8,(v.scgCash/maxCash)*140)}px`}}/>
-                      <div style={{fontSize:10,color:C.text,fontWeight:600,textAlign:"center"}}>{kw}</div>
+              {sortedMonths.map(mo=>{
+                const kwMap = monthWeekDeals[mo];
+                const sortedKW = Object.entries(kwMap).sort((a,b)=>a[0].localeCompare(b[0]));
+                const moVol = sortedKW.reduce((a,[,ds])=>a+ds.reduce((s,d)=>s+d.scgVol,0),0);
+                const moCash = sortedKW.reduce((a,[,ds])=>a+ds.reduce((s,d)=>s+d.scgCash,0),0);
+                const moNetto = nettoFromDeals(sortedKW.flatMap(([,ds])=>ds));
+                const moDeals = sortedKW.reduce((a,[,ds])=>a+ds.length,0);
+                return (
+                  <div key={mo} style={{marginBottom:32}}>
+                    <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:12,paddingBottom:8,borderBottom:`2px solid ${C.border}`}}>{mo}</div>
+                    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                      <table style={{width:"100%",borderCollapse:"collapse"}}>
+                        <thead>
+                          <tr style={{background:"#e8ddd0"}}>
+                            <th style={{...TH,textAlign:"left"}}>WOCHE</th>
+                            <th style={{...TH,textAlign:"right"}}>DEALS</th>
+                            <th style={{...TH,textAlign:"right"}}>SCG VOLUMEN</th>
+                            <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
+                            <th style={{...TH,textAlign:"right"}}>NETTO</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedKW.map(([kw,ds],i)=>{
+                            const vol=ds.reduce((a,d)=>a+d.scgVol,0);
+                            const cash=ds.reduce((a,d)=>a+d.scgCash,0);
+                            const netto=nettoFromDeals(ds);
+                            return (
+                              <tr key={kw} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
+                                <td style={{...TD,fontWeight:700,color:C.text}}>{kw}</td>
+                                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{ds.length}</td>
+                                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
+                                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
+                                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(netto)}</td>
+                              </tr>
+                            );
+                          })}
+                          <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+                            <td style={{...TD,fontWeight:700,color:C.text}}>Gesamt {mo}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{moDeals}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(moVol)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(moCash)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(moNetto)}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
-                  ))}
-                </div>
-              </div>
-              <div style={{marginTop:24,background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                <table style={{width:"100%",borderCollapse:"collapse"}}>
-                  <thead>
-                    <tr style={{background:"#e8ddd0"}}>
-                      <th style={{...TH,textAlign:"left"}}>WOCHE</th>
-                      <th style={{...TH,textAlign:"right"}}>DEALS</th>
-                      <th style={{...TH,textAlign:"right"}}>SCG VOLUMEN</th>
-                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
-                      <th style={{...TH,textAlign:"right"}}>NETTO</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sorted.map(([kw,v],i)=>(
-                      <tr key={kw} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
-                        <td style={{...TD,fontWeight:700,color:C.text}}>{kw}</td>
-                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{v.deals}</td>
-                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(v.scgVol)}</td>
-                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(v.scgCash)}</td>
-                        <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(v.netto)}</td>
-                      </tr>
-                    ))}
-                    <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
-                      <td style={{...TD,fontWeight:700,color:C.text}}>Gesamt</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{sorted.reduce((a,[,v])=>a+v.deals,0)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sorted.reduce((a,[,v])=>a+v.scgVol,0))}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sorted.reduce((a,[,v])=>a+v.scgCash,0))}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sorted.reduce((a,[,v])=>a+v.netto,0))}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                );
+              })}
             </div>
           );
         })()}
