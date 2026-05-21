@@ -1837,7 +1837,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [selMonat, setSelMonat] = useState("April 2026");
   const [allRows, setAllRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
   const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
-  const C = {bg:"#f0f2f5",sidebar:"#ffffff",card:"#ffffff",border:"#e2e8f0",text:"#1a202c",muted:"#64748b",green:"#059669",pink:"#dc2626",indigo:"#4f46e5"};
+  const C = {bg:"#f0ece0",sidebar:"#faf6ef",card:"#ffffff",border:"#d4c9b8",text:"#1a1208",muted:"#6b5e4e",green:"#2d7a3a",pink:"#c0392b",indigo:"#5c4a2a"};
   const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
 
   async function loadMonat(monat: string) {
@@ -1878,12 +1878,12 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
         </div>
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           <div style={{padding:"5px 12px",borderRadius:20,fontSize:13,fontWeight:700,
-            background:liveStatus==="success"?"#0a2a10":liveStatus==="error"?"#0a0a1a":"#13132a",
+            background:liveStatus==="success"?"#d4ead6":liveStatus==="error"?"#f0d4d4":"#e8ddd0",
             border:`1px solid ${liveStatus==="success"?"#1a5a25":"#252538"}`,
-            color:liveStatus==="success"?C.green:C.muted}}>
+            color:liveStatus==="success"?C.green:C.text}}>
             {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
           </div>
-          <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
+          <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
             {["April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"].map(m=><option key={m} value={m}>{m}</option>)}
           </select>
           {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,color:C.indigo,background:"transparent",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>← Zurück</button>}
@@ -1896,11 +1896,11 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             {/* Gesamtsaldo EUR */}
             <div style={{fontSize:12,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>EUR FIRMEN</div>
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:16}}>
-              <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
+              <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(totalEin)}</div>
               </div>
-              <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:20,textAlign:"center"}}>
+              <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
               </div>
@@ -1918,11 +1918,11 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <>
                   <div style={{fontSize:12,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>CHF FIRMEN</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:28}}>
-                    <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:20,textAlign:"center"}}>
+                    <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (CHF)</div>
                       <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(chfEin)}</div>
                     </div>
-                    <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:20,textAlign:"center"}}>
+                    <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
                       <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
                     </div>
@@ -1981,7 +1981,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             <div style={{display:"flex",gap:8,marginBottom:24}}>
               {(["uebersicht","bwa"] as const).map(tab=>(
                 <button key={tab} onClick={()=>setDetailTab(tab)} style={{padding:"8px 20px",borderRadius:20,fontSize:14,fontWeight:700,cursor:"pointer",border:"none",
-                  background:detailTab===tab?f.color:"#1a1a2e",
+                  background:detailTab===tab?f.color:"#e8ddd0",
                   color:detailTab===tab?"#fff":C.muted}}>
                   {tab==="uebersicht"?"📊 Übersicht":"📋 BWA"}
                 </button>
@@ -1989,12 +1989,12 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             </div>
             {/* KPI Cards */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
-              <div style={{background:"#0a2a10",border:"1px solid #1a5a25",borderRadius:12,padding:16,textAlign:"center"}}>
+              <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
                 <div style={{fontSize:22,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)}</div>
                 <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
               </div>
-              <div style={{background:"#2a0a10",border:"1px solid #5a1a25",borderRadius:12,padding:16,textAlign:"center"}}>
+              <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>AUSGABEN</div>
                 <div style={{fontSize:22,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)}</div>
                 <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
@@ -2009,36 +2009,36 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
-                  <div style={{background:"#0d0d1f",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                  <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.einDetails.map(([n,v],i)=>{
                       const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
                       return (
-                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
-                        <span style={{fontSize:13,color:"#ffffff",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
+                        <span style={{fontSize:13,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
                         <span style={{fontSize:13,fontWeight:700,color:C.green,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
                       );
                     })}
-                    <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                      <span style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>Gesamt</span>
+                    <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#ede5d8"}}>
+                      <span style={{fontSize:13,fontWeight:700,color:C.text}}>Gesamt</span>
                       <span style={{fontSize:14,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
                 <div>
                   <div style={{fontSize:14,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
-                  <div style={{background:"#0d0d1f",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                  <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.ausDetails.map(([n,v],i)=>{
                       const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\bAE\d{2}\w+\b/g,"").replace(/GENODEM\w+|DRESDEFF\w+|COBADEFF\w+|NOLADE\w+|SPKHDE\w+|HASPDE\w+|WIBADE\w+|SOLADE\w+|REVODEB\w+|NTSBDEB\w+|SOBKDEB\w+|COKSDE\w+|FNOMDEB\w+|SSKMDEMMXXX|TRWIBEB\w+|PBNKDEFF\w+|VOWADE\w+|HELADEF\w+|DEUTDEDB\w+|VOHADE\w+|GENODEF\w+/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
                       return (
-                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
-                        <span style={{fontSize:13,color:"#ffffff",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
+                      <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
+                        <span style={{fontSize:13,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
                         <span style={{fontSize:13,fontWeight:700,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
                       );
                     })}
-                    <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#0a0a15"}}>
-                      <span style={{fontSize:13,fontWeight:700,color:"#ffffff"}}>Gesamt</span>
+                    <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#ede5d8"}}>
+                      <span style={{fontSize:13,fontWeight:700,color:C.text}}>Gesamt</span>
                       <span style={{fontSize:14,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                     </div>
                   </div>
@@ -2053,9 +2053,9 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     const rows = f.ausDetails.filter(([n])=>items.includes(n));
                     if (rows.length===0) return null;
                     return (
-                      <div key={kat} style={{background:"#0d0d1f",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                        <div style={{padding:"12px 16px",background:"#0a0a18",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                          <span style={{fontSize:15,fontWeight:700,color:"#ffffff"}}>{icon} {kat}</span>
+                      <div key={kat} style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
+                        <div style={{padding:"12px 16px",background:"#e8ddd0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <span style={{fontSize:15,fontWeight:700,color:C.text}}>{icon} {kat}</span>
                           <span style={{fontSize:15,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
                         </div>
                         {rows.map(([n,v],i)=>{
@@ -2075,8 +2075,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                             .trim()
                             .slice(0,45);
                           return (
-                          <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#0c0c1a"}}>
-                            <span style={{fontSize:13,color:"#ffffff",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{shortName}</span>
+                          <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
+                            <span style={{fontSize:13,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{shortName}</span>
                             <span style={{fontSize:13,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                           </div>
                           );
@@ -2085,8 +2085,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     );
                   })}
                 </div>
-                <div style={{marginTop:20,background:"#0a0a18",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:15,fontWeight:700,color:"#ffffff"}}>📊 Gesamt Ausgaben</span>
+                <div style={{marginTop:20,background:"#e8ddd0",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:15,fontWeight:700,color:C.text}}>📊 Gesamt Ausgaben</span>
                   <span style={{fontSize:18,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                 </div>
               </div>
@@ -2853,7 +2853,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#0c0c1a"}}>
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
                 <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
@@ -2893,7 +2893,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#0c0c1a"}}>
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
                 <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
@@ -2941,7 +2941,7 @@ export default function Dashboard() {
           </tr></thead>
           <tbody>
             {rows.map((r,i)=>(
-              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#0c0c1a"}}>
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
                 <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
@@ -3055,7 +3055,7 @@ export default function Dashboard() {
               if(parsed.length>0){setUploadedDeals(parsed);setUploadStatus("success");}
               else{setUploadStatus("error");}
             }catch{setUploadStatus("error");}
-          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#1a1a2e",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
+          }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#e8ddd0",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
           <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#818cf8",background:"#0f0f20",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
@@ -3223,7 +3223,7 @@ export default function Dashboard() {
                     <div key={name} style={{padding:"12px 20px",borderBottom:i<sorted.length-1?`1px solid ${C.border}`:"none",display:"flex",alignItems:"center",gap:14}}>
                       <div style={{width:24,fontSize:13,fontWeight:700,color:i===0?C.amber:C.muted}}>{i+1}</div>
                       <div style={{width:120,fontSize:13,fontWeight:600,color:C.text}}>{name}</div>
-                      <div style={{flex:1,background:"#1a1a2e",borderRadius:4,height:6,overflow:"hidden"}}>
+                      <div style={{flex:1,background:"#e8ddd0",borderRadius:4,height:6,overflow:"hidden"}}>
                         <div style={{width:`${(s.vol/maxVol*100).toFixed(0)}%`,height:"100%",background:`linear-gradient(90deg,${C.indigo},${C.cyan})`,borderRadius:4}}/>
                       </div>
                       <div style={{width:120,textAlign:"right",fontSize:12,fontFamily:"'DM Mono',monospace",color:C.cyan}}>{new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(s.vol)}</div>
@@ -3239,8 +3239,8 @@ export default function Dashboard() {
         {activeTab==="tagesansicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Tagesansicht</h1>
-            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.amber,border:"1px solid #3a3a20"}}>{selectedDatum}</span>
-            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#1a1a2e",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
+            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#e8ddd0",color:C.amber,border:"1px solid #3a3a20"}}>{selectedDatum}</span>
+            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#e8ddd0",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
             <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
@@ -3255,7 +3255,7 @@ export default function Dashboard() {
         {activeTab==="monatsansicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Monatsansicht</h1>
-            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50"}}>{selectedMonth}</span>
+            <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:"1px solid #2a2a50"}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
             <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
@@ -3344,7 +3344,7 @@ export default function Dashboard() {
           const headerSection = (
             <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
               <h1 style={{margin:0,fontSize:21,fontWeight:700}}>{isIntern?"Closer Intern":"Closer Extern"}</h1>
-              <select value={selectedMonth} onChange={e=>{setSelectedMonth(e.target.value);const t=[...new Set(deals.filter(d=>d.monat===e.target.value).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
+              <select value={selectedMonth} onChange={e=>{setSelectedMonth(e.target.value);const t=[...new Set(deals.filter(d=>d.monat===e.target.value).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
                 {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
               </select>
               <div style={{display:"flex",gap:4,background:"#0f0f1c",borderRadius:20,padding:3,border:`1px solid ${C.border}`}}>
@@ -3355,7 +3355,7 @@ export default function Dashboard() {
                 ))}
               </div>
               {closerView==="tag" && (
-                <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#1a1a2e",color:C.amber,border:"1px solid #3a3a20",cursor:"pointer",outline:"none"}}>
+                <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#e8ddd0",color:C.amber,border:"1px solid #3a3a20",cursor:"pointer",outline:"none"}}>
                   {tageInMonat.map(d=><option key={d} value={d}>{d.slice(0,5)}</option>)}
                 </select>
               )}
