@@ -3058,7 +3058,7 @@ export default function Dashboard() {
           }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#e8ddd0",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
-          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#5c4a2a",background:"#0f0f20",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
+          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#5c4a2a",background:"#e8ddd0",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
             🤖 KI-Assistent
           </button>
         </div>
@@ -3163,10 +3163,10 @@ export default function Dashboard() {
 
           const KPICard = ({title,value,sub,color,icon}:{title:string,value:string,sub?:string,color:string,icon:string}) => (
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`2px solid ${color}`,borderRadius:12,padding:20}}>
-              <div style={{fontSize:11,color:C.muted,letterSpacing:"1px",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+              <div style={{fontSize:11,color:"#1a1208",letterSpacing:"1px",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
                 <span>{icon}</span><span>{title}</span>
               </div>
-              <div style={{fontSize:22,fontWeight:800,fontFamily:"'DM Mono',monospace",color}}>{value}</div>
+              <div style={{fontSize:22,fontWeight:800,fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{value}</div>
               {sub && <div style={{fontSize:11,color:C.muted,marginTop:4}}>{sub}</div>}
             </div>
           );
@@ -3318,7 +3318,7 @@ export default function Dashboard() {
                       <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(intV)}</td>
                       <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(extV)}</td>
                       <td style={{...TD,textAlign:"right",color:C.muted}}>{dealCount}</td>
-                      <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#0d2a1a":rate>=55?"#1a2a10":"#2a1a10",color:rate>=70?C.green:rate>=55?"#84cc16":C.amber,fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
+                      <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#d4ead6":rate>=55?"#e8f0d4":"#f0e8d4",color:"#1a1208",fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
                     </tr>
                   );
                 })}
@@ -3385,16 +3385,16 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                          <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                          <div style={{background:"#e8ddd0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgCash)}</span>
                           </div>
                           <div style={{background:"#d4ead6",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(provi)}</span>
                           </div>
                         </div>
@@ -3417,12 +3417,12 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                          <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                          <div style={{background:"#e8ddd0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgCash)}</span>
                           </div>
                         </div>
@@ -3465,12 +3465,12 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                          <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
+                          <div style={{background:"#e8ddd0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(s.scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
-                            <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
+                            <span style={{fontSize:10,color:"#1a1208",letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
                             <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(s.scgCash)}</span>
                           </div>
                         </div>
