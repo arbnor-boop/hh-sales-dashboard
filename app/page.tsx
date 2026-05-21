@@ -1874,7 +1874,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
       <div style={{background:C.sidebar,borderBottom:`1px solid ${C.border}`,padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div>
           <div style={{fontSize:20,fontWeight:800}}>🏢 Jahresübersicht 4 Firmen</div>
-          <div style={{fontSize:13,color:C.muted,letterSpacing:"2px"}}>{selMonat.toUpperCase()}</div>
+          <div style={{fontSize:15,color:C.muted,letterSpacing:"2px"}}>{selMonat.toUpperCase()}</div>
         </div>
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           <div style={{padding:"5px 12px",borderRadius:20,fontSize:13,fontWeight:700,
@@ -1906,7 +1906,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               </div>
               <div style={{background:totalSaldo>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${totalSaldo>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
-                <div style={{fontSize:24,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
+                <div style={{fontSize:26,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
               </div>
             </div>
             {/* Gesamtsaldo CHF */}
@@ -1928,7 +1928,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     </div>
                     <div style={{background:chfSaldo>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${chfSaldo>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
-                      <div style={{fontSize:24,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
+                      <div style={{fontSize:26,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
                     </div>
                   </div>
                 </>
@@ -1949,12 +1949,12 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   </div>
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{fontSize:13,color:C.muted}}>✅ Einnahmen</span>
-                      <span style={{fontSize:14,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
+                      <span style={{fontSize:15,color:C.muted}}>✅ Einnahmen</span>
+                      <span style={{fontSize:16,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
                     </div>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{fontSize:13,color:C.muted}}>📤 Ausgaben</span>
-                      <span style={{fontSize:14,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
+                      <span style={{fontSize:15,color:C.muted}}>📤 Ausgaben</span>
+                      <span style={{fontSize:16,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
                     </div>
                     <div style={{height:1,background:C.border}}/>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
@@ -1992,54 +1992,54 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
                 <div style={{fontSize:22,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)}</div>
-                <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
+                <div style={{fontSize:15,color:C.muted}}>{f.currency}</div>
               </div>
               <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>AUSGABEN</div>
                 <div style={{fontSize:22,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)}</div>
-                <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
+                <div style={{fontSize:15,color:C.muted}}>{f.currency}</div>
               </div>
             </div>
             <div style={{background:(f.ein+f.aus)>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${(f.ein+f.aus)>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
-              <div style={{fontSize:13,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
+              <div style={{fontSize:15,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
               <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
             </div>
 
             {detailTab==="uebersicht" ? (
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
                 <div>
-                  <div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.green,marginBottom:12,letterSpacing:"1px"}}>✅ EINNAHMEN DETAIL</div>
                   <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.einDetails.map(([n,v],i)=>{
                       const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
                       return (
                       <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
-                        <span style={{fontSize:13,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.green,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
+                        <span style={{fontSize:15,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
+                        <span style={{fontSize:15,fontWeight:700,color:C.green,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
                       );
                     })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#ede5d8"}}>
                       <span style={{fontSize:13,fontWeight:700,color:C.text}}>Gesamt</span>
-                      <span style={{fontSize:14,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
+                      <span style={{fontSize:18,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <div style={{fontSize:14,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.pink,marginBottom:12,letterSpacing:"1px"}}>📤 AUSGABEN DETAIL</div>
                   <div style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                     {f.ausDetails.map(([n,v],i)=>{
                       const sn=n.replace(/End-to-End-Ref\..*$/i,"").replace(/End-To-End-Ref\..*$/i,"").replace(/Mandatsref.*$/i,"").replace(/Karte Nr\..*$/i,"").replace(/Kartenzahlung.*$/i,"").replace(/\bDE\d{2}\w+\b/g,"").replace(/\bAE\d{2}\w+\b/g,"").replace(/GENODEM\w+|DRESDEFF\w+|COBADEFF\w+|NOLADE\w+|SPKHDE\w+|HASPDE\w+|WIBADE\w+|SOLADE\w+|REVODEB\w+|NTSBDEB\w+|SOBKDEB\w+|COKSDE\w+|FNOMDEB\w+|SSKMDEMMXXX|TRWIBEB\w+|PBNKDEFF\w+|VOWADE\w+|HELADEF\w+|DEUTDEDB\w+|VOHADE\w+|GENODEF\w+/g,"").replace(/\s{2,}/g," ").trim().slice(0,40);
                       return (
                       <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
-                        <span style={{fontSize:13,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
-                        <span style={{fontSize:13,fontWeight:700,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
+                        <span style={{fontSize:15,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
+                        <span style={{fontSize:15,fontWeight:700,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
                       );
                     })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#ede5d8"}}>
                       <span style={{fontSize:13,fontWeight:700,color:C.text}}>Gesamt</span>
-                      <span style={{fontSize:14,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                      <span style={{fontSize:18,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
@@ -2055,8 +2055,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     return (
                       <div key={kat} style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                         <div style={{padding:"12px 16px",background:"#e8ddd0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                          <span style={{fontSize:15,fontWeight:700,color:C.text}}>{icon} {kat}</span>
-                          <span style={{fontSize:15,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
+                          <span style={{fontSize:17,fontWeight:700,color:C.text}}>{icon} {kat}</span>
+                          <span style={{fontSize:17,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
                         </div>
                         {rows.map(([n,v],i)=>{
                           const shortName = n
@@ -2076,8 +2076,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                             .slice(0,45);
                           return (
                           <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
-                            <span style={{fontSize:13,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{shortName}</span>
-                            <span style={{fontSize:13,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
+                            <span style={{fontSize:15,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{shortName}</span>
+                            <span style={{fontSize:15,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                           </div>
                           );
                         })}
@@ -2086,8 +2086,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   })}
                 </div>
                 <div style={{marginTop:20,background:"#e8ddd0",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:15,fontWeight:700,color:C.text}}>📊 Gesamt Ausgaben</span>
-                  <span style={{fontSize:18,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                  <span style={{fontSize:17,fontWeight:700,color:C.text}}>📊 Gesamt Ausgaben</span>
+                  <span style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                 </div>
               </div>
             )}
@@ -2699,7 +2699,7 @@ export default function Dashboard() {
     letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
     whiteSpace:"nowrap", background:"#e8ddd0",
   };
-  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap", fontWeight:600, color:"#1a1208" };
+  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:15, whiteSpace:"nowrap", fontWeight:600, color:"#1a1208" };
   const card = (accent?:string):React.CSSProperties => ({
     background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
     ...(accent?{borderTop:`2px solid ${accent}`}:{})
@@ -2738,7 +2738,7 @@ export default function Dashboard() {
     return (
       <div style={{minHeight:"100vh",background:"#f0ece0",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
         <div style={{background:"#ffffff",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:400,textAlign:"center"}}>
-          <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
+          <div style={{fontSize:26,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
           <div style={{fontSize:11,color:"#6b5e4e",letterSpacing:"3px",marginBottom:24}}>DASHBOARD</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
             <div onClick={()=>setSelDash("sales")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
@@ -2826,9 +2826,9 @@ export default function Dashboard() {
       <div style={{background:bg,border:`1px solid ${border}`,borderRadius:12,padding:"18px 22px"}}>
         <div style={{fontSize:10,color,textTransform:"uppercase",letterSpacing:"2px",marginBottom:14,fontWeight:700}}>{label}</div>
         <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
-          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>SCG Volumen</div><div style={{fontSize:17,fontWeight:700,...mono(color)}}>{fmt0(vol)}</div></div>
-          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:17,fontWeight:700,...mono(C.green)}}>{fmt0(cash)}</div></div>
-          {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:17,fontWeight:700,...mono(C.amber)}}>{fmt0(netto)}</div></div>}
+          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>SCG Volumen</div><div style={{fontSize:19,fontWeight:700,...mono(color)}}>{fmt0(vol)}</div></div>
+          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:19,fontWeight:700,...mono(C.green)}}>{fmt0(cash)}</div></div>
+          {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:19,fontWeight:700,...mono(C.amber)}}>{fmt0(netto)}</div></div>}
         </div>
       </div>
     );
@@ -3175,8 +3175,8 @@ export default function Dashboard() {
             <>
               <div style={{marginBottom:28,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
                 <div>
-                  <h1 style={{margin:0,fontSize:24,fontWeight:800}}>Guten Tag! 👋</h1>
-                  <div style={{fontSize:13,color:C.muted,marginTop:4}}>{todayStr} — Live Dashboard</div>
+                  <h1 style={{margin:0,fontSize:26,fontWeight:800}}>Guten Tag! 👋</h1>
+                  <div style={{fontSize:15,color:C.muted,marginTop:4}}>{todayStr} — Live Dashboard</div>
                 </div>
                 <div style={{padding:"6px 16px",borderRadius:20,background:"#d4ead6",border:"1px solid #2d7a3a",fontSize:12,color:C.green,fontWeight:700}}>
                   ● {deals.length} Deals geladen
@@ -3387,15 +3387,15 @@ export default function Dashboard() {
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
                           <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
                           </div>
                           <div style={{background:"#d4ead6",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
                           </div>
                         </div>
                       </div>
@@ -3419,11 +3419,11 @@ export default function Dashboard() {
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
                           <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
                           </div>
                         </div>
                       </div>
@@ -3467,11 +3467,11 @@ export default function Dashboard() {
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
                           <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                            <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
                           </div>
                         </div>
                       </div>
