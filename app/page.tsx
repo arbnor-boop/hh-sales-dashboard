@@ -1879,7 +1879,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           <div style={{padding:"5px 12px",borderRadius:20,fontSize:13,fontWeight:700,
             background:liveStatus==="success"?"#d4ead6":liveStatus==="error"?"#f0d4d4":"#e8ddd0",
-            border:`1px solid ${liveStatus==="success"?"#1a5a25":"#c4b9a8"}`,
+            border:`1px solid ${liveStatus==="success"?"#2d7a3a":"#c4b9a8"}`,
             color:liveStatus==="success"?C.green:C.text}}>
             {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
           </div>
@@ -1904,7 +1904,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
               </div>
-              <div style={{background:totalSaldo>=0?"#d4ead6":"#2a0a10",border:`1px solid ${totalSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
+              <div style={{background:totalSaldo>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${totalSaldo>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
                 <div style={{fontSize:24,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
               </div>
@@ -1926,7 +1926,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
                       <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
                     </div>
-                    <div style={{background:chfSaldo>=0?"#d4ead6":"#2a0a10",border:`1px solid ${chfSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
+                    <div style={{background:chfSaldo>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${chfSaldo>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
                       <div style={{fontSize:24,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
                     </div>
@@ -2000,7 +2000,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
               </div>
             </div>
-            <div style={{background:(f.ein+f.aus)>=0?"#d4ead6":"#2a0a10",border:`1px solid ${(f.ein+f.aus)>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
+            <div style={{background:(f.ein+f.aus)>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${(f.ein+f.aus)>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
               <div style={{fontSize:13,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
               <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
             </div>
@@ -2692,14 +2692,14 @@ export default function Dashboard() {
   const C = {
     bg:"#f0ece0", sidebar:"#faf6ef", card:"#ffffff", border:"#d4c9b8", border2:"#c4b9a8",
     indigo:"#5c4a2a", green:"#2d7a3a", amber:"#a07820", pink:"#c0392b",
-    cyan:"#2a7a6a", text:"#1a1208", muted:"#6b5e4e", dimmed:"#e0d8cc",
+    cyan:"#1a6a8a", text:"#1a1208", muted:"#6b5e4e", dimmed:"#e0d8cc",
   };
   const TH: React.CSSProperties = {
     padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
     letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
     whiteSpace:"nowrap", background:"#e8ddd0",
   };
-  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap" };
+  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap", fontWeight:600, color:"#1a1208" };
   const card = (accent?:string):React.CSSProperties => ({
     background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
     ...(accent?{borderTop:`2px solid ${accent}`}:{})
@@ -2861,8 +2861,8 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.internCash)}</td>
               </tr>
             ))}
-            <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
-              <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+            <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+              <td style={{...TD,fontWeight:700,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(sum.internVol)}</td>
@@ -2901,8 +2901,8 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.externCash)}</td>
               </tr>
             ))}
-            <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
-              <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+            <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+              <td style={{...TD,fontWeight:700,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.pink)}}>{fmt(sum.externVol)}</td>
@@ -2957,8 +2957,8 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(C.green),fontWeight:600}}>{fmt(nettoOf(r))}</td>
               </tr>
             ))}
-            <tr style={{background:"#09091a",borderTop:`2px solid ${C.border2}`}}>
-              <td style={{...TD,fontWeight:700,color:"#fff"}}>Gesamtsumme</td>
+            <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+              <td style={{...TD,fontWeight:700,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(sum.scgVol)}</td>
@@ -3038,7 +3038,7 @@ export default function Dashboard() {
           <div style={{
             padding:"9px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",
             background: uploadStatus==="success" ? "#d4ead6" : uploadStatus==="error" ? "#f0d4d4" : "#e8ddd0",
-            border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : "#c4b9a8"}`,
+            border: `1px solid ${uploadStatus==="success" ? "#2d7a3a" : "#c4b9a8"}`,
             color: uploadStatus==="success" ? C.green : C.muted,
             letterSpacing:"1px",
           }}>
@@ -3244,8 +3244,8 @@ export default function Dashboard() {
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
             <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-            <SumCard label="EXTERN" vol={sumRows(tagExtern).externVol} cash={sumRows(tagExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
-            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#2a2a50"/>
+            <SumCard label="EXTERN" vol={sumRows(tagExtern).externVol} cash={sumRows(tagExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter)))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
+            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
           </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
           <ExternTable rows={tagExtern} label={selectedDatum}/>
@@ -3259,8 +3259,8 @@ export default function Dashboard() {
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
             <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-            <SumCard label="EXTERN" vol={sumRows(monatsExtern).externVol} cash={sumRows(monatsExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
-            <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol} cash={sumRows(monatsRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth))} color={C.indigo} bg="#ffffff" border="#2a2a50"/>
+            <SumCard label="EXTERN" vol={sumRows(monatsExtern).externVol} cash={sumRows(monatsExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter)))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
+            <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol} cash={sumRows(monatsRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
           </div>
           <InternTable rows={monatsIntern} label={selectedMonth}/>
           <ExternTable rows={monatsExtern} label={selectedMonth}/>
