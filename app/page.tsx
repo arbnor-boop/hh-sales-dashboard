@@ -1898,15 +1898,15 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:16}}>
               <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (EUR)</div>
-                <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(totalEin)}</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(totalEin)}</div>
               </div>
               <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
-                <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
+                <div style={{fontSize:20,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
               </div>
               <div style={{background:totalSaldo>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${totalSaldo>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:20,textAlign:"center"}}>
-                <div style={{fontSize:13,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
-                <div style={{fontSize:26,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
+                <div style={{fontSize:13,color:"#1a1208",marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
+                <div style={{fontSize:26,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
               </div>
             </div>
             {/* Gesamtsaldo CHF */}
@@ -1920,15 +1920,15 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16,marginBottom:28}}>
                     <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>GESAMT EINNAHMEN (CHF)</div>
-                      <div style={{fontSize:20,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(chfEin)}</div>
+                      <div style={{fontSize:20,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(chfEin)}</div>
                     </div>
                     <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
-                      <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
+                      <div style={{fontSize:20,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
                     </div>
                     <div style={{background:chfSaldo>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${chfSaldo>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:20,textAlign:"center"}}>
-                      <div style={{fontSize:13,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
-                      <div style={{fontSize:26,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
+                      <div style={{fontSize:13,color:"#1a1208",marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
+                      <div style={{fontSize:26,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
                     </div>
                   </div>
                 </>
@@ -1950,16 +1950,16 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   <div style={{display:"flex",flexDirection:"column",gap:8}}>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
                       <span style={{fontSize:15,color:C.muted}}>✅ Einnahmen</span>
-                      <span style={{fontSize:16,fontWeight:700,color:C.green,fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
+                      <span style={{fontSize:16,fontWeight:700,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(fi.ein)} {fi.currency}</span>
                     </div>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
                       <span style={{fontSize:15,color:C.muted}}>📤 Ausgaben</span>
-                      <span style={{fontSize:16,fontWeight:700,color:C.pink,fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
+                      <span style={{fontSize:16,fontWeight:700,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(fi.aus)} {fi.currency}</span>
                     </div>
                     <div style={{height:1,background:C.border}}/>
                     <div style={{display:"flex",justifyContent:"space-between"}}>
                       <span style={{fontSize:14,fontWeight:700}}>💰 Saldo</span>
-                      <span style={{fontSize:16,fontWeight:800,color:saldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{saldo>=0?"+":"-"}{fmtN(saldo)} {fi.currency}</span>
+                      <span style={{fontSize:16,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{saldo>=0?"+":"-"}{fmtN(saldo)} {fi.currency}</span>
                     </div>
                   </div>
                   <div style={{marginTop:12,fontSize:12,color:C.muted,textAlign:"right"}}>Details anzeigen →</div>
@@ -1991,18 +1991,18 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
               <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.green,marginBottom:4,letterSpacing:"1px"}}>EINNAHMEN</div>
-                <div style={{fontSize:22,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)}</div>
+                <div style={{fontSize:22,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(f.ein)}</div>
                 <div style={{fontSize:15,color:C.muted}}>{f.currency}</div>
               </div>
               <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:12,padding:16,textAlign:"center"}}>
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>AUSGABEN</div>
-                <div style={{fontSize:22,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)}</div>
+                <div style={{fontSize:22,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(f.aus)}</div>
                 <div style={{fontSize:15,color:C.muted}}>{f.currency}</div>
               </div>
             </div>
             <div style={{background:(f.ein+f.aus)>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${(f.ein+f.aus)>=0?"#2d7a3a":"#c0392b"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
               <div style={{fontSize:15,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
-              <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
+              <div style={{fontSize:28,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
             </div>
 
             {detailTab==="uebersicht" ? (
@@ -2015,13 +2015,13 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       return (
                       <div key={i} style={{padding:"9px 14px",borderBottom:i<f.einDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
                         <span style={{fontSize:15,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
-                        <span style={{fontSize:15,fontWeight:700,color:C.green,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
+                        <span style={{fontSize:15,fontWeight:700,color:"#1a1208",fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
                       );
                     })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#ede5d8"}}>
                       <span style={{fontSize:13,fontWeight:700,color:C.text}}>Gesamt</span>
-                      <span style={{fontSize:18,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
+                      <span style={{fontSize:18,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(f.ein)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
@@ -2033,13 +2033,13 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       return (
                       <div key={i} style={{padding:"9px 14px",borderBottom:i<f.ausDetails.length-1?`1px solid ${C.border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
                         <span style={{fontSize:15,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{sn}</span>
-                        <span style={{fontSize:15,fontWeight:700,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
+                        <span style={{fontSize:15,fontWeight:700,color:"#1a1208",fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                       </div>
                       );
                     })}
                     <div style={{padding:"9px 14px",borderTop:`2px solid ${C.border}`,display:"flex",justifyContent:"space-between",background:"#ede5d8"}}>
                       <span style={{fontSize:13,fontWeight:700,color:C.text}}>Gesamt</span>
-                      <span style={{fontSize:18,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                      <span style={{fontSize:18,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                     </div>
                   </div>
                 </div>
@@ -2056,7 +2056,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       <div key={kat} style={{background:"#ffffff",border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                         <div style={{padding:"12px 16px",background:"#e8ddd0",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                           <span style={{fontSize:17,fontWeight:700,color:C.text}}>{icon} {kat}</span>
-                          <span style={{fontSize:17,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
+                          <span style={{fontSize:17,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(total)} {f.currency}</span>
                         </div>
                         {rows.map(([n,v],i)=>{
                           const shortName = n
@@ -2077,7 +2077,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                           return (
                           <div key={i} style={{padding:"8px 16px",borderTop:`1px solid ${C.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,background:i%2===0?"transparent":"#f5f0e8"}}>
                             <span style={{fontSize:15,color:C.text,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={n}>{shortName}</span>
-                            <span style={{fontSize:15,color:C.pink,fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
+                            <span style={{fontSize:15,color:"#1a1208",fontFamily:"monospace",whiteSpace:"nowrap",flexShrink:0}}>{fmtN(v)} {f.currency}</span>
                           </div>
                           );
                         })}
@@ -2087,7 +2087,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 </div>
                 <div style={{marginTop:20,background:"#e8ddd0",border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <span style={{fontSize:17,fontWeight:700,color:C.text}}>📊 Gesamt Ausgaben</span>
-                  <span style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
+                  <span style={{fontSize:20,fontWeight:800,color:"#1a1208",fontFamily:"monospace"}}>{fmtN(f.aus)} {f.currency}</span>
                 </div>
               </div>
             )}
@@ -2704,7 +2704,7 @@ export default function Dashboard() {
     background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
     ...(accent?{borderTop:`2px solid ${accent}`}:{})
   });
-  const mono = (color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color});
+  const mono = (_color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color:"#1a1208"});
 
   const dynamicMonths = useMemo(()=>{
     const mo = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -2826,9 +2826,9 @@ export default function Dashboard() {
       <div style={{background:bg,border:`1px solid ${border}`,borderRadius:12,padding:"18px 22px"}}>
         <div style={{fontSize:10,color,textTransform:"uppercase",letterSpacing:"2px",marginBottom:14,fontWeight:700}}>{label}</div>
         <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
-          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>SCG Volumen</div><div style={{fontSize:19,fontWeight:700,...mono(color)}}>{fmt0(vol)}</div></div>
-          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:19,fontWeight:700,...mono(C.green)}}>{fmt0(cash)}</div></div>
-          {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:19,fontWeight:700,...mono(C.amber)}}>{fmt0(netto)}</div></div>}
+          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>SCG Volumen</div><div style={{fontSize:19,fontWeight:700,...mono("#1a1208")}}>{fmt0(vol)}</div></div>
+          <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:19,fontWeight:700,...mono("#1a1208")}}>{fmt0(cash)}</div></div>
+          {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:19,fontWeight:700,...mono("#1a1208")}}>{fmt0(netto)}</div></div>}
         </div>
       </div>
     );
@@ -2840,7 +2840,7 @@ export default function Dashboard() {
       <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
-          <span style={{fontSize:13,fontWeight:700,color:C.green,letterSpacing:"1px"}}>INTERN</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>INTERN</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
@@ -2855,18 +2855,18 @@ export default function Dashboard() {
             {rows.map((r,i)=>(
               <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.internVol)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.internCash)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internCash)}</td>
               </tr>
             ))}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:700,color:C.text}}>Gesamtsumme</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(sum.internVol)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.cyan)}}>{fmt(sum.internCash)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.total)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.internVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.internCash)}</td>
             </tr>
           </tbody>
         </table>
@@ -2880,7 +2880,7 @@ export default function Dashboard() {
       <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.pink}}/>
-          <span style={{fontSize:13,fontWeight:700,color:C.pink,letterSpacing:"1px"}}>EXTERN</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>EXTERN</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
@@ -2895,18 +2895,18 @@ export default function Dashboard() {
             {rows.map((r,i)=>(
               <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.pink)}}>{fmt(r.externVol)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.externCash)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externCash)}</td>
               </tr>
             ))}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:700,color:C.text}}>Gesamtsumme</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.pink)}}>{fmt(sum.externVol)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.cyan)}}>{fmt(sum.externCash)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.total)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.externVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.externCash)}</td>
             </tr>
           </tbody>
         </table>
@@ -2920,7 +2920,7 @@ export default function Dashboard() {
       <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.indigo}}/>
-          <span style={{fontSize:13,fontWeight:700,color:C.indigo,letterSpacing:"1px"}}>GESAMT</span>
+          <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>GESAMT</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
@@ -2943,10 +2943,10 @@ export default function Dashboard() {
             {rows.map((r,i)=>(
               <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.ersteRate)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(r.scgVol)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(r.scgCash)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgCash)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.montano?C.amber:C.dimmed)}}>{fmt(r.montano)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.cem?C.amber:C.dimmed)}}>{fmt(r.cem)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.yves?C.amber:C.dimmed)}}>{fmt(r.yves)}</td>
@@ -2954,23 +2954,23 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(r.kada?C.amber:C.dimmed)}}>{fmt(r.kada)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.soeren?C.amber:C.dimmed)}}>{fmt(r.soeren)}</td>
                 <td style={{...TD,textAlign:"right",...mono(r.rene?C.amber:C.dimmed)}}>{fmt(r.rene)}</td>
-                <td style={{...TD,textAlign:"right",...mono(C.green),fontWeight:600}}>{fmt(nettoOf(r))}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208"),fontWeight:600}}>{fmt(nettoOf(r))}</td>
               </tr>
             ))}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:700,color:C.text}}>Gesamtsumme</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(sum.total)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(sum.ersteRate)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(sum.scgVol)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.cyan)}}>{fmt(sum.scgCash)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.montano)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.cem)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.yves)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.mert)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.kada)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.soeren)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.amber)}}>{fmt(sum.rene)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(nettoOf(sum))}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.total)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.scgVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.scgCash)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.montano)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.cem)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.yves)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.mert)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.kada)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.soeren)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(sum.rene)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(nettoOf(sum))}</td>
             </tr>
           </tbody>
         </table>
@@ -3313,10 +3313,10 @@ export default function Dashboard() {
                   return(
                     <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#e0d8cc":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
                       <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text}}>{m}</td>
-                      <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(vol)}</td>
-                      <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(cash)}</td>
-                      <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(intV)}</td>
-                      <td style={{...TD,textAlign:"right",...mono(C.pink)}}>{fmt(extV)}</td>
+                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
+                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
+                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(intV)}</td>
+                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(extV)}</td>
                       <td style={{...TD,textAlign:"right",color:C.muted}}>{dealCount}</td>
                       <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#0d2a1a":rate>=55?"#1a2a10":"#2a1a10",color:rate>=70?C.green:rate>=55?"#84cc16":C.amber,fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
                     </tr>
@@ -3387,15 +3387,15 @@ export default function Dashboard() {
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
                           <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgCash)}</span>
                           </div>
                           <div style={{background:"#d4ead6",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(provi)}</span>
                           </div>
                         </div>
                       </div>
@@ -3419,11 +3419,11 @@ export default function Dashboard() {
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
                           <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(scgCash)}</span>
                           </div>
                         </div>
                       </div>
@@ -3467,11 +3467,11 @@ export default function Dashboard() {
                         <div style={{display:"flex",flexDirection:"column",gap:8}}>
                           <div style={{background:"#0f0f20",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(s.scgVol)}</span>
                           </div>
                           <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
-                            <span style={{fontSize:15,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
+                            <span style={{fontSize:15,fontWeight:700,...mono("#1a1208")}}>{fmt(s.scgCash)}</span>
                           </div>
                         </div>
                       </div>
