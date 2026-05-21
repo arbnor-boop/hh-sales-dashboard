@@ -3253,7 +3253,7 @@ export default function Dashboard() {
         </>)}
 
         {activeTab==="wochenansicht"&&(()=>{
-          const weeks: Record<string,{scgVol:number,scgCash:number,netto:number,deals:number}> = {};
+          const weekDeals: Record<string,Deal[]> = {};
           deals.forEach(d=>{
             const [day,month,year] = d.datum.split(".").map(Number);
             if(isNaN(day)||isNaN(month)||isNaN(year)) return;
@@ -3261,12 +3261,15 @@ export default function Dashboard() {
             const startOfYear = new Date(year,0,1);
             const weekNum = Math.ceil(((date.getTime()-startOfYear.getTime())/(86400000)+startOfYear.getDay()+1)/7);
             const key = `KW ${weekNum} · ${year}`;
-            if(!weeks[key]) weeks[key]={scgVol:0,scgCash:0,netto:0,deals:0};
-            weeks[key].scgVol+=d.scgVol;
-            weeks[key].scgCash+=d.scgCash;
-            weeks[key].netto+=d.netto||0;
-            weeks[key].deals+=1;
+            if(!weekDeals[key]) weekDeals[key]=[];
+            weekDeals[key].push(d);
           });
+          const weeks = Object.fromEntries(Object.entries(weekDeals).map(([k,ds])=>([k,{
+            scgVol:ds.reduce((a,d)=>a+d.scgVol,0),
+            scgCash:ds.reduce((a,d)=>a+d.scgCash,0),
+            netto:nettoFromDeals(ds),
+            deals:ds.length,
+          }])));
           const sorted = Object.entries(weeks).sort((a,b)=>a[0].localeCompare(b[0]));
           const maxCash = Math.max(...sorted.map(([,v])=>v.scgCash),1);
           return (
