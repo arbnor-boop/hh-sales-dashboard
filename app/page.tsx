@@ -1631,7 +1631,7 @@ type FirmaData = {
 };
 
 const FDATA: FirmaData[] = [
-  { firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR",
+  { firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#5c4a2a", icon:"📊", currency:"EUR",
     ein:367319.29, aus:-295063.03,
     einDetails:[["No Limits Consulting Miete",1706.98],["Allianz Rückgabe",3649.71],["Everflow Excellence",16755.20],["Eitel Invest AG",16376.66],["Grundl Leadership",35394.78],["Schippke Partner",39214.00],["ECOM HOUSE",86933.04],["Arlind Nuhi",5623.87],["SocialNatives",2659.65],["Candidate Flow",94076.72],["AIRWALLEX",1916.95],["Hamann Kollegen",23972.85],["2B AHEAD",36248.74],["Sonstiges",2789.82]],
     ausDetails:[["Löhne",-73125.16],["Finanzamt",-60021.49],["HP Venius Dubai",-49169.05],["Krankenkassen",-28878.74],["Dienstleistungen",-25300.00],["Miete",-21471.28],["Leasing",-13133.00],["Autoversicherung",-5055.25],["Reisekosten",-4687.41],["Software",-3524.37],["Lebensversicherung",-1352.00],["Versicherung",-1079.57],["Steuerberatung",-683.06],["Sonstiges",-5582.60]],
@@ -1647,7 +1647,7 @@ const FDATA: FirmaData[] = [
       {kat:"Dienstleistungen", icon:"🔧", items:["Dienstleistungen","HP Venius Dubai"]},
       {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
     ]},
-  { firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF",
+  { firma:"Peak Revenue AG", short:"Peak Revenue", color:"#2d7a3a", icon:"🇨🇭", currency:"CHF",
     ein:118334.09, aus:-36361.29,
     einDetails:[["Aktienkapital Zürich",99875.00],["Investmentpunk",3093.70],["Leon Ioakeim",4555.39],["Tax Angels",10810.00]],
     ausDetails:[["Kapitaleinlage Hamann",-23320.88],["Steckel Legal Tax",-9080.40],["Reviso Treuhand",-1081.00],["Fechner Rechtsanwälte",-781.57],["Steuern",-590.00],["Software",-306.47],["Sonstiges",-1201.97]],
@@ -1669,7 +1669,7 @@ const FDATA: FirmaData[] = [
       {kat:"Bankgebühren", icon:"🏦", items:["Bankgebühren"]},
       {kat:"Sonstiges", icon:"📦", items:["Sonstiges"]},
     ]},
-  { firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR",
+  { firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#c0392b", icon:"🏠", currency:"EUR",
     ein:73861.00, aus:-25605.48,
     einDetails:[["WHITE.IMMOBILIEN GMBH",48861.00],["Zahlung aus Ausland",25000.00]],
     ausDetails:[["HH SCG Zahlungen",-23972.85],["KROOS KOLLEGEN",-808.74],["Facebook Ads",-536.00],["CLOSE CRM",-151.03],["AMTSGERICHT",-300.00],["PIXELFLOW",-16.52],["WEBFLOW",-18.54],["Kontoführung",-14.80]],
@@ -1796,10 +1796,10 @@ function autoKategorisiere(name: string, firma: string): string {
 
 function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[], monat: string) {
   const FIRMEN_CFG = [
-    {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#818cf8", icon:"📊", currency:"EUR"},
-    {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#34d399", icon:"🇨🇭", currency:"CHF"},
+    {firma:"HH Sales Consulting Germany GmbH", short:"HH SCG", color:"#5c4a2a", icon:"📊", currency:"EUR"},
+    {firma:"Peak Revenue AG", short:"Peak Revenue", color:"#2d7a3a", icon:"🇨🇭", currency:"CHF"},
     {firma:"HP Venius", short:"HP Venius", color:"#f59e0b", icon:"🏢", currency:"EUR"},
-    {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#f472b6", icon:"🏠", currency:"EUR"},
+    {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#c0392b", icon:"🏠", currency:"EUR"},
   ];
   return FIRMEN_CFG.map(cfg => {
     const firmaRows = rows.filter(r => r.firma === cfg.firma && r.monat === monat);
@@ -1879,7 +1879,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
         <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
           <div style={{padding:"5px 12px",borderRadius:20,fontSize:13,fontWeight:700,
             background:liveStatus==="success"?"#d4ead6":liveStatus==="error"?"#f0d4d4":"#e8ddd0",
-            border:`1px solid ${liveStatus==="success"?"#1a5a25":"#252538"}`,
+            border:`1px solid ${liveStatus==="success"?"#1a5a25":"#c4b9a8"}`,
             color:liveStatus==="success"?C.green:C.text}}>
             {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
           </div>
@@ -1904,7 +1904,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (EUR)</div>
                 <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(totalAus)}</div>
               </div>
-              <div style={{background:totalSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${totalSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
+              <div style={{background:totalSaldo>=0?"#d4ead6":"#2a0a10",border:`1px solid ${totalSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                 <div style={{fontSize:13,color:totalSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (EUR)</div>
                 <div style={{fontSize:24,fontWeight:800,color:totalSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{totalSaldo>=0?"+":"-"}{fmtN(totalSaldo)}</div>
               </div>
@@ -1926,7 +1926,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                       <div style={{fontSize:13,color:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT AUSGABEN (CHF)</div>
                       <div style={{fontSize:20,fontWeight:800,color:C.pink,fontFamily:"monospace"}}>{fmtN(chfAus)}</div>
                     </div>
-                    <div style={{background:chfSaldo>=0?"#0a2a10":"#2a0a10",border:`1px solid ${chfSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
+                    <div style={{background:chfSaldo>=0?"#d4ead6":"#2a0a10",border:`1px solid ${chfSaldo>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:20,textAlign:"center"}}>
                       <div style={{fontSize:13,color:chfSaldo>=0?C.green:C.pink,marginBottom:4,letterSpacing:"1px"}}>GESAMT SALDO (CHF)</div>
                       <div style={{fontSize:24,fontWeight:800,color:chfSaldo>=0?C.green:C.pink,fontFamily:"monospace"}}>{chfSaldo>=0?"+":"-"}{fmtN(chfSaldo)}</div>
                     </div>
@@ -2000,7 +2000,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                 <div style={{fontSize:13,color:C.muted}}>{f.currency}</div>
               </div>
             </div>
-            <div style={{background:(f.ein+f.aus)>=0?"#0a2a10":"#2a0a10",border:`1px solid ${(f.ein+f.aus)>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
+            <div style={{background:(f.ein+f.aus)>=0?"#d4ead6":"#2a0a10",border:`1px solid ${(f.ein+f.aus)>=0?"#1a5a25":"#5a1a25"}`,borderRadius:12,padding:16,textAlign:"center",marginBottom:24}}>
               <div style={{fontSize:13,color:C.muted,marginBottom:4,letterSpacing:"1px"}}>NETTO SALDO</div>
               <div style={{fontSize:28,fontWeight:800,color:(f.ein+f.aus)>=0?C.green:C.pink,fontFamily:"monospace"}}>{(f.ein+f.aus)>=0?"+":"-"}{fmtN(f.ein+f.aus)} {f.currency}</div>
             </div>
@@ -2596,10 +2596,10 @@ const FIRMEN_DATEN: Buchung[] = [
 
 const FIRMEN_LIST = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH"];
 const FIRMEN_COLORS: Record<string,string> = {
-  "HH Sales Consulting Germany GmbH": "#818cf8",
-  "Peak Revenue AG": "#34d399",
+  "HH Sales Consulting Germany GmbH": "#5c4a2a",
+  "Peak Revenue AG": "#2d7a3a",
   "HP Venius": "#f59e0b",
-  "Hamann & Kollegen Immobilien GmbH": "#f472b6",
+  "Hamann & Kollegen Immobilien GmbH": "#c0392b",
 };
 const FIRMEN_SHORT: Record<string,string> = {
   "HH Sales Consulting Germany GmbH": "HH SCG",
@@ -2690,14 +2690,14 @@ export default function Dashboard() {
   }, []);
 
   const C = {
-    bg:"#07070f", sidebar:"#0b0b15", card:"#0f0f1c", border:"#1c1c2e", border2:"#252538",
-    indigo:"#818cf8", green:"#34d399", amber:"#f59e0b", pink:"#f472b6",
-    cyan:"#67e8f9", text:"#e8e8f0", muted:"#52526a", dimmed:"#252540",
+    bg:"#f0ece0", sidebar:"#faf6ef", card:"#ffffff", border:"#d4c9b8", border2:"#c4b9a8",
+    indigo:"#5c4a2a", green:"#2d7a3a", amber:"#a07820", pink:"#c0392b",
+    cyan:"#2a7a6a", text:"#1a1208", muted:"#6b5e4e", dimmed:"#e0d8cc",
   };
   const TH: React.CSSProperties = {
     padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
     letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
-    whiteSpace:"nowrap", background:"#08081a",
+    whiteSpace:"nowrap", background:"#e8ddd0",
   };
   const TD: React.CSSProperties = { padding:"10px 16px", fontSize:13, whiteSpace:"nowrap" };
   const card = (accent?:string):React.CSSProperties => ({
@@ -2730,30 +2730,30 @@ export default function Dashboard() {
   const monatsExtern = useMemo(()=>aggregate(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter))),[selectedMonth,deals]);
   const jahresRows   = useMemo(()=>aggregate(deals),[deals]);
 
-  if (!hydrated) return <div style={{minHeight:"100vh",background:"#07070f"}}/>;
+  if (!hydrated) return <div style={{minHeight:"100vh",background:"#f0ece0"}}/>;
 
   if (loggedIn && selDash === "firmen") return <FirmenDashboard onLogout={()=>{localStorage.removeItem("hh_scg_auth");setLoggedIn(false);setSelDash("sales");}}/>;
 
   if (!loggedIn) {
     return (
-      <div style={{minHeight:"100vh",background:"#07070f",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
-        <div style={{background:"#0f0f1c",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:400,textAlign:"center"}}>
+      <div style={{minHeight:"100vh",background:"#f0ece0",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
+        <div style={{background:"#ffffff",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:400,textAlign:"center"}}>
           <div style={{fontSize:24,fontWeight:800,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
-          <div style={{fontSize:11,color:"#52526a",letterSpacing:"3px",marginBottom:24}}>DASHBOARD</div>
+          <div style={{fontSize:11,color:"#6b5e4e",letterSpacing:"3px",marginBottom:24}}>DASHBOARD</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
             <div onClick={()=>setSelDash("sales")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
-              background:selDash==="sales"?"#1e1e40":"#13132a",
-              border:`2px solid ${selDash==="sales"?"#818cf8":"#252550"}`}}>
+              background:selDash==="sales"?"#d4c9b8":"#e8ddd0",
+              border:`2px solid ${selDash==="sales"?"#5c4a2a":"#c4b9a8"}`}}>
               <div style={{fontSize:20,marginBottom:6}}>📊</div>
-              <div style={{fontSize:12,fontWeight:700,color:"#818cf8"}}>Sales Dashboard</div>
-              <div style={{fontSize:10,color:"#52526a",marginTop:2}}>HH SCG Sales</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#5c4a2a"}}>Sales Dashboard</div>
+              <div style={{fontSize:10,color:"#6b5e4e",marginTop:2}}>HH SCG Sales</div>
             </div>
             <div onClick={()=>setSelDash("firmen")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
-              background:selDash==="firmen"?"#0a2a10":"#0a1a10",
-              border:`2px solid ${selDash==="firmen"?"#34d399":"#1a4a25"}`}}>
+              background:selDash==="firmen"?"#c8e0ca":"#d4e8d4",
+              border:`2px solid ${selDash==="firmen"?"#2d7a3a":"#2d7a3a"}`}}>
               <div style={{fontSize:20,marginBottom:6}}>🏢</div>
-              <div style={{fontSize:12,fontWeight:700,color:"#34d399"}}>Jahresübersicht</div>
-              <div style={{fontSize:10,color:"#52526a",marginTop:2}}>4 Firmen</div>
+              <div style={{fontSize:12,fontWeight:700,color:"#2d7a3a"}}>Jahresübersicht</div>
+              <div style={{fontSize:10,color:"#6b5e4e",marginTop:2}}>4 Firmen</div>
             </div>
           </div>
           {selDash && (
@@ -2765,7 +2765,7 @@ export default function Dashboard() {
                 onChange={e=>{setPwInput(e.target.value);setPwError(false);}}
                 onKeyDown={e=>{if(e.key==="Enter") doLogin();}}
                 style={{width:"100%",padding:"12px 16px",borderRadius:8,fontSize:14,
-                  background:"#07070f",border:`1px solid ${pwError?"#f87171":"#252538"}`,
+                  background:"#ffffff",border:`1px solid ${pwError?"#c0392b":"#d4c9b8"}`,
                   color:"#e8e8f0",outline:"none",boxSizing:"border-box",marginBottom:8}}
                 autoFocus
               />
@@ -2777,7 +2777,7 @@ export default function Dashboard() {
               </button>
             </>
           )}
-          {false && <div style={{fontSize:12,color:"#52526a"}}>Bitte Dashboard auswählen</div>}
+          {false && <div style={{fontSize:12,color:"#6b5e4e"}}>Bitte Dashboard auswählen</div>}
         </div>
       </div>
     );
@@ -2982,7 +2982,7 @@ export default function Dashboard() {
     display:"flex",alignItems:"center",justifyContent:"space-between",
     width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,
     border:"none",cursor:"pointer",marginBottom:3,
-    background:active?"#1a1a30":"transparent",
+    background:active?"#e0d8cc":"transparent",
     color:active?C.text:C.muted,fontSize:13,fontWeight:active?600:400,
   });
 
@@ -2994,7 +2994,7 @@ export default function Dashboard() {
           <div style={{fontSize:10,color:C.muted,marginTop:2,letterSpacing:"3px"}}>SALES DASHBOARD</div>
         </div>
         <div style={{padding:"14px 12px 4px"}}>
-          <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
+          <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
           {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
@@ -3005,8 +3005,8 @@ export default function Dashboard() {
         <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
         <div style={{padding:"4px 12px"}}>
           <button onClick={()=>setMonthOpen(o=>!o)} style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"4px 4px",background:"transparent",border:"none",cursor:"pointer",marginBottom:4}}>
-            <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",textTransform:"uppercase"}}>Monat</div>
-            <span style={{color:"#2e2e50",fontSize:12}}>{monthOpen?"▲":"▼"}</span>
+            <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",textTransform:"uppercase"}}>Monat</div>
+            <span style={{color:"#d4c9b8",fontSize:12}}>{monthOpen?"▲":"▼"}</span>
           </button>
           {monthOpen && dynamicMonths.map(m=>(
             <button key={m} onClick={()=>{setSelectedMonth(m);setMonthOpen(false);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={sideBtn(selectedMonth===m)}>
@@ -3024,7 +3024,7 @@ export default function Dashboard() {
         {activeTab==="tagesansicht"&&(<>
           <div style={{height:1,background:C.border,margin:"8px 12px"}}/>
           <div style={{padding:"4px 12px 16px"}}>
-            <div style={{fontSize:10,color:"#2e2e50",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Datum</div>
+            <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Datum</div>
             {tageImMonat.map(d=>(
               <button key={d} onClick={()=>setSelectedDatum(d)} style={sideBtn(selectedDatum===d)}>
                 <span>{d.slice(0,5)}</span>
@@ -3037,8 +3037,8 @@ export default function Dashboard() {
         <div style={{padding:"12px",borderTop:`1px solid ${C.border}`}}>
           <div style={{
             padding:"9px 12px",borderRadius:8,fontSize:11,fontWeight:700,textAlign:"center",
-            background: uploadStatus==="success" ? "#0a2a10" : uploadStatus==="error" ? "#0a0a1a" : "#13132a",
-            border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : "#252538"}`,
+            background: uploadStatus==="success" ? "#d4ead6" : uploadStatus==="error" ? "#f0d4d4" : "#e8ddd0",
+            border: `1px solid ${uploadStatus==="success" ? "#1a5a25" : "#c4b9a8"}`,
             color: uploadStatus==="success" ? C.green : C.muted,
             letterSpacing:"1px",
           }}>
@@ -3058,7 +3058,7 @@ export default function Dashboard() {
           }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#e8e8f0",background:"#e8ddd0",border:`1px solid #252538`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
-          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#818cf8",background:"#0f0f20",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
+          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#5c4a2a",background:"#0f0f20",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
             🤖 KI-Assistent
           </button>
         </div>
@@ -3067,7 +3067,7 @@ export default function Dashboard() {
       {/* AI Chat Modal */}
       {chatOpen && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)setChatOpen(false);}}>
-          <div style={{background:"#0f0f1c",border:`1px solid ${C.border2}`,borderRadius:16,width:520,maxWidth:"90vw",height:600,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+          <div style={{background:"#ffffff",border:`1px solid ${C.border2}`,borderRadius:16,width:520,maxWidth:"90vw",height:600,display:"flex",flexDirection:"column",overflow:"hidden"}}>
             <div style={{padding:"16px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <div>
                 <div style={{fontSize:15,fontWeight:700,color:C.text}}>🤖 KI-Assistent</div>
@@ -3080,7 +3080,7 @@ export default function Dashboard() {
                 <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:8}}>
                   <div style={{fontSize:12,color:C.muted,marginBottom:4}}>Beispiele:</div>
                   {["Wer ist Top-Closer heute?","Wer ist Top-Partner heute?","Wie war diese Woche?","Vergleiche diese Woche mit letzter Woche","Bester Tag im Mai?","Durchschnitt pro Deal im April","Wie viel fehlt bis 300.000 im Mai?","Wer hat die meisten Deals im April?"].map(q=>(
-                    <button key={q} onClick={()=>sendChatMessage(q)} style={{padding:"10px 14px",borderRadius:8,fontSize:12,textAlign:"left",background:"#13132a",border:`1px solid ${C.border}`,color:C.text,cursor:"pointer"}}>
+                    <button key={q} onClick={()=>sendChatMessage(q)} style={{padding:"10px 14px",borderRadius:8,fontSize:12,textAlign:"left",background:"#f5f0e8",border:`1px solid ${C.border}`,color:C.text,cursor:"pointer"}}>
                       💡 {q}
                     </button>
                   ))}
@@ -3090,7 +3090,7 @@ export default function Dashboard() {
                 <div key={i} style={{display:"flex",flexDirection:"column",gap:4,alignItems:m.role==="user"?"flex-end":"flex-start"}}>
                   <div style={{
                     maxWidth:"85%",padding:"10px 14px",borderRadius:10,fontSize:13,lineHeight:1.5,
-                    background:m.role==="user"?"#1e1e40":"#13132a",
+                    background:m.role==="user"?"#e0d8cc":"#ede5d8",
                     color:m.role==="user"?C.indigo:C.text,
                     border:`1px solid ${m.role==="user"?"#2a2a60":C.border}`,
                     whiteSpace:"pre-wrap",
@@ -3110,9 +3110,9 @@ export default function Dashboard() {
                 onChange={e=>setChatInput(e.target.value)}
                 onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChatMessage(chatInput);}}}
                 placeholder="Frage eingeben..."
-                style={{flex:1,padding:"10px 14px",borderRadius:8,fontSize:13,background:"#07070f",border:`1px solid ${C.border2}`,color:C.text,outline:"none"}}
+                style={{flex:1,padding:"10px 14px",borderRadius:8,fontSize:13,background:"#ffffff",border:`1px solid ${C.border2}`,color:C.text,outline:"none"}}
               />
-              <button onClick={()=>sendChatMessage(chatInput)} disabled={chatLoading||!chatInput.trim()} style={{padding:"10px 16px",borderRadius:8,fontSize:13,fontWeight:700,background:"#4f46e5",color:"#fff",border:"none",cursor:"pointer",opacity:chatLoading||!chatInput.trim()?0.5:1}}>
+              <button onClick={()=>sendChatMessage(chatInput)} disabled={chatLoading||!chatInput.trim()} style={{padding:"10px 16px",borderRadius:8,fontSize:13,fontWeight:700,background:"#5c4a2a",color:"#fff",border:"none",cursor:"pointer",opacity:chatLoading||!chatInput.trim()?0.5:1}}>
                 ➤
               </button>
             </div>
@@ -3178,7 +3178,7 @@ export default function Dashboard() {
                   <h1 style={{margin:0,fontSize:24,fontWeight:800}}>Guten Tag! 👋</h1>
                   <div style={{fontSize:13,color:C.muted,marginTop:4}}>{todayStr} — Live Dashboard</div>
                 </div>
-                <div style={{padding:"6px 16px",borderRadius:20,background:"#0a1a10",border:"1px solid #1a4a25",fontSize:12,color:C.green,fontWeight:700}}>
+                <div style={{padding:"6px 16px",borderRadius:20,background:"#d4ead6",border:"1px solid #2d7a3a",fontSize:12,color:C.green,fontWeight:700}}>
                   ● {deals.length} Deals geladen
                 </div>
               </div>
@@ -3243,9 +3243,9 @@ export default function Dashboard() {
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#e8ddd0",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
+            <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
             <SumCard label="EXTERN" vol={sumRows(tagExtern).externVol} cash={sumRows(tagExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
-            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#0f0f1c" border="#2a2a50"/>
+            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#2a2a50"/>
           </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
           <ExternTable rows={tagExtern} label={selectedDatum}/>
@@ -3258,9 +3258,9 @@ export default function Dashboard() {
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:"1px solid #2a2a50"}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#0a1a10" border="#1a4a25"/>
+            <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
             <SumCard label="EXTERN" vol={sumRows(monatsExtern).externVol} cash={sumRows(monatsExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter)))} color={C.pink} bg="#1a0a10" border="#4a1a25"/>
-            <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol} cash={sumRows(monatsRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth))} color={C.indigo} bg="#0f0f1c" border="#2a2a50"/>
+            <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol} cash={sumRows(monatsRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth))} color={C.indigo} bg="#ffffff" border="#2a2a50"/>
           </div>
           <InternTable rows={monatsIntern} label={selectedMonth}/>
           <ExternTable rows={monatsExtern} label={selectedMonth}/>
@@ -3282,7 +3282,7 @@ export default function Dashboard() {
                 return(
                   <div key={m} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:6,cursor:"pointer"}} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}}>
                     <div style={{fontSize:10,...mono(isSel?C.amber:C.muted)}}>{fmt0(cash)}</div>
-                    <div style={{width:"100%",height:Math.max((cash/maxC)*130,3),background:isSel?"linear-gradient(180deg,#818cf8,#4f46e5)":"#1e1e38",borderRadius:"4px 4px 0 0"}}/>
+                    <div style={{width:"100%",height:Math.max((cash/maxC)*130,3),background:isSel?"linear-gradient(180deg,#818cf8,#4f46e5)":"#e0d8cc",borderRadius:"4px 4px 0 0"}}/>
                     <div style={{fontSize:11,color:isSel?C.text:C.muted,fontWeight:isSel?700:400,textAlign:"center"}}>{m.split(" ")[0].slice(0,3)}</div>
                   </div>
                 );
@@ -3311,7 +3311,7 @@ export default function Dashboard() {
                   const dealCount=deals.filter(d=>d.monat===m).length;
                   const isSel=m===selectedMonth;
                   return(
-                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#13132a":i%2===0?"transparent":"#0c0c1a",cursor:"pointer"}}>
+                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#e0d8cc":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
                       <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text}}>{m}</td>
                       <td style={{...TD,textAlign:"right",...mono(C.indigo)}}>{fmt(vol)}</td>
                       <td style={{...TD,textAlign:"right",...mono(C.cyan)}}>{fmt(cash)}</td>
@@ -3347,9 +3347,9 @@ export default function Dashboard() {
               <select value={selectedMonth} onChange={e=>{setSelectedMonth(e.target.value);const t=[...new Set(deals.filter(d=>d.monat===e.target.value).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:"1px solid #2a2a50",cursor:"pointer",outline:"none"}}>
                 {dynamicMonths.map(m=><option key={m} value={m}>{m}</option>)}
               </select>
-              <div style={{display:"flex",gap:4,background:"#0f0f1c",borderRadius:20,padding:3,border:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",gap:4,background:"#ffffff",borderRadius:20,padding:3,border:`1px solid ${C.border}`}}>
                 {(["monat","tag"] as const).map(v=>(
-                  <button key={v} onClick={()=>setCloserView(v)} style={{padding:"4px 14px",borderRadius:16,fontSize:11,fontWeight:700,border:"none",cursor:"pointer",background:closerView===v?"#252550":"transparent",color:closerView===v?C.indigo:C.muted}}>
+                  <button key={v} onClick={()=>setCloserView(v)} style={{padding:"4px 14px",borderRadius:16,fontSize:11,fontWeight:700,border:"none",cursor:"pointer",background:closerView===v?"#c4b9a8":"transparent",color:closerView===v?C.indigo:C.muted}}>
                     {v==="monat"?"Monat":"Tag"}
                   </button>
                 ))}
@@ -3389,11 +3389,11 @@ export default function Dashboard() {
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
                           </div>
-                          <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                          <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
                           </div>
-                          <div style={{background:"#0a1a10",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                          <div style={{background:"#d4ead6",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.green,letterSpacing:"1px",fontWeight:600}}>PROVISION</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.green)}}>{fmt(provi)}</span>
                           </div>
@@ -3421,7 +3421,7 @@ export default function Dashboard() {
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(scgVol)}</span>
                           </div>
-                          <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                          <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(scgCash)}</span>
                           </div>
@@ -3469,7 +3469,7 @@ export default function Dashboard() {
                             <span style={{fontSize:10,color:C.indigo,letterSpacing:"1px",fontWeight:600}}>SCG VOLUMEN</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.indigo)}}>{fmt(s.scgVol)}</span>
                           </div>
-                          <div style={{background:"#0a1020",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
+                          <div style={{background:"#f0ece0",borderRadius:8,padding:"9px 12px",display:"flex",justifyContent:"space-between"}}>
                             <span style={{fontSize:10,color:C.cyan,letterSpacing:"1px",fontWeight:600}}>SCG CASH IN</span>
                             <span style={{fontSize:13,fontWeight:700,...mono(C.cyan)}}>{fmt(s.scgCash)}</span>
                           </div>
