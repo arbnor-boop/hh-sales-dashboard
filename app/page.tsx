@@ -2702,7 +2702,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -3080,7 +3080,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -3694,6 +3694,96 @@ export default function Dashboard() {
               </>
             );
           }
+        })()}
+
+        {activeTab==="pivot"&&(()=>{
+          const pivotDeals = filterDeals.filter(d=>d.partner&&d.partner.trim());
+          const allDates = [...new Set(pivotDeals.map(d=>d.datum))].sort((a,b)=>{
+            const [ad,am,ay]=a.split(".").map(Number);
+            const [bd,bm,by]=b.split(".").map(Number);
+            return new Date(ay,am-1,ad).getTime()-new Date(by,bm-1,bd).getTime();
+          });
+          const allPartners = [...new Set(pivotDeals.map(d=>d.partner.trim()))].sort();
+          const pivotMap: Record<string,Record<string,number>> = {};
+          pivotDeals.forEach(d=>{
+            if(!pivotMap[d.datum]) pivotMap[d.datum]={};
+            pivotMap[d.datum][d.partner.trim()]=(pivotMap[d.datum][d.partner.trim()]||0)+d.scgCash;
+          });
+          const partnerTotals: Record<string,number> = {};
+          allPartners.forEach(p=>{ partnerTotals[p]=allDates.reduce((a,date)=>a+(pivotMap[date]?.[p]||0),0); });
+          const sortedPartners = [...allPartners].sort((a,b)=>partnerTotals[b]-partnerTotals[a]);
+          const dayTotals = allDates.map(date=>sortedPartners.reduce((a,p)=>a+(pivotMap[date]?.[p]||0),0));
+          const grandTotal = dayTotals.reduce((a,v)=>a+v,0);
+          const chartW=900,chartH=220,padL=60,padR=20,padT=20,padB=40;
+          const innerW=chartW-padL-padR,innerH=chartH-padT-padB;
+          const maxVal=Math.max(...dayTotals,1);
+          const pts = dayTotals.map((v,i)=>[padL+i*(innerW/Math.max(allDates.length-1,1)),padT+innerH-(v/maxVal)*innerH] as [number,number]);
+          const pathD = pts.map((p,i)=>`${i===0?"M":"L"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+          const areaD = pts.length>0?`${pathD} L${pts[pts.length-1][0].toFixed(1)},${(padT+innerH).toFixed(1)} L${pts[0][0].toFixed(1)},${(padT+innerH).toFixed(1)} Z`:"";
+          const yLabels = [0,0.25,0.5,0.75,1].map(f=>({v:maxVal*f,y:padT+innerH-(f*innerH)}));
+          return (
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>📋 Pivot — {selectedMonth}</h2>
+                <div style={{fontSize:13,color:C.muted}}>{allDates.length} Tage · {sortedPartners.length} Partner · {fmt(grandTotal)} Cash IN</div>
+              </div>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:24,marginBottom:28}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"2px",marginBottom:16}}>SCG CASH IN PER TAG · {selectedMonth.toUpperCase()}</div>
+                <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{width:"100%",height:"auto",display:"block"}}>
+                  {yLabels.map(({v,y})=>(
+                    <g key={y}>
+                      <line x1={padL} y1={y} x2={chartW-padR} y2={y} stroke={C.border} strokeWidth="1" strokeDasharray="4,4"/>
+                      <text x={padL-8} y={y+4} textAnchor="end" fontSize="10" fill={C.muted}>{fmt0(v)}</text>
+                    </g>
+                  ))}
+                  {pts.length>1&&<path d={areaD} fill={C.indigo} fillOpacity="0.08"/>}
+                  {pts.length>1&&<path d={pathD} fill="none" stroke={C.indigo} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round"/>}
+                  {pts.map(([x,y],i)=>(
+                    <g key={i}>
+                      <circle cx={x} cy={y} r="4" fill={C.indigo} stroke={C.card} strokeWidth="2"/>
+                      <text x={x} y={chartH-8} textAnchor="middle" fontSize="9" fill={C.muted}>{allDates[i]?.split(".")[0]}</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:800}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH,textAlign:"left",position:"sticky",left:0,background:t.th,zIndex:2,minWidth:100}}>DATE</th>
+                      {sortedPartners.map(p=>(
+                        <th key={p} style={{...TH,textAlign:"right",minWidth:120,whiteSpace:"nowrap"}} title={p}>{p.length>14?p.slice(0,14)+"…":p}</th>
+                      ))}
+                      <th style={{...TH,textAlign:"right",minWidth:110}}>GESAMT</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allDates.map((date,i)=>{
+                      const dayTotal=dayTotals[i];
+                      if(dayTotal===0) return null;
+                      return (
+                        <tr key={date} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
+                          <td style={{...TD,fontWeight:600,position:"sticky",left:0,background:i%2===0?C.card:"#f5f0e8",zIndex:1}}>{date}</td>
+                          {sortedPartners.map(p=>{
+                            const v=pivotMap[date]?.[p]||0;
+                            return <td key={p} style={{...TD,textAlign:"right",color:v>0?C.text:C.muted}}>{v>0?fmt(v):"—"}</td>;
+                          })}
+                          <td style={{...TD,textAlign:"right",fontWeight:700}}>{fmt(dayTotal)}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+                      <td style={{...TD,fontWeight:700,position:"sticky",left:0,background:"#e0d8cc",zIndex:1}}>Gesamtsumme</td>
+                      {sortedPartners.map(p=>(
+                        <td key={p} style={{...TD,textAlign:"right",fontWeight:700}}>{partnerTotals[p]>0?fmt(partnerTotals[p]):"—"}</td>
+                      ))}
+                      <td style={{...TD,textAlign:"right",fontWeight:700}}>{fmt(grandTotal)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
         })()}
       </div>
     </div>
