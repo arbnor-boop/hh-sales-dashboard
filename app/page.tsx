@@ -1838,6 +1838,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [allRows, setAllRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
   const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selKW, setSelKW] = useState<string>("alle");
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "mittel" as "klein"|"mittel"|"gross",
@@ -2709,6 +2710,7 @@ export default function Dashboard() {
   const [closerView, setCloserView] = useState<"monat"|"tag">("monat");
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selKW, setSelKW] = useState<string>("alle");
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "mittel" as "klein"|"mittel"|"gross",
@@ -3409,12 +3411,34 @@ export default function Dashboard() {
             const [am,ay]=a.split(" "); const [bm,by]=b.split(" ");
             return Number(ay)-Number(by)||MONTHS_ORDER.indexOf(am)-MONTHS_ORDER.indexOf(bm);
           });
+          // Build flat list of all KW options
+          const allKWOptions: {mo:string,kw:string,label:string}[] = [];
+          sortedMonths.forEach(mo=>{
+            Object.keys(monthWeekDeals[mo]).sort().forEach(kw=>{
+              allKWOptions.push({mo,kw,label:`${kw} · ${mo}`});
+            });
+          });
+          const filteredMonths = selKW==="alle"
+            ? sortedMonths
+            : sortedMonths.filter(mo=>monthWeekDeals[mo][selKW]);
           return (
             <div>
-              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>Wochenübersicht 2026</h2>
-              {sortedMonths.map(mo=>{
-                const kwMap = monthWeekDeals[mo];
+              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24,flexWrap:"wrap"}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>Wochenübersicht 2026</h2>
+                <select value={selKW} onChange={e=>setSelKW(e.target.value)}
+                  style={{padding:"8px 14px",borderRadius:8,fontSize:13,fontWeight:600,background:C.card,color:C.text,border:`1px solid ${C.border}`,cursor:"pointer",outline:"none"}}>
+                  <option value="alle">Alle Wochen</option>
+                  {allKWOptions.map(({mo,kw,label})=>(
+                    <option key={`${mo}-${kw}`} value={kw}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              {filteredMonths.map(mo=>{
+                const kwEntries = selKW==="alle"
+                  ? Object.entries(monthWeekDeals[mo]).sort((a,b)=>a[0].localeCompare(b[0]))
+                  : [[selKW, monthWeekDeals[mo][selKW]] as [string,Deal[]]].filter(([,v])=>v);
                 const sortedKW = Object.entries(kwMap).sort((a,b)=>a[0].localeCompare(b[0]));
+                const sortedKW = kwEntries;
                 const allDs = sortedKW.flatMap(([,ds])=>ds);
                 return (
                   <div key={mo} style={{marginBottom:48}}>
