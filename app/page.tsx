@@ -1870,7 +1870,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const totalSaldo = totalEin + totalAus;
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:FF}}>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"Inter,system-ui,sans-serif"}}>
       <div style={{background:C.sidebar,borderBottom:`1px solid ${C.border}`,padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div>
           <div style={{fontSize:20,fontWeight:400}}>🏢 Jahresübersicht 4 Firmen</div>
