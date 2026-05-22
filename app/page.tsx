@@ -3390,7 +3390,6 @@ export default function Dashboard() {
         </>)}
 
         {activeTab==="wochenansicht"&&(()=>{
-          // Group deals by month then by KW
           const monthWeekDeals: Record<string, Record<string, Deal[]>> = {};
           deals.forEach(d=>{
             const [day,month,year] = d.datum.split(".").map(Number);
@@ -3415,22 +3414,30 @@ export default function Dashboard() {
               {sortedMonths.map(mo=>{
                 const kwMap = monthWeekDeals[mo];
                 const sortedKW = Object.entries(kwMap).sort((a,b)=>a[0].localeCompare(b[0]));
-                const moVol = sortedKW.reduce((a,[,ds])=>a+ds.reduce((s,d)=>s+d.scgVol,0),0);
-                const moCash = sortedKW.reduce((a,[,ds])=>a+ds.reduce((s,d)=>s+d.scgCash,0),0);
-                const moNetto = nettoFromDeals(sortedKW.flatMap(([,ds])=>ds));
-                const moDeals = sortedKW.reduce((a,[,ds])=>a+ds.length,0);
+                const allDs = sortedKW.flatMap(([,ds])=>ds);
+                // Get all partners in this month, sorted by total scgVol
+                const partnerVols: Record<string,number> = {};
+                allDs.forEach(d=>{ if(d.partner) partnerVols[d.partner.trim()]=(partnerVols[d.partner.trim()]||0)+d.scgVol; });
+                const moPartners = Object.keys(partnerVols).sort((a,b)=>partnerVols[b]-partnerVols[a]);
+                const moVol = allDs.reduce((a,d)=>a+d.scgVol,0);
+                const moCash = allDs.reduce((a,d)=>a+d.scgCash,0);
+                const moNetto = nettoFromDeals(allDs);
+                const moDeals = allDs.length;
                 return (
-                  <div key={mo} style={{marginBottom:32}}>
+                  <div key={mo} style={{marginBottom:40}}>
                     <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:12,paddingBottom:8,borderBottom:`2px solid ${C.border}`}}>{mo}</div>
-                    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
-                      <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto"}}>
+                      <table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
                         <thead>
-                          <tr style={{background:"#e8ddd0"}}>
-                            <th style={{...TH,textAlign:"left"}}>WOCHE</th>
-                            <th style={{...TH,textAlign:"right"}}>DEALS</th>
-                            <th style={{...TH,textAlign:"right"}}>SCG VOLUMEN</th>
-                            <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
-                            <th style={{...TH,textAlign:"right"}}>NETTO</th>
+                          <tr style={{background:t.th}}>
+                            <th style={{...TH,textAlign:"left",position:"sticky",left:0,background:t.th,zIndex:2,minWidth:80}}>WOCHE</th>
+                            <th style={{...TH,textAlign:"right",minWidth:70}}>DEALS</th>
+                            {moPartners.map(p=>(
+                              <th key={p} style={{...TH,textAlign:"right",minWidth:120,whiteSpace:"nowrap"}} title={p}>{p.length>13?p.slice(0,13)+"…":p}</th>
+                            ))}
+                            <th style={{...TH,textAlign:"right",minWidth:110}}>SCG VOL.</th>
+                            <th style={{...TH,textAlign:"right",minWidth:110}}>CASH IN</th>
+                            <th style={{...TH,textAlign:"right",minWidth:100}}>NETTO</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -3438,22 +3445,32 @@ export default function Dashboard() {
                             const vol=ds.reduce((a,d)=>a+d.scgVol,0);
                             const cash=ds.reduce((a,d)=>a+d.scgCash,0);
                             const netto=nettoFromDeals(ds);
+                            const kwPartnerVols: Record<string,number> = {};
+                            ds.forEach(d=>{ if(d.partner) kwPartnerVols[d.partner.trim()]=(kwPartnerVols[d.partner.trim()]||0)+d.scgVol; });
                             return (
                               <tr key={kw} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
-                                <td style={{...TD,fontWeight:400,color:C.text}}>{kw}</td>
+                                <td style={{...TD,fontWeight:600,position:"sticky",left:0,background:i%2===0?C.card:"#f5f0e8",zIndex:1}}>{kw}</td>
                                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{ds.length}</td>
-                                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
+                                {moPartners.map(p=>(
+                                  <td key={p} style={{...TD,textAlign:"right",color:(kwPartnerVols[p]||0)>0?C.text:C.muted}}>
+                                    {(kwPartnerVols[p]||0)>0?fmt(kwPartnerVols[p]):"0,00 €"}
+                                  </td>
+                                ))}
+                                <td style={{...TD,textAlign:"right",fontWeight:600,...mono("#1a1208")}}>{fmt(vol)}</td>
                                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
                                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(netto)}</td>
                               </tr>
                             );
                           })}
                           <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
-                            <td style={{...TD,fontWeight:400,color:C.text}}>Gesamt {mo}</td>
-                            <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{moDeals}</td>
-                            <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(moVol)}</td>
-                            <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(moCash)}</td>
-                            <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(moNetto)}</td>
+                            <td style={{...TD,fontWeight:700,position:"sticky",left:0,background:"#e0d8cc",zIndex:1}}>Gesamt {mo}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{moDeals}</td>
+                            {moPartners.map(p=>(
+                              <td key={p} style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{partnerVols[p]>0?fmt(partnerVols[p]):"0,00 €"}</td>
+                            ))}
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(moVol)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(moCash)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#1a1208")}}>{fmt(moNetto)}</td>
                           </tr>
                         </tbody>
                       </table>
