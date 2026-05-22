@@ -1870,7 +1870,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const totalSaldo = totalEin + totalAus;
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif"}}>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:FF}}>
       <div style={{background:C.sidebar,borderBottom:`1px solid ${C.border}`,padding:"16px 32px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:10}}>
         <div>
           <div style={{fontSize:20,fontWeight:400}}>🏢 Jahresübersicht 4 Firmen</div>
@@ -2642,6 +2642,13 @@ export default function Dashboard() {
   const [monthOpen, setMonthOpen] = useState(false);
   const [closerView, setCloserView] = useState<"monat"|"tag">("monat");
   const [chatOpen, setChatOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    theme: "beige" as "beige"|"dark"|"white",
+    fontSize: "mittel" as "klein"|"mittel"|"gross",
+    fontFamily: "modern" as "modern"|"klassisch"|"mono",
+    zahlenFett: false,
+  });
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<{role:"user"|"assistant",content:string}[]>([]);
@@ -2689,22 +2696,34 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const C = {
-    bg:"#f0ece0", sidebar:"#faf6ef", card:"#ffffff", border:"#d4c9b8", border2:"#c4b9a8",
-    indigo:"#5c4a2a", green:"#2d7a3a", amber:"#a07820", pink:"#c0392b",
-    cyan:"#1a6a8a", text:"#1a1208", muted:"#6b5e4e", dimmed:"#e0d8cc",
+  const THEMES = {
+    beige: {bg:"#f0ece0",sidebar:"#faf6ef",card:"#ffffff",border:"#d4c9b8",border2:"#c4b9a8",text:"#1a1208",muted:"#6b5e4e",dimmed:"#e0d8cc",th:"#e8ddd0"},
+    dark:  {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",border2:"#252538",text:"#e8e8f0",muted:"#6b7280",dimmed:"#1a1a2e",th:"#08081a"},
+    white: {bg:"#ffffff",sidebar:"#f8f8f8",card:"#ffffff",border:"#e2e8f0",border2:"#d0d7e0",text:"#1a202c",muted:"#64748b",dimmed:"#f0f4f8",th:"#f1f5f9"},
   };
+  const t = THEMES[settings.theme];
+  const C = {
+    ...t,
+    indigo: settings.theme==="dark"?"#818cf8":"#5c4a2a",
+    green:  settings.theme==="dark"?"#34d399":"#2d7a3a",
+    amber:  settings.theme==="dark"?"#fbbf24":"#a07820",
+    pink:   settings.theme==="dark"?"#f87171":"#c0392b",
+    cyan:   settings.theme==="dark"?"#67e8f9":"#1a6a8a",
+  };
+  const FS = settings.fontSize==="klein"?13:settings.fontSize==="gross"?17:15;
+  const FF = settings.fontFamily==="mono"?"'DM Mono',monospace":settings.fontFamily==="klassisch"?"Georgia,serif":"Inter,system-ui,sans-serif";
+  const FW = settings.zahlenFett?700:400;
   const TH: React.CSSProperties = {
     padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
     letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
-    whiteSpace:"nowrap", background:"#e8ddd0",
+    whiteSpace:"nowrap", background:t.th,
   };
-  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:15, whiteSpace:"nowrap", fontWeight:400, color:"#1a1208" };
+  const TD: React.CSSProperties = { padding:"10px 16px", fontSize:FS, whiteSpace:"nowrap", fontWeight:FW, color:C.text, fontFamily:FF };
   const card = (accent?:string):React.CSSProperties => ({
     background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
     ...(accent?{borderTop:`2px solid ${accent}`}:{})
   });
-  const mono = (_color:string):React.CSSProperties => ({fontFamily:"'DM Mono',monospace",color:"#1a1208"});
+  const mono = (_color:string):React.CSSProperties => ({fontFamily:FF,color:C.text,fontWeight:FW});
 
   const dynamicMonths = useMemo(()=>{
     const mo = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -2987,7 +3006,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans','Inter',sans-serif",display:"flex"}}>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:FF,display:"flex"}}>
       <div style={{width:220,background:C.sidebar,borderRight:`1px solid ${C.border}`,position:"fixed",top:0,bottom:0,left:0,zIndex:100,overflowY:"auto",display:"flex",flexDirection:"column"}}>
         <div style={{padding:"20px 18px 16px",borderBottom:`1px solid ${C.border}`}}>
           <div style={{fontSize:19,fontWeight:800,letterSpacing:"-0.5px",color:"#fff"}}>HH SCG</div>
@@ -3058,13 +3077,65 @@ export default function Dashboard() {
           }} style={{marginTop:6,width:"100%",padding:"7px",borderRadius:6,fontSize:11,fontWeight:600,color:"#1a1208",background:"#e8ddd0",border:`1px solid #c4b9a8`,cursor:"pointer",letterSpacing:"0.5px"}}>
             ↻ Jetzt aktualisieren
           </button>
-          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#5c4a2a",background:"#e8ddd0",border:`1px solid #2a2a50`,cursor:"pointer",letterSpacing:"0.5px"}}>
+          <button onClick={()=>setSettingsOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:C.text,background:t.th,border:`1px solid ${C.border}`,cursor:"pointer",letterSpacing:"0.5px"}}>
+            ⚙️ Einstellungen
+          </button>
+          <button onClick={()=>setChatOpen(true)} style={{marginTop:6,width:"100%",padding:"9px",borderRadius:6,fontSize:11,fontWeight:700,color:"#5c4a2a",background:t.th,border:`1px solid ${C.border}`,cursor:"pointer",letterSpacing:"0.5px"}}>
             🤖 KI-Assistent
           </button>
         </div>
       </div>
 
       {/* AI Chat Modal */}
+      {settingsOpen&&(
+          <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)setSettingsOpen(false);}}>
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,width:440,maxWidth:"90vw",boxShadow:"0 20px 60px rgba(0,0,0,0.3)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
+                <div style={{fontSize:18,fontWeight:700,color:C.text}}>⚙️ Einstellungen</div>
+                <button onClick={()=>setSettingsOpen(false)} style={{background:"transparent",border:"none",color:C.muted,fontSize:20,cursor:"pointer"}}>✕</button>
+              </div>
+              <div style={{marginBottom:24}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>FARBTHEMA</div>
+                <div style={{display:"flex",gap:8}}>
+                  {([["beige","🌿 Beige"],["white","☀️ Weiß"],["dark","🌙 Dunkel"]] as const).map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setSettings(s=>({...s,theme:val}))} style={{flex:1,padding:"10px 8px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.theme===val?C.indigo:C.border}`,background:settings.theme===val?t.th:C.card,color:C.text}}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginBottom:24}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>SCHRIFTGRÖSSE</div>
+                <div style={{display:"flex",gap:8}}>
+                  {([["klein","A Klein"],["mittel","A Mittel"],["gross","A Gross"]] as const).map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:val}))} style={{flex:1,padding:"10px 8px",borderRadius:8,fontSize:val==="klein"?11:val==="gross"?15:13,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===val?C.indigo:C.border}`,background:settings.fontSize===val?t.th:C.card,color:C.text}}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginBottom:24}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>SCHRIFTART</div>
+                <div style={{display:"flex",gap:8}}>
+                  {([["modern","Modern"],["klassisch","Klassisch"],["mono","Mono"]] as const).map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setSettings(s=>({...s,fontFamily:val}))} style={{flex:1,padding:"10px 8px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontFamily===val?C.indigo:C.border}`,background:settings.fontFamily===val?t.th:C.card,color:C.text,fontFamily:val==="mono"?"'DM Mono',monospace":val==="klassisch"?"Georgia,serif":"Inter,sans-serif"}}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{marginBottom:28}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>ZAHLEN</div>
+                <div style={{display:"flex",gap:8}}>
+                  {([false,true] as const).map(val=>(
+                    <button key={String(val)} onClick={()=>setSettings(s=>({...s,zahlenFett:val}))} style={{flex:1,padding:"10px 8px",borderRadius:8,fontSize:13,fontWeight:val?700:400,cursor:"pointer",border:`2px solid ${settings.zahlenFett===val?C.indigo:C.border}`,background:settings.zahlenFett===val?t.th:C.card,color:C.text}}>{val?"Fett":"Normal"}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{background:t.th,borderRadius:10,padding:"14px 18px",marginBottom:20,border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:10,color:C.muted,letterSpacing:"2px",marginBottom:6}}>VORSCHAU</div>
+                <div style={{fontFamily:FF,fontSize:FS,fontWeight:FW,color:C.text}}>183.206,47 € · 227.625,08 €</div>
+                <div style={{fontFamily:FF,fontSize:FS-2,color:C.muted,marginTop:4}}>Beispiel Tagesansicht Mai 2026</div>
+              </div>
+              <button onClick={()=>setSettingsOpen(false)} style={{width:"100%",padding:"12px",borderRadius:8,fontSize:13,fontWeight:700,background:C.indigo,color:"#ffffff",border:"none",cursor:"pointer"}}>Übernehmen & Schließen</button>
+            </div>
+          </div>
+        )}
+
       {chatOpen && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={e=>{if(e.target===e.currentTarget)setChatOpen(false);}}>
           <div style={{background:"#ffffff",border:`1px solid ${C.border2}`,borderRadius:16,width:520,maxWidth:"90vw",height:600,display:"flex",flexDirection:"column",overflow:"hidden"}}>
