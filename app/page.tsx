@@ -3698,10 +3698,16 @@ export default function Dashboard() {
 
         {activeTab==="pivot"&&(()=>{
           const pivotDeals = deals.filter(d=>d.monat===selectedMonth&&d.partner&&d.partner.trim());
-          const allDates = [...new Set(pivotDeals.map(d=>d.datum))].sort((a,b)=>{
-            const [ad,am,ay]=a.split(".").map(Number);
-            const [bd,bm,by]=b.split(".").map(Number);
-            return new Date(ay,am-1,ad).getTime()-new Date(by,bm-1,bd).getTime();
+          // Generate ALL days of the selected month
+          const [selMonthName, selYear] = selectedMonth.split(" ");
+          const MONTH_NAMES_DE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+          const selMonthIdx = MONTH_NAMES_DE.indexOf(selMonthName);
+          const selYearNum = parseInt(selYear);
+          const daysInMonth = new Date(selYearNum, selMonthIdx+1, 0).getDate();
+          const allDates = Array.from({length:daysInMonth},(_,i)=>{
+            const d = i+1;
+            const m = selMonthIdx+1;
+            return `${String(d).padStart(2,"0")}.${String(m).padStart(2,"0")}.${selYearNum}`;
           });
           const allPartners = [...new Set(pivotDeals.map(d=>d.partner.trim()))].sort();
           const pivotMap: Record<string,Record<string,number>> = {};
@@ -3760,13 +3766,12 @@ export default function Dashboard() {
                   <tbody>
                     {allDates.map((date,i)=>{
                       const dayTotal=dayTotals[i];
-                      if(dayTotal===0) return null;
                       return (
                         <tr key={date} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
                           <td style={{...TD,fontWeight:600,position:"sticky",left:0,background:i%2===0?C.card:"#f5f0e8",zIndex:1}}>{date}</td>
                           {sortedPartners.map(p=>{
                             const v=pivotMap[date]?.[p]||0;
-                            return <td key={p} style={{...TD,textAlign:"right",color:v>0?C.text:C.muted}}>{v>0?fmt(v):"—"}</td>;
+                            return <td key={p} style={{...TD,textAlign:"right",color:v>0?C.text:C.muted}}>{fmt(v)}</td>;
                           })}
                           <td style={{...TD,textAlign:"right",fontWeight:700}}>{fmt(dayTotal)}</td>
                         </tr>
