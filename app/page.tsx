@@ -3707,7 +3707,7 @@ export default function Dashboard() {
           const pivotMap: Record<string,Record<string,number>> = {};
           pivotDeals.forEach(d=>{
             if(!pivotMap[d.datum]) pivotMap[d.datum]={};
-            pivotMap[d.datum][d.partner.trim()]=(pivotMap[d.datum][d.partner.trim()]||0)+d.scgCash;
+            pivotMap[d.datum][d.partner.trim()]=(pivotMap[d.datum][d.partner.trim()]||0)+d.scgVol;
           });
           const partnerTotals: Record<string,number> = {};
           allPartners.forEach(p=>{ partnerTotals[p]=allDates.reduce((a,date)=>a+(pivotMap[date]?.[p]||0),0); });
@@ -3725,10 +3725,10 @@ export default function Dashboard() {
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
                 <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>📋 Pivot — {selectedMonth}</h2>
-                <div style={{fontSize:13,color:C.muted}}>{allDates.length} Tage · {sortedPartners.length} Partner · {fmt(grandTotal)} Cash IN</div>
+                <div style={{fontSize:13,color:C.muted}}>{allDates.length} Tage · {sortedPartners.length} Partner · {fmt(grandTotal)} SCG Volumen</div>
               </div>
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:24,marginBottom:28}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"2px",marginBottom:16}}>SCG CASH IN PER TAG · {selectedMonth.toUpperCase()}</div>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"2px",marginBottom:16}}>SCG VOLUMEN PER TAG · {selectedMonth.toUpperCase()}</div>
                 <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{width:"100%",height:"auto",display:"block"}}>
                   {yLabels.map(({v,y})=>(
                     <g key={y}>
