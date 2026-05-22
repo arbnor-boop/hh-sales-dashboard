@@ -3697,7 +3697,7 @@ export default function Dashboard() {
         })()}
 
         {activeTab==="pivot"&&(()=>{
-          const pivotDeals = filterDeals.filter(d=>d.partner&&d.partner.trim());
+          const pivotDeals = deals.filter(d=>d.monat===selectedMonth&&d.partner&&d.partner.trim());
           const allDates = [...new Set(pivotDeals.map(d=>d.datum))].sort((a,b)=>{
             const [ad,am,ay]=a.split(".").map(Number);
             const [bd,bm,by]=b.split(".").map(Number);
