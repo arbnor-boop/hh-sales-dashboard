@@ -3437,7 +3437,6 @@ export default function Dashboard() {
                 const kwEntries = selKW==="alle"
                   ? Object.entries(monthWeekDeals[mo]).sort((a,b)=>a[0].localeCompare(b[0]))
                   : [[selKW, monthWeekDeals[mo][selKW]] as [string,Deal[]]].filter(([,v])=>v);
-                const sortedKW = Object.entries(kwMap).sort((a,b)=>a[0].localeCompare(b[0]));
                 const sortedKW = kwEntries;
                 const allDs = sortedKW.flatMap(([,ds])=>ds);
                 return (
