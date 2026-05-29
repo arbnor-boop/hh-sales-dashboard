@@ -1839,6 +1839,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [liveStatus, setLiveStatus] = useState<"idle"|"success"|"error">("idle");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selKW, setSelKW] = useState<string>("alle");
+  const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "mittel" as "klein"|"mittel"|"gross",
@@ -2703,7 +2704,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -2711,6 +2712,7 @@ export default function Dashboard() {
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selKW, setSelKW] = useState<string>("alle");
+  const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "mittel" as "klein"|"mittel"|"gross",
@@ -3082,7 +3084,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -3795,6 +3797,124 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          );
+        })()}
+
+        {activeTab==="rangliste"&&(()=>{
+          const monthDeals = deals.filter(d=>d.monat===selectedMonth);
+          type CloserStat = {name:string;cash:number;vol:number;deals:number;type:"intern"|"extern"};
+          const closerMap: Record<string,CloserStat> = {};
+          monthDeals.forEach(d=>{
+            const internFields:[string,number][] = [
+              ["Montano",d.montano],["Cem",d.cem],["Yves",d.yves],
+              ["Mert",d.mert],["Kada",d.kada],["Sören",d.soeren],["Rene",d.rene],
+            ];
+            internFields.forEach(([name,val])=>{
+              if(val>0){
+                if(!closerMap[name]) closerMap[name]={name,cash:0,vol:0,deals:0,type:"intern"};
+                closerMap[name].cash+=val;
+                closerMap[name].vol+=val;
+                closerMap[name].deals+=1;
+              }
+            });
+          });
+          monthDeals.filter(d=>!isInternCloser(d.setter)&&d.setter&&d.setter.trim()).forEach(d=>{
+            const k="ext_"+d.setter.trim();
+            if(!closerMap[k]) closerMap[k]={name:d.setter.trim(),cash:0,vol:0,deals:0,type:"extern"};
+            closerMap[k].cash+=d.scgCash;
+            closerMap[k].vol+=d.scgVol;
+            closerMap[k].deals+=1;
+          });
+          const internClosers=Object.values(closerMap).filter(c=>c.type==="intern"&&c.cash>0);
+          const externClosers=Object.values(closerMap).filter(c=>c.type==="extern"&&c.cash>0);
+          const allClosers=[...internClosers,...externClosers];
+          const metricFmt=(v:number)=>rankMetric==="deals"?String(v):fmt(v);
+          const RankCard=({title,closers,color,bg}:{title:string,closers:CloserStat[],color:string,bg:string})=>{
+            const sorted=[...closers].sort((a,b)=>b[rankMetric]-a[rankMetric]);
+            const top3=sorted.slice(0,3);
+            const flop=sorted.length>3?sorted.slice(-Math.min(3,sorted.length-3)).reverse():[];
+            const medals=["🥇","🥈","🥉"];
+            const flopIcons=["🔴","🟡","🟠"];
+            return (
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",marginBottom:20}}>
+                <div style={{padding:"14px 20px",background:bg,borderBottom:`1px solid ${C.border}`,fontSize:13,fontWeight:700,color}}>{title}</div>
+                <div style={{padding:20,display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>🏆 TOP CLOSER</div>
+                    {top3.map((c,i)=>(
+                      <div key={c.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px",borderRadius:8,marginBottom:8,background:i===0?bg:"transparent",border:`1px solid ${i===0?color:C.border}`}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8}}>
+                          <span style={{fontSize:18}}>{medals[i]}</span>
+                          <div>
+                            <div style={{fontSize:14,fontWeight:700,color:C.text}}>{c.name}</div>
+                            <div style={{fontSize:11,color:C.muted}}>{c.deals} Deals</div>
+                          </div>
+                        </div>
+                        <div style={{fontSize:14,fontWeight:700,color}}>{metricFmt(c[rankMetric])}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {flop.length>0&&(
+                    <div>
+                      <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>📉 FLOP CLOSER</div>
+                      {flop.map((c,i)=>(
+                        <div key={c.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px",borderRadius:8,marginBottom:8,border:`1px solid ${C.border}`}}>
+                          <div style={{display:"flex",alignItems:"center",gap:8}}>
+                            <span style={{fontSize:18}}>{flopIcons[i]}</span>
+                            <div>
+                              <div style={{fontSize:14,fontWeight:600,color:C.text}}>{c.name}</div>
+                              <div style={{fontSize:11,color:C.muted}}>{c.deals} Deals</div>
+                            </div>
+                          </div>
+                          <div style={{fontSize:14,fontWeight:600,color:C.muted}}>{metricFmt(c[rankMetric])}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div style={{borderTop:`1px solid ${C.border}`}}>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead>
+                      <tr style={{background:t.th}}>
+                        <th style={{...TH,textAlign:"left",width:40}}>#</th>
+                        <th style={{...TH,textAlign:"left"}}>NAME</th>
+                        <th style={{...TH,textAlign:"right"}}>DEALS</th>
+                        <th style={{...TH,textAlign:"right"}}>SCG VOLUMEN</th>
+                        <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sorted.map((c,i)=>(
+                        <tr key={c.name} style={{borderBottom:`1px solid ${C.border}`,background:i===0?bg:i%2===0?"transparent":"#f5f0e8"}}>
+                          <td style={{...TD,fontWeight:700,color:i<3?color:C.muted}}>{i+1}</td>
+                          <td style={{...TD,fontWeight:i===0?700:400,color:C.text}}>{c.name}</td>
+                          <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{c.deals}</td>
+                          <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(c.vol)}</td>
+                          <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(c.cash)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          };
+          return (
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>🏆 Rangliste — {selectedMonth}</h2>
+                <div style={{display:"flex",gap:8}}>
+                  {([["cash","💰 Cash IN"],["vol","📊 Volumen"],["deals","🤝 Deals"]] as const).map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setRankMetric(val)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${rankMetric===val?C.indigo:C.border}`,background:rankMetric===val?t.th:C.card,color:C.text}}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:4}}>
+                {internClosers.length>0&&<RankCard title="👤 INTERN CLOSER" closers={internClosers} color={C.green} bg="#d4ead6"/>}
+                {externClosers.length>0&&<RankCard title="🌐 EXTERN CLOSER" closers={externClosers} color={C.pink} bg="#f0d4d4"/>}
+              </div>
+              {allClosers.length>0&&<RankCard title="🏆 GESAMT — INTERN + EXTERN" closers={allClosers} color={C.indigo} bg={t.th}/>}
             </div>
           );
         })()}
