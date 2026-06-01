@@ -2185,8 +2185,25 @@ function parseCSVLine2(line: string): string[] {
   return cols;
 }
 
+function parseCSVLines(text: string): string[] {
+  // Join multi-line quoted cells before splitting into lines
+  const result: string[] = [];
+  let cur = ""; let inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') { inQ = !inQ; cur += c; }
+    else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && text[i+1] === '\n') i++;
+      if (cur.trim()) result.push(cur);
+      cur = "";
+    } else { cur += c; }
+  }
+  if (cur.trim()) result.push(cur);
+  return result;
+}
+
 function parseFirmenCSV(text: string): {firma:string; datum:string; name:string; betrag:number; kategorie:string; monat:string}[] {
-  const lines = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n").split("\n");
+  const lines = parseCSVLines(text);
   const result: {firma:string; datum:string; name:string; betrag:number; kategorie:string; monat:string}[] = [];
   
   const parseNum = (s: string) => {
