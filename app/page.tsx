@@ -3529,42 +3529,107 @@ export default function Dashboard() {
               })}
             </div>
           </div>
-          <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
-            <table style={{width:"100%",borderCollapse:"collapse"}}>
-              <thead><tr>
-                <th style={TH}>Monat</th>
-                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>SCG Volumen</th>
-                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>SCG Cash IN</th>
-                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>Intern Vol</th>
-                <th style={{...TH,textAlign:"right",color:"#1a1208"}}>Extern Vol</th>
-                <th style={{...TH,textAlign:"right"}}>Deals</th>
-                <th style={{...TH,textAlign:"right"}}>Cash-Rate</th>
-              </tr></thead>
-              <tbody>
-                {dynamicMonths.map((m,i)=>{
-                  const rows=aggregate(deals.filter(d=>d.monat===m));
-                  const vol=rows.reduce((a,r)=>a+r.scgVol,0);
-                  const cash=rows.reduce((a,r)=>a+r.scgCash,0);
-                  const intV=rows.reduce((a,r)=>a+r.internVol,0);
-                  const extV=rows.reduce((a,r)=>a+r.externVol,0);
-                  const rate=vol>0?cash/vol*100:0;
-                  const dealCount=deals.filter(d=>d.monat===m).length;
-                  const isSel=m===selectedMonth;
-                  return(
-                    <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#d4c9b8":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
-                      <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text}}>{m}</td>
-                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
-                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
-                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(intV)}</td>
-                      <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(extV)}</td>
-                      <td style={{...TD,textAlign:"right",color:C.muted}}>{dealCount}</td>
-                      <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#d4ead6":rate>=55?"#e8f0d4":"#f0e8d4",color:"#1a1208",fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {(()=>{
+            const MONTH_NAMES=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+            const Q_MONTHS=[["Januar","Februar","März"],["April","Mai","Juni"],["Juli","August","September"],["Oktober","November","Dezember"]];
+            // Build per-month stats
+            const monthStats = dynamicMonths.map(m=>{
+              const rows=aggregate(deals.filter(d=>d.monat===m));
+              const vol=rows.reduce((a,r)=>a+r.scgVol,0);
+              const cash=rows.reduce((a,r)=>a+r.scgCash,0);
+              const intV=rows.reduce((a,r)=>a+r.internVol,0);
+              const extV=rows.reduce((a,r)=>a+r.externVol,0);
+              const dealCount=deals.filter(d=>d.monat===m).length;
+              const rate=vol>0?cash/vol*100:0;
+              const year=m.split(" ")[1]||"2026";
+              const moName=m.split(" ")[0];
+              const qIdx=Q_MONTHS.findIndex(q=>q.includes(moName));
+              return {m,vol,cash,intV,extV,dealCount,rate,year,moName,qIdx};
+            });
+            // Build quarterly stats
+            const years=[...new Set(monthStats.map(s=>s.year))];
+            const qStats: Record<string,{vol:number,cash:number,intV:number,extV:number,deals:number}> = {};
+            years.forEach(yr=>{
+              [0,1,2,3].forEach(qi=>{
+                const key=`Q${qi+1} ${yr}`;
+                const ms=monthStats.filter(s=>s.year===yr&&s.qIdx===qi);
+                qStats[key]={
+                  vol:ms.reduce((a,s)=>a+s.vol,0),
+                  cash:ms.reduce((a,s)=>a+s.cash,0),
+                  intV:ms.reduce((a,s)=>a+s.intV,0),
+                  extV:ms.reduce((a,s)=>a+s.extV,0),
+                  deals:ms.reduce((a,s)=>a+s.dealCount,0),
+                };
+              });
+            });
+
+            const rows: ("month"|"quarter"|"year")[] = [];
+            // Interleave months with quarterly summaries
+            let lastQKey = "";
+            const tableRows: {type:"month",data:typeof monthStats[0]}|{type:"quarter",key:string,qi:number}|{type:"year",year:string}[] = [];
+            monthStats.forEach((s,i)=>{
+              const qKey=`Q${s.qIdx+1} ${s.year}`;
+              tableRows.push({type:"month",data:s});
+              // After last month of quarter, add quarterly row
+              const nextS=monthStats[i+1];
+              if(!nextS||nextS.qIdx!==s.qIdx||nextS.year!==s.year){
+                if(qStats[qKey].deals>0) tableRows.push({type:"quarter",key:qKey,qi:s.qIdx});
+              }
+            });
+
+            return (
+              <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead><tr>
+                    <th style={{...TH,textAlign:"left",minWidth:140}}>MONAT / QUARTAL</th>
+                    <th style={{...TH,textAlign:"right"}}>SCG VOLUMEN</th>
+                    <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
+                    <th style={{...TH,textAlign:"right"}}>INTERN VOL</th>
+                    <th style={{...TH,textAlign:"right"}}>EXTERN VOL</th>
+                    <th style={{...TH,textAlign:"right"}}>DEALS</th>
+                    <th style={{...TH,textAlign:"right"}}>CASH-RATE</th>
+                  </tr></thead>
+                  <tbody>
+                    {tableRows.map((row,i)=>{
+                      if(row.type==="month"){
+                        const {m,vol,cash,intV,extV,dealCount,rate}=row.data;
+                        const isSel=m===selectedMonth;
+                        return(
+                          <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#d4c9b8":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
+                            <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text,paddingLeft:24}}>{m}</td>
+                            <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
+                            <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
+                            <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(intV)}</td>
+                            <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(extV)}</td>
+                            <td style={{...TD,textAlign:"right",color:C.muted}}>{dealCount}</td>
+                            <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#d4ead6":rate>=55?"#e8f0d4":"#f0e8d4",color:"#1a1208",fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
+                          </tr>
+                        );
+                      }
+                      if(row.type==="quarter"){
+                        const q=qStats[row.key];
+                        const rate=q.vol>0?q.cash/q.vol*100:0;
+                        const qColors=["#5c4a2a","#2d7a3a","#1a6a8a","#c0392b"];
+                        const qBgs=["#ede0c8","#d4ead6","#d0e8f0","#f0d4d4"];
+                        return(
+                          <tr key={row.key} style={{borderBottom:`2px solid ${C.border2}`,background:qBgs[row.qi]}}>
+                            <td style={{...TD,fontWeight:700,color:qColors[row.qi],fontSize:13,letterSpacing:"0.5px"}}>▸ {row.key}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.vol)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.cash)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.intV)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.extV)}</td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,color:qColors[row.qi]}}>{q.deals}</td>
+                            <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:qBgs[row.qi],border:`1px solid ${qColors[row.qi]}`,color:qColors[row.qi],fontSize:12,fontWeight:700}}>{rate.toFixed(1)}%</span></td>
+                          </tr>
+                        );
+                      }
+                      return null;
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })()}
           <GesamtTable rows={jahresRows} label="Gesamtes Jahr 2026"/>
         </>)}
 
