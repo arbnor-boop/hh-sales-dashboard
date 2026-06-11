@@ -3563,10 +3563,7 @@ export default function Dashboard() {
               });
             });
 
-            const rows: ("month"|"quarter"|"year")[] = [];
-            // Interleave months with quarterly summaries
-            let lastQKey = "";
-            const tableRows: {type:"month",data:typeof monthStats[0]}|{type:"quarter",key:string,qi:number}|{type:"year",year:string}[] = [];
+            const tableRows: ({type:"month",data:typeof monthStats[0]}|{type:"quarter",key:string,qi:number})[] = [];
             monthStats.forEach((s,i)=>{
               const qKey=`Q${s.qIdx+1} ${s.year}`;
               tableRows.push({type:"month",data:s});
