@@ -2730,6 +2730,7 @@ export default function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selKW, setSelKW] = useState<string>("alle");
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
+  const TATSAECHLICH: Record<string,number> = {"Januar 2026":406645.15,"Februar 2026":515907.06,"März 2026":380995.44,"April 2026":552716.59,"Mai 2026":514168.31};
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "mittel" as "klein"|"mittel"|"gross",
@@ -3507,7 +3508,6 @@ export default function Dashboard() {
           <GesamtTable rows={monatsRows} label={selectedMonth}/>
         </>)}
 
-        {const TATSAECHLICH: Record<string,number> = {"Januar 2026":406645.15,"Februar 2026":515907.06,"März 2026":380995.44,"April 2026":552716.59,"Mai 2026":514168.31};}
         {activeTab==="jahresuebersicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Jahresübersicht 2026</h1>
