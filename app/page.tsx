@@ -3507,6 +3507,7 @@ export default function Dashboard() {
           <GesamtTable rows={monatsRows} label={selectedMonth}/>
         </>)}
 
+        {const TATSAECHLICH: Record<string,number> = {"Januar 2026":406645.15,"Februar 2026":515907.06,"März 2026":380995.44,"April 2026":552716.59,"Mai 2026":514168.31};}
         {activeTab==="jahresuebersicht"&&(<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Jahresübersicht 2026</h1>
@@ -3583,9 +3584,9 @@ export default function Dashboard() {
                     <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
                     <th style={{...TH,textAlign:"right"}}>INTERN VOL</th>
                     <th style={{...TH,textAlign:"right"}}>EXTERN VOL</th>
-                    <th style={{...TH,textAlign:"right"}}>TATSÄCHLICH ERHALTEN</th>
                     <th style={{...TH,textAlign:"right"}}>DEALS</th>
                     <th style={{...TH,textAlign:"right"}}>CASH-RATE</th>
+                    <th style={{...TH,textAlign:"right"}}>TATSÄCHLICH ERHALTEN</th>
                   </tr></thead>
                   <tbody>
                     {tableRows.map((row,i)=>{
@@ -3599,9 +3600,9 @@ export default function Dashboard() {
                             <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
                             <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(intV)}</td>
                             <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(extV)}</td>
-                            <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(nettoFromDeals(deals.filter(d=>d.monat===m)))}</td>
                             <td style={{...TD,textAlign:"right",color:C.muted}}>{dealCount}</td>
                             <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:rate>=70?"#d4ead6":rate>=55?"#e8f0d4":"#f0e8d4",color:"#1a1208",fontSize:12,fontWeight:600}}>{rate.toFixed(1)}%</span></td>
+                            <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{TATSAECHLICH[m]!==undefined?fmt(TATSAECHLICH[m]):"—"}</td>
                           </tr>
                         );
                       }
@@ -3617,9 +3618,9 @@ export default function Dashboard() {
                             <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.cash)}</td>
                             <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.intV)}</td>
                             <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(q.extV)}</td>
-                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(nettoFromDeals(deals.filter(d=>{const mn=d.monat.split(" ")[0];const yr=d.monat.split(" ")[1];return yr===row.key.split(" ")[1]&&Q_MONTHS[row.qi].includes(mn);})))}</td>
                             <td style={{...TD,textAlign:"right",fontWeight:700,color:qColors[row.qi]}}>{q.deals}</td>
                             <td style={{...TD,textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:qBgs[row.qi],border:`1px solid ${qColors[row.qi]}`,color:qColors[row.qi],fontSize:12,fontWeight:700}}>{rate.toFixed(1)}%</span></td>
+                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(qColors[row.qi])}}>{fmt(Q_MONTHS[row.qi].reduce((a,mn)=>a+(TATSAECHLICH[mn+" "+row.key.split(" ")[1]]||0),0)||0)}</td>
                           </tr>
                         );
                       }
