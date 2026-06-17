@@ -1786,6 +1786,68 @@ const BWA_KEYWORD_MAP: Record<string, {kat: string; icon: string; keywords: stri
   ],
 };
 
+// Extracts a clean recipient/payer name from a long bank transaction string,
+// stripping references, IBANs, BICs, card numbers, dates, etc., so that
+// repeated payments to the same person/company can be grouped together.
+function kuerzeEmpfaenger(name: string): string {
+  let s = name
+    .replace(/End-to-End-Ref\..*$/i,"")
+    .replace(/End-To-End-Ref\..*$/i,"")
+    .replace(/Mandatsref.*$/i,"")
+    .replace(/Gläubiger-ID.*$/i,"")
+    .replace(/SEPA-BASISLASTSCHRIFT.*$/i,"")
+    .replace(/SEPA BASISLASTSCHRIFT.*$/i,"")
+    .replace(/Karte Nr\..*$/i,"")
+    .replace(/Kartenzahlung.*$/i,"")
+    .replace(/Kundenreferenz.*$/i,"")
+    .replace(/Originalbetrag.*$/i,"")
+    .replace(/Entgelt Auslandseinsatz.*$/i,"")
+    .replace(/Rechnungsnummer.*$/i,"")
+    .replace(/Rechnungs-Nummer.*$/i,"")
+    .replace(/Rechnung-Nr\..*$/i,"")
+    .replace(/Rechnung:.*$/i,"")
+    .replace(/Rechnung Nr\..*$/i,"")
+    .replace(/RG \d.*$/i,"")
+    .replace(/RE\d{4,}.*$/i,"")
+    .replace(/Re-Nr\..*$/i,"")
+    .replace(/ReNr\.?\s*\d.*$/i,"")
+    .replace(/RNr\.?\s*\d.*$/i,"")
+    .replace(/\b\d{1,2}[\.\-]\d{1,2}[\.\-]\d{2,4}\b/g,"")
+    .replace(/\bDE\d{2}\w+\b/g,"")
+    .replace(/\bAE\d{2}\w+\b/g,"")
+    .replace(/\bCH\d{2}\w+\b/g,"")
+    .replace(/GENODEM\w+|DRESDEFF\w+|COBADEFF\w+|NOLADE\w+|SPKHDE\w+|HASPDE\w+|WIBADE\w+|SOLADE\w+|REVODEB\w+|NTSBDEB\w+|SOBKDEB\w+|COKSDE\w+|FNOMDEB\w+|SSKMDEMMXXX|TRWIBEB\w+|PBNKDEFF\w+|VOWADE\w+|HELADEF\w+|DEUTDEDB\w+|VOHADE\w+|GENODEF\w+|QNTODEB\w+|BYLADEM\w+|MALADE\w+|SBREDE\w+|VABECH\w+|STSPAT\w+/g,"")
+    .replace(/Lohn\s*-?\s*Gehalt.*$/i," Lohn")
+    .replace(/Gehalt\s+(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember).*$/i," Lohn")
+    .replace(/\(Gehalt.*?\)/i,"")
+    .replace(/Abrechnung\s*\d{2}\/\d{4}/i,"")
+    .replace(/\s{2,}/g," ")
+    .replace(/,\s*$/,"")
+    .trim();
+
+  // Collapse known recurring payees into a single canonical label
+  const KNOWN_PAYEES = [
+    "Niedersachsische Landeshauptkasse","Niedersächsische Landeshauptkasse",
+    "AOK Die Gesundheitskasse","AOK NordWest","AOK Nordost","AOK Baden-Wuerttemberg","AOK Nordrhein",
+    "Techniker Krankenkasse","EK Techniker-Krankenkasse",
+    "EK Hanseatische Krankenkass","EK hkk Handelskrankenkasse",
+    "BKK Debeka","R+V Betriebskrankenkasse","Deutsche Rentenversicherung",
+    "Hamann Henrik","Cem Gazeteci","Montano Heimann","Sören Durow","Soren Durow","Melih Mert Elarslan",
+    "Dinh Huy Nguyen Minh","Daniel Borissow","Rene Peters","Yves-Feras Yehya","Fatmire Hyseni",
+    "Donika Hyseni","Arbnor Ahmeti","Semir Desic","Jose Leonardo Sa de Morais","Naoki Fukushima",
+    "Adrian Kurtesi","Yannick Koch","Sülei Tatli","Taim Shakir","Lukas Jukic","Florian Schimpf","Samuel Greif",
+    "Petrit Hyseni","Melvin Vetterl","Melvin Loris Vetterli","Kada Hyseni",
+    "Collection Business Centers","aik Immobilien-Investmentgesellschaft",
+    "Mercedes-Benz Leasing","Porsche Financial Services","VW Leasing","Auto Weber",
+    "Telekom Deutschland","Vodafone","enercity",
+  ];
+  const lower = s.toLowerCase();
+  for (const payee of KNOWN_PAYEES) {
+    if (lower.includes(payee.toLowerCase())) return payee;
+  }
+  return s.slice(0,50) || name.slice(0,50);
+}
+
 function autoKategorisiere(name: string, firma: string): string {
   const cats = BWA_KEYWORD_MAP[firma];
   if (!cats) return "Sonstiges";
@@ -1815,12 +1877,22 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
     const einMap: Record<string,number> = {};
     einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
     const ausMap: Record<string,number> = {};
-    ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
+    const nameToKat: Record<string,string> = {};
+    if (monat === "Gesamt 2026") {
+      // Group by normalized recipient name so repeated payments (e.g. monthly salary, AOK) collapse into one line
+      ausRows.forEach(r => {
+        const key = kuerzeEmpfaenger(r.name);
+        ausMap[key] = (ausMap[key]||0) + r.betrag;
+        if (!nameToKat[key]) nameToKat[key] = autoKategorisiere(r.name, cfg.firma);
+      });
+    } else {
+      ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
+    }
     const ausDetails = Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,60) as [string,number][];
     const catDefs = BWA_KEYWORD_MAP[cfg.firma] || [];
     const catMap: Record<string, [string,number][]> = {};
     for (const [name, val] of ausDetails) {
-      const kat = autoKategorisiere(name, cfg.firma);
+      const kat = nameToKat[name] || autoKategorisiere(name, cfg.firma);
       if (!catMap[kat]) catMap[kat] = [];
       catMap[kat].push([name, val]);
     }
