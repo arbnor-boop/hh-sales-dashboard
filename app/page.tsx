@@ -1877,16 +1877,28 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
     const einMap: Record<string,number> = {};
     einRows.forEach(r => { einMap[r.name] = (einMap[r.name]||0) + r.betrag; });
     const ausMap: Record<string,number> = {};
-    const nameToKat: Record<string,string> = {};
+    const nameToKatSums: Record<string,Record<string,number>> = {};
     if (monat === "Gesamt 2026") {
       // Group by normalized recipient name so repeated payments (e.g. monthly salary, AOK) collapse into one line
       ausRows.forEach(r => {
         const key = kuerzeEmpfaenger(r.name);
         ausMap[key] = (ausMap[key]||0) + r.betrag;
-        if (!nameToKat[key]) nameToKat[key] = autoKategorisiere(r.name, cfg.firma);
+        const kat = autoKategorisiere(r.name, cfg.firma);
+        if (!nameToKatSums[key]) nameToKatSums[key] = {};
+        nameToKatSums[key][kat] = (nameToKatSums[key][kat]||0) + Math.abs(r.betrag);
       });
     } else {
       ausRows.forEach(r => { ausMap[r.name] = (ausMap[r.name]||0) + r.betrag; });
+    }
+    // Resolve each recipient's category to whichever category captured the largest total amount
+    const nameToKat: Record<string,string> = {};
+    for (const key of Object.keys(nameToKatSums)) {
+      const sums = nameToKatSums[key];
+      let bestKat = "Sonstiges"; let bestVal = -1;
+      for (const kat of Object.keys(sums)) {
+        if (sums[kat] > bestVal) { bestVal = sums[kat]; bestKat = kat; }
+      }
+      nameToKat[key] = bestKat;
     }
     const ausDetails = Object.entries(ausMap).sort((a,b)=>a[1]-b[1]).slice(0,60) as [string,number][];
     const catDefs = BWA_KEYWORD_MAP[cfg.firma] || [];
