@@ -1838,6 +1838,9 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
 
 function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [selFirma, setSelFirma] = useState<string|null>(null);
+  const [jahresView, setJahresView] = useState(false);
+  const [jahresRows, setJahresRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
+  const [jahresLoading, setJahresLoading] = useState(false);
   const [detailTab, setDetailTab] = useState<"uebersicht"|"bwa">("uebersicht");
   const [selMonat, setSelMonat] = useState("April 2026");
   const [allRows, setAllRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
@@ -1852,9 +1855,9 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
     zahlenFett: false,
   });
   const THEMES = {
-    beige: {bg:"#f0ece0",sidebar:"#faf6ef",card:"#ffffff",border:"#d4c9b8",text:"#1a1208",muted:"#6b5e4e",green:"#2d7a3a",pink:"#c0392b",indigo:"#5c4a2a",th:"#e8ddd0"},
-    dark:  {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",text:"#e8e8f0",muted:"#6b7280",green:"#34d399",pink:"#f87171",indigo:"#818cf8",th:"#08081a"},
-    white: {bg:"#ffffff",sidebar:"#f8f8f8",card:"#ffffff",border:"#e2e8f0",text:"#1a202c",muted:"#64748b",green:"#059669",pink:"#dc2626",indigo:"#4f46e5",th:"#f1f5f9"},
+    beige: {bg:"#f0ece0",sidebar:"#faf6ef",card:"#ffffff",border:"#d4c9b8",border2:"#c4b9a8",text:"#1a1208",muted:"#6b5e4e",green:"#2d7a3a",pink:"#c0392b",indigo:"#5c4a2a",th:"#e8ddd0"},
+    dark:  {bg:"#07070f",sidebar:"#0b0b15",card:"#0f0f1c",border:"#1c1c2e",border2:"#252538",text:"#e8e8f0",muted:"#6b7280",green:"#34d399",pink:"#f87171",indigo:"#818cf8",th:"#08081a"},
+    white: {bg:"#ffffff",sidebar:"#f8f8f8",card:"#ffffff",border:"#e2e8f0",border2:"#d0d7e0",text:"#1a202c",muted:"#64748b",green:"#059669",pink:"#dc2626",indigo:"#4f46e5",th:"#f1f5f9"},
   };
   const t = THEMES[settings.theme];
   const C = {...t};
@@ -1862,6 +1865,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const FF = settings.fontFamily==="mono"?"'DM Mono',monospace":settings.fontFamily==="klassisch"?"Georgia,serif":"Inter,system-ui,sans-serif";
   const FW = settings.zahlenFett?700:400;
   const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
+  const fmtN0 = (n: number) => new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 
   async function loadMonat(monat: string) {
     try {
@@ -1894,6 +1898,19 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
     return () => clearInterval(iv);
   }, [selMonat]);
 
+  useEffect(() => {
+    if (!jahresView) return;
+    setJahresLoading(true);
+    const gids = [...new Set(["0", ...Object.values(MONAT_TO_GID)])];
+    Promise.all(gids.map(gid =>
+      fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).catch(()=>"")
+    )).then(results => {
+      const allParsed = results.flatMap(text => text ? parseFirmenCSV(text) : []);
+      setJahresRows(allParsed);
+      setJahresLoading(false);
+    });
+  }, [jahresView]);
+
   const liveData = allRows.length > 0 ? buildFirmenData(allRows, selMonat) : null;
   const data = liveData ?? FDATA;
   const f = selFirma ? (data.find(x=>x.firma===selFirma) ?? data[0]) : null;
@@ -1902,6 +1919,18 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const totalEin = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.ein,0);
   const totalAus = data.filter(fi=>fi.currency==="EUR").reduce((a,fi)=>a+fi.aus,0);
   const totalSaldo = totalEin + totalAus;
+
+  // Jahresgewinn-Berechnung über alle Firmen, alle Monate (EUR-Basis, CHF wird mit Wechselkurs ~1.05 grob umgerechnet als Orientierung)
+  const CHF_TO_EUR = 1.05;
+  const jahresMonate = ["Januar 2026","Februar 2026","März 2026","April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"];
+  const jahresByFirma = jahresMonate.map(mo => {
+    const monatData = buildFirmenData(jahresRows, mo);
+    return { monat: mo, data: monatData };
+  }).filter(m => m.data.some(d => d.ein > 0 || d.aus < 0));
+
+  const jahresGesamtEin = jahresByFirma.reduce((acc, m) => acc + m.data.reduce((a, d) => a + (d.currency === "CHF" ? d.ein * CHF_TO_EUR : d.ein), 0), 0);
+  const jahresGesamtAus = jahresByFirma.reduce((acc, m) => acc + m.data.reduce((a, d) => a + (d.currency === "CHF" ? d.aus * CHF_TO_EUR : d.aus), 0), 0);
+  const jahresGewinn = jahresGesamtEin + jahresGesamtAus;
 
   return (
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:FF}}>
@@ -1917,7 +1946,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             color:liveStatus==="success"?C.green:C.text}}>
             {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
           </div>
-          <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
+          <button onClick={()=>{setJahresView(v=>!v);setSelFirma(null);}} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,color:jahresView?"#ffffff":C.indigo,background:jahresView?C.indigo:"#e8ddd0",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>📈 Jahresgewinn</button>
+          <select value={selMonat} onChange={e=>{setSelMonat(e.target.value);setJahresView(false);}} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
             {["Januar 2026","Februar 2026","März 2026","April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"].map(m=><option key={m} value={m}>{m}</option>)}
             <option value="Gesamt 2026">📊 Gesamt 2026 (alle Monate)</option>
           </select>
@@ -1927,7 +1957,72 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
         </div>
       </div>
       <div style={{padding:"28px 32px"}}>
-        {!selFirma ? (
+        {jahresView ? (
+          <div>
+            <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:6}}>📈 Jahresgewinn 2026 — Alle Firmen</h2>
+            <div style={{fontSize:13,color:C.muted,marginBottom:24}}>Summe über alle 4 Firmen · CHF wird zu ~{CHF_TO_EUR} EUR umgerechnet (Orientierung)</div>
+            {jahresLoading ? (
+              <div style={{padding:40,textAlign:"center",color:C.muted}}>⟳ Lade Jahresdaten aus allen Monaten...</div>
+            ) : (
+              <>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:20,marginBottom:28}}>
+                  <div style={{background:"#d4ead6",border:"1px solid #2d7a3a",borderRadius:14,padding:24,textAlign:"center"}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"#2d7a3a",letterSpacing:"1.5px",marginBottom:10}}>GESAMTEINNAHMEN (EUR-äquiv.)</div>
+                    <div style={{fontSize:30,fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{fmtN0(jahresGesamtEin)}</div>
+                  </div>
+                  <div style={{background:"#f0d4d4",border:"1px solid #c0392b",borderRadius:14,padding:24,textAlign:"center"}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"#c0392b",letterSpacing:"1.5px",marginBottom:10}}>GESAMTAUSGABEN (EUR-äquiv.)</div>
+                    <div style={{fontSize:30,fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{fmtN0(jahresGesamtAus)}</div>
+                  </div>
+                  <div style={{background:jahresGewinn>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${jahresGewinn>=0?"#2d7a3a":"#c0392b"}`,borderRadius:14,padding:24,textAlign:"center"}}>
+                    <div style={{fontSize:12,fontWeight:700,color:jahresGewinn>=0?"#2d7a3a":"#c0392b",letterSpacing:"1.5px",marginBottom:10}}>💰 GEWINN BISHER (CASHBESTAND)</div>
+                    <div style={{fontSize:30,fontWeight:700,fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{jahresGewinn>=0?"+":""}{fmtN0(jahresGewinn)}</div>
+                  </div>
+                </div>
+                <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto"}}>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead>
+                      <tr style={{background:t.th}}>
+                        <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>MONAT</th>
+                        <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>EINNAHMEN</th>
+                        <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>AUSGABEN</th>
+                        <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>GEWINN</th>
+                        <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>KUMULIERT</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(() => {
+                        let kumuliert = 0;
+                        return jahresByFirma.map((m, i) => {
+                          const ein = m.data.reduce((a, d) => a + (d.currency === "CHF" ? d.ein * CHF_TO_EUR : d.ein), 0);
+                          const aus = m.data.reduce((a, d) => a + (d.currency === "CHF" ? d.aus * CHF_TO_EUR : d.aus), 0);
+                          const gewinn = ein + aus;
+                          kumuliert += gewinn;
+                          return (
+                            <tr key={m.monat} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
+                              <td style={{padding:"10px 16px",fontWeight:600,color:C.text}}>{m.monat}</td>
+                              <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{fmtN0(ein)}</td>
+                              <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{fmtN0(aus)}</td>
+                              <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:gewinn>=0?"#2d7a3a":"#c0392b"}}>{gewinn>=0?"+":""}{fmtN0(gewinn)}</td>
+                              <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:kumuliert>=0?"#2d7a3a":"#c0392b"}}>{kumuliert>=0?"+":""}{fmtN0(kumuliert)}</td>
+                            </tr>
+                          );
+                        });
+                      })()}
+                      <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
+                        <td style={{padding:"10px 16px",fontWeight:700,color:C.text}}>Gesamt 2026</td>
+                        <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:"#1a1208"}}>{fmtN0(jahresGesamtEin)}</td>
+                        <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:"#1a1208"}}>{fmtN0(jahresGesamtAus)}</td>
+                        <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:jahresGewinn>=0?"#2d7a3a":"#c0392b"}}>{jahresGewinn>=0?"+":""}{fmtN0(jahresGewinn)}</td>
+                        <td style={{padding:"10px 16px",textAlign:"right"}}></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        ) : !selFirma ? (
           <>
             {/* Gesamtsaldo EUR */}
             <div style={{fontSize:12,color:C.muted,letterSpacing:"2px",marginBottom:8,fontWeight:700}}>EUR FIRMEN</div>
