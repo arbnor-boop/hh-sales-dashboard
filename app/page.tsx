@@ -2110,6 +2110,85 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Pro Firma Aufschlüsselung */}
+                {(() => {
+                  // Aggregate per firma across all months of jahresByFirma
+                  const firmaAgg: Record<string, {ein:number;aus:number;currency:string;color:string}> = {};
+                  jahresByFirma.forEach(m => {
+                    m.data.forEach(d => {
+                      if (!firmaAgg[d.firma]) firmaAgg[d.firma] = {ein:0, aus:0, currency:d.currency, color:d.color};
+                      firmaAgg[d.firma].ein += d.ein;
+                      firmaAgg[d.firma].aus += d.aus;
+                    });
+                  });
+                  const firmaRows = Object.entries(firmaAgg).map(([firma, v]) => {
+                    const saldo = v.ein + v.aus;
+                    const saldoEur = v.currency === "CHF" ? saldo * CHF_TO_EUR : saldo;
+                    return { firma, ein: v.ein, aus: v.aus, saldo, saldoEur, currency: v.currency, color: v.color };
+                  }).sort((a,b) => b.saldoEur - a.saldoEur);
+                  const totalSaldoEur = firmaRows.reduce((a,r) => a + r.saldoEur, 0);
+
+                  return (
+                    <div style={{marginTop:28}}>
+                      <h3 style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:14}}>📊 Aufschlüsselung pro Firma — Gesamt 2026</h3>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:16,marginBottom:20}}>
+                        {firmaRows.map(r => {
+                          const anteil = totalSaldoEur !== 0 ? (r.saldoEur / totalSaldoEur) * 100 : 0;
+                          return (
+                            <div key={r.firma} style={{background:C.card,border:`1px solid ${C.border}`,borderTop:`3px solid ${r.color}`,borderRadius:12,padding:18}}>
+                              <div style={{fontSize:14,fontWeight:700,color:r.color,marginBottom:10}}>{r.firma}</div>
+                              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.muted,marginBottom:4}}>
+                                <span>✅ Einnahmen</span>
+                                <span style={{fontFamily:"'DM Mono',monospace",color:C.text}}>{fmtN(r.ein)} {r.currency}</span>
+                              </div>
+                              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.muted,marginBottom:8}}>
+                                <span>💸 Ausgaben</span>
+                                <span style={{fontFamily:"'DM Mono',monospace",color:C.text}}>{fmtN(r.aus)} {r.currency}</span>
+                              </div>
+                              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",paddingTop:8,borderTop:`1px solid ${C.border}`}}>
+                                <span style={{fontSize:12,fontWeight:700,color:C.text}}>💰 Saldo</span>
+                                <span style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color:r.saldo>=0?"#2d7a3a":"#c0392b"}}>{r.saldo>=0?"+":""}{fmtN(r.saldo)} {r.currency}</span>
+                              </div>
+                              <div style={{marginTop:10,background:t.th,borderRadius:8,padding:"6px 10px",textAlign:"center"}}>
+                                <span style={{fontSize:11,fontWeight:700,color:C.indigo,letterSpacing:"0.5px"}}>Anteil am Gesamtgewinn: {anteil.toFixed(0)}%</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto"}}>
+                        <table style={{width:"100%",borderCollapse:"collapse"}}>
+                          <thead>
+                            <tr style={{background:t.th}}>
+                              <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>FIRMA</th>
+                              <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>EINNAHMEN</th>
+                              <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>AUSGABEN</th>
+                              <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>SALDO</th>
+                              <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>WÄHRUNG</th>
+                              <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,color:C.muted,letterSpacing:"1.2px",textTransform:"uppercase",borderBottom:`1px solid ${C.border}`}}>ANTEIL</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {firmaRows.map((r,i) => {
+                              const anteil = totalSaldoEur !== 0 ? (r.saldoEur / totalSaldoEur) * 100 : 0;
+                              return (
+                                <tr key={r.firma} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
+                                  <td style={{padding:"10px 16px",fontWeight:700,color:r.color}}>{r.firma}</td>
+                                  <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{fmtN(r.ein)}</td>
+                                  <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{fmtN(r.aus)}</td>
+                                  <td style={{padding:"10px 16px",textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.saldo>=0?"#2d7a3a":"#c0392b"}}>{r.saldo>=0?"+":""}{fmtN(r.saldo)}</td>
+                                  <td style={{padding:"10px 16px",textAlign:"right",color:C.muted}}>{r.currency}</td>
+                                  <td style={{padding:"10px 16px",textAlign:"right"}}><span style={{padding:"2px 9px",borderRadius:12,background:t.th,color:C.indigo,fontSize:12,fontWeight:700}}>{anteil.toFixed(0)}%</span></td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>
