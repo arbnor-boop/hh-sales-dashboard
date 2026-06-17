@@ -1790,6 +1790,13 @@ const BWA_KEYWORD_MAP: Record<string, {kat: string; icon: string; keywords: stri
 // stripping references, IBANs, BICs, card numbers, dates, etc., so that
 // repeated payments to the same person/company can be grouped together.
 function kuerzeEmpfaenger(name: string): string {
+  // Special case: international wire transfers list the real recipient after "BEGUENSTIGTER:" —
+  // match known recipients directly by keyword since the surrounding format varies.
+  if (/ZAHLUNG IN DAS AUSLAND/i.test(name)) {
+    if (/hp venius/i.test(name)) return "HP Venius Dubai";
+    if (/sebastian engel/i.test(name)) return "Sebastian Engel";
+  }
+
   let s = name
     .replace(/End-to-End-Ref\..*$/i,"")
     .replace(/End-To-End-Ref\..*$/i,"")
