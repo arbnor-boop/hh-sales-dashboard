@@ -2243,7 +2243,8 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
   
   let currentFirma = "";
   let inData = false;
-  
+  let ausStartIdx = 5; // default offset for Ausgaben columns (Datum,Name,Betrag,Kategorie)
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const cols = parseCSVLine2(line);
@@ -2256,17 +2257,23 @@ function parseFirmenCSV(text: string): {firma:string; datum:string; name:string;
       continue;
     }
     
-    // Check if header row
+    // Check if header row — dynamically find where the second "Datum" column starts (Ausgaben block)
     if (cols[0]?.toLowerCase() === "datum") {
       inData = true;
+      // Find the index of the second occurrence of "Datum" (case-insensitive) after index 0
+      let secondDatumIdx = -1;
+      for (let c = 1; c < cols.length; c++) {
+        if (cols[c]?.toLowerCase() === "datum") { secondDatumIdx = c; break; }
+      }
+      ausStartIdx = secondDatumIdx > 0 ? secondDatumIdx : 5;
       continue;
     }
     
     if (!inData || !currentFirma) continue;
     
-    // Einnahmen: cols 0,1,2 — Ausgaben: cols 5,6,7,8
+    // Einnahmen: cols 0,1,2 — Ausgaben: dynamically positioned based on header
     const einDatum = cols[0]||""; const einName = cols[1]||""; const einBetrag = parseNum(cols[2]||"");
-    const ausDatum = cols[5]||""; const ausName = cols[6]||""; const ausBetrag = parseNum(cols[7]||""); const ausKat = cols[8]||"";
+    const ausDatum = cols[ausStartIdx]||""; const ausName = cols[ausStartIdx+1]||""; const ausBetrag = parseNum(cols[ausStartIdx+2]||""); const ausKat = cols[ausStartIdx+3]||"";
     
     if (einDatum && /\d{1,2}[\.\-]\d{2}[\.\-]\d{4}/.test(einDatum) && einBetrag !== null && einBetrag > 0) {
       const parts = einDatum.replace(/-/g,".").split(".");
