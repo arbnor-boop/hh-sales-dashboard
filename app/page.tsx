@@ -1684,6 +1684,9 @@ const FDATA: FirmaData[] = [
 const FIRMEN_NEW_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7IdyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv";
 
 const MONAT_TO_GID: Record<string,string> = {
+  "Januar 2026": "922391159",
+  "Februar 2026": "1004781515",
+  "März 2026": "527071699",
   "April 2026": "0",
   "Mai 2026": "494571505",
   "Juni 2026": "225408471",
