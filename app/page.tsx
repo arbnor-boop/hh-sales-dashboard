@@ -1698,17 +1698,6 @@ const MONAT_TO_GID: Record<string,string> = {
   "Dezember 2026": "379786663",
 };
 
-// Only these months currently contain real booking data in the sheet.
-// Update this list as new months get filled in — keeps "Gesamt 2026" /
-// Jahresgewinn from pulling in empty/placeholder tab content for future months.
-const AKTIVE_MONATE_GIDS = [
-  MONAT_TO_GID["Januar 2026"],
-  MONAT_TO_GID["Februar 2026"],
-  MONAT_TO_GID["März 2026"],
-  MONAT_TO_GID["April 2026"],
-  MONAT_TO_GID["Mai 2026"],
-];
-
 // Keyword-based BWA auto-categorizer — verified against real April 2026 bookings
 const BWA_KEYWORD_MAP: Record<string, {kat: string; icon: string; keywords: string[]}[]> = {
   "HH Sales Consulting Germany GmbH": [
@@ -1972,14 +1961,28 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   async function loadMonat(monat: string) {
     try {
       if (monat === "Gesamt 2026") {
-        // Only fetch months that are known to contain real (non-placeholder) data.
-        // Months without real bookings yet are intentionally excluded here to avoid
-        // pulling in empty/template tab content that would corrupt the yearly totals.
-        const gids = [...new Set(["0", ...AKTIVE_MONATE_GIDS])];
-        const results = await Promise.all(gids.map(gid =>
+        // Fetch every month's tab, then automatically keep only the months whose
+        // tab actually contains real booking rows for that exact month — this way
+        // empty/placeholder tabs for future months are skipped automatically and
+        // newly filled-in months show up without any code changes.
+        const gidEntries = Object.entries(MONAT_TO_GID); // [monat, gid][]
+        const results = await Promise.all(gidEntries.map(([, gid]) =>
           fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).catch(()=>"")
         ));
-        const allParsed = results.flatMap(text => text ? parseFirmenCSV(text) : []);
+        const allParsed: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[] = [];
+        gidEntries.forEach(([erwarteterMonat], i) => {
+          const text = results[i];
+          if (!text) return;
+          const parsedRows = parseFirmenCSV(text);
+          // A tab "has real data for its month" if at least one row's own parsed
+          // month matches what this tab is supposed to represent, and the amount
+          // isn't zero (guards against stray header/template rows).
+          const hatEchteDaten = parsedRows.some(r => r.monat === erwarteterMonat && r.betrag !== 0);
+          if (!hatEchteDaten) return;
+          // Only keep rows that belong to this tab's expected month, in case a
+          // template tab carried over stale rows from a different month.
+          parsedRows.forEach(r => { if (r.monat === erwarteterMonat) allParsed.push(r); });
+        });
         if (allParsed.length === 0) { setLiveStatus("error"); return; }
         setAllRows(allParsed);
         setLiveStatus("success");
@@ -2006,11 +2009,19 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   useEffect(() => {
     if (!jahresView) return;
     setJahresLoading(true);
-    const gids = [...new Set(["0", ...AKTIVE_MONATE_GIDS])];
-    Promise.all(gids.map(gid =>
+    const gidEntries = Object.entries(MONAT_TO_GID);
+    Promise.all(gidEntries.map(([, gid]) =>
       fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).catch(()=>"")
     )).then(results => {
-      const allParsed = results.flatMap(text => text ? parseFirmenCSV(text) : []);
+      const allParsed: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[] = [];
+      gidEntries.forEach(([erwarteterMonat], i) => {
+        const text = results[i];
+        if (!text) return;
+        const parsedRows = parseFirmenCSV(text);
+        const hatEchteDaten = parsedRows.some(r => r.monat === erwarteterMonat && r.betrag !== 0);
+        if (!hatEchteDaten) return;
+        parsedRows.forEach(r => { if (r.monat === erwarteterMonat) allParsed.push(r); });
+      });
       setJahresRows(allParsed);
       setJahresLoading(false);
     });
