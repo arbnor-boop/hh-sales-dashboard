@@ -1802,7 +1802,9 @@ function buildFirmenData(rows: {firma:string;datum:string;name:string;betrag:num
     {firma:"Hamann & Kollegen Immobilien GmbH", short:"Hamann & Kollegen", color:"#c0392b", icon:"🏠", currency:"EUR"},
   ];
   return FIRMEN_CFG.map(cfg => {
-    const firmaRows = rows.filter(r => r.firma === cfg.firma && r.monat === monat);
+    const firmaRows = monat === "Gesamt 2026"
+      ? rows.filter(r => r.firma === cfg.firma)
+      : rows.filter(r => r.firma === cfg.firma && r.monat === monat);
     const einRows = firmaRows.filter(r => r.betrag > 0);
     const ausRows = firmaRows.filter(r => r.betrag < 0);
     const ein = einRows.reduce((a,r) => a+r.betrag, 0);
@@ -1859,8 +1861,19 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
 
   async function loadMonat(monat: string) {
-    const gid = MONAT_TO_GID[monat] ?? "0";
     try {
+      if (monat === "Gesamt 2026") {
+        const gids = [...new Set(["0", ...Object.values(MONAT_TO_GID)])];
+        const results = await Promise.all(gids.map(gid =>
+          fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"}).then(r=>r.text()).catch(()=>"")
+        ));
+        const allParsed = results.flatMap(text => text ? parseFirmenCSV(text) : []);
+        if (allParsed.length === 0) { setLiveStatus("error"); return; }
+        setAllRows(allParsed);
+        setLiveStatus("success");
+        return;
+      }
+      const gid = MONAT_TO_GID[monat] ?? "0";
       const res = await fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"});
       const text = await res.text();
       const rows = parseFirmenCSV(text);
@@ -1902,7 +1915,8 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             {liveStatus==="success"?"● LIVE":liveStatus==="error"?"● Offline":"⟳ Lädt..."}
           </div>
           <select value={selMonat} onChange={e=>setSelMonat(e.target.value)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:`1px solid #2a2a50`,cursor:"pointer",outline:"none"}}>
-            {["April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"].map(m=><option key={m} value={m}>{m}</option>)}
+            {["Januar 2026","Februar 2026","März 2026","April 2026","Mai 2026","Juni 2026","Juli 2026","August 2026","September 2026","Oktober 2026","November 2026","Dezember 2026"].map(m=><option key={m} value={m}>{m}</option>)}
+            <option value="Gesamt 2026">📊 Gesamt 2026 (alle Monate)</option>
           </select>
           {selFirma && <button onClick={()=>setSelFirma(null)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,color:C.indigo,background:"transparent",border:`1px solid ${C.indigo}`,cursor:"pointer"}}>← Zurück</button>}
           <button onClick={()=>setSettingsOpen(true)} style={{padding:"6px 14px",borderRadius:8,fontSize:14,color:C.text,background:"transparent",border:`1px solid ${C.border}`,cursor:"pointer"}}>⚙️ Einstellungen</button>
