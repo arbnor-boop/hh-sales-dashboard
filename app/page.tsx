@@ -3619,6 +3619,7 @@ export default function Dashboard() {
           for(let i=0;i<7;i++){weekDates.push(`${pad(cur.getDate())}.${pad(cur.getMonth()+1)}.${cur.getFullYear()}`);cur.setDate(cur.getDate()+1);}
           const weekDeals = deals.filter(d=>weekDates.includes(d.datum));
           const weekCash = weekDeals.reduce((a,d)=>a+d.scgCash,0);
+          const weekVol = weekDeals.reduce((a,d)=>a+d.scgVol,0);
           const weekNetto = nettoFromDeals(weekDeals);
           // Top closer today
           const closerMap: Record<string,number> = {};
@@ -3661,7 +3662,7 @@ export default function Dashboard() {
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:28}}>
                 <KPICard title="DEALS HEUTE" value={String(todayDeals.length)} sub="Abgeschlossene Deals" color={C.indigo} icon="📋"/>
                 <KPICard title="SCG CASH IN" value={todayCash>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayCash):"—"} sub="Heute" color={C.cyan} icon="💰"/>
-                <KPICard title="AV" value={todayDeals.length>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayCash/todayDeals.length):"—"} sub="Ø pro Deal" color={C.cyan} icon="📐"/>
+                <KPICard title="SCG VOLUMEN" value={todayVol>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayVol):"—"} sub="Heute" color={C.cyan} icon="📊"/>
                 <KPICard title="NETTO CASH-IN" value={todayNetto>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayNetto):"—"} sub="Nach Provision" color={C.green} icon="✅"/>
                 <KPICard title="TOP CLOSER" value={topCloser?topCloser[0]:"—"} sub={topCloser?`${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(topCloser[1])} Vol.`:"Keine Deals"} color={C.amber} icon="🏆"/>
                 <KPICard title="TOP PARTNER" value={topPartner?topPartner[0]:"—"} sub={topPartner?`${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(topPartner[1])} Cash`:"Keine Deals"} color={C.pink} icon="🏢"/>
@@ -3672,7 +3673,7 @@ export default function Dashboard() {
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14,marginBottom:28}}>
                 <KPICard title="DEALS" value={String(weekDeals.length)} sub="Diese Woche" color={C.indigo} icon="📋"/>
                 <KPICard title="SCG CASH IN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(weekCash)} sub="Diese Woche" color={C.cyan} icon="💰"/>
-                <KPICard title="AV" value={weekDeals.length>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(weekCash/weekDeals.length):"—"} sub="Ø pro Deal" color={C.cyan} icon="📐"/>
+                <KPICard title="SCG VOLUMEN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(weekVol)} sub="Diese Woche" color={C.cyan} icon="📊"/>
                 <KPICard title="NETTO" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(weekNetto)} sub="Nach Provision" color={C.green} icon="✅"/>
               </div>
 
@@ -3682,7 +3683,6 @@ export default function Dashboard() {
                 <KPICard title="DEALS" value={String(monthDeals.length)} color={C.indigo} icon="📋"/>
                 <KPICard title="SCG VOLUMEN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthVol)} color={C.indigo} icon="📊"/>
                 <KPICard title="SCG CASH IN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthCash)} color={C.cyan} icon="💰"/>
-                <KPICard title="AV" value={monthDeals.length>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthCash/monthDeals.length):"—"} sub="Ø pro Deal" color={C.cyan} icon="📐"/>
                 <KPICard title="NETTO CASH-IN" value={new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(monthNetto)} sub="Nach Provision" color={C.green} icon="✅"/>
                 <KPICard title="VS LETZTER MONAT" value={`${monthDiff>=0?"+":""}${monthDiff.toFixed(1)}%`} sub={`${lastMonth}: ${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(lastMonthCash)}`} color={monthDiff>=0?C.green:C.pink} icon={monthDiff>=0?"📈":"📉"}/>
               </div>
