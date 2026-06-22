@@ -14,9 +14,9 @@ const INTERN_PARTNERS = new Set([
   "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
 function isInternCloser(setter: string): boolean {
-  const s = setter.trim().replace(/\s+/g," ");
-  const SETTER_NAMES = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel","Petrit","Henrik"];
-  return SETTER_NAMES.some(n => n.toLowerCase() === s.toLowerCase());
+  const s = setter.trim().toLowerCase();
+  const SETTER_NAMES = ["montano","cem","yves","mert","kada","sören","soeren","rene","daniel","petrit","henrik"];
+  return SETTER_NAMES.some(n => s === n || s.startsWith(n+" ") || s.endsWith(" "+n));
 }
 
 function isInternPartner(name: string): boolean {
