@@ -2093,6 +2093,16 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
                   <div style={{background:jahresGewinn>=0?"#d4ead6":"#f0d4d4",border:`1px solid ${jahresGewinn>=0?"#2d7a3a":"#c0392b"}`,borderRadius:14,padding:24,textAlign:"center"}}>
                     <div style={{fontSize:12,fontWeight:700,color:jahresGewinn>=0?"#2d7a3a":"#c0392b",letterSpacing:"1.5px",marginBottom:10}}>💰 GEWINN BISHER (CASHBESTAND)</div>
                     <div style={{fontSize:30,fontWeight:700,fontFamily:"'DM Mono',monospace",color:"#1a1208"}}>{jahresGewinn>=0?"+":""}{fmtN0(jahresGewinn)}</div>
+                    <div style={{marginTop:12,paddingTop:12,borderTop:"1px solid rgba(0,0,0,0.1)"}}>
+                      <div style={{fontSize:11,color:"#c0392b",fontWeight:600,marginBottom:4}}>Abzug: Peak Revenue Schuld bei KHPH AG (Fr. 137'148.48)</div>
+                      <div style={{fontSize:14,fontFamily:"'DM Mono',monospace",color:"#c0392b",fontWeight:700}}>-144.005,90 €</div>
+                      <div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(0,0,0,0.1)"}}>
+                        <div style={{fontSize:11,color:"#1a1208",fontWeight:600,marginBottom:4}}>= GEWINN NACH SCHULDEN (real)</div>
+                        <div style={{fontSize:22,fontFamily:"'DM Mono',monospace",fontWeight:700,color:(jahresGewinn-144005.90)>=0?"#2d7a3a":"#c0392b"}}>
+                          {(jahresGewinn-144005.90)>=0?"+":""}{fmtN0(jahresGewinn-144005.90)}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"auto"}}>
