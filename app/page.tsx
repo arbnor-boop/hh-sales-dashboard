@@ -3279,8 +3279,8 @@ export default function Dashboard() {
             <th style={TH}>Partner</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
-            <th style={{...TH,textAlign:"right",color:C.green}}>SUM von Intern Volumen</th>
-            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von Intern Cash IN</th>
+            <th style={{...TH,textAlign:"right",color:C.green}}>SUM von SCG Volumen</th>
+            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
           </tr></thead>
           <tbody>
             {rows.map((r,i)=>(
@@ -3288,16 +3288,16 @@ export default function Dashboard() {
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
-                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgVol)}</td>
-                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgCash)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internCash)}</td>
               </tr>
             ))}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgVol)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgCash)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.internVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.internCash)}</td>
             </tr>
           </tbody>
         </table>
@@ -3319,8 +3319,8 @@ export default function Dashboard() {
             <th style={TH}>Partner</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
-            <th style={{...TH,textAlign:"right",color:C.pink}}>SUM von Extern Volumen</th>
-            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von Extern Cash IN</th>
+            <th style={{...TH,textAlign:"right",color:C.pink}}>SUM von SCG Volumen</th>
+            <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
           </tr></thead>
           <tbody>
             {rows.map((r,i)=>(
@@ -3328,16 +3328,16 @@ export default function Dashboard() {
                 <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
-                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgVol)}</td>
-                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgCash)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externVol)}</td>
+                <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externCash)}</td>
               </tr>
             ))}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgVol)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgCash)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.externVol)}</td>
+              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.externCash)}</td>
             </tr>
           </tbody>
         </table>
@@ -3729,8 +3729,8 @@ export default function Dashboard() {
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#e8ddd0",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(tagIntern).scgVol} cash={sumRows(tagIntern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-            <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={sumRows(tagExtern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter)))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
+            <SumCard label="INTERN" vol={sumRows(tagIntern).internVol} cash={sumRows(tagIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
+            <SumCard label="EXTERN" vol={sumRows(tagExtern).externVol} cash={sumRows(tagExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&!isInternCloser(d.setter)))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
             <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
           </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
@@ -3803,8 +3803,8 @@ export default function Dashboard() {
                             <span style={{fontSize:13,color:C.muted}}>{kwDs.length} Deals · {fmt(kwDs.reduce((a,d)=>a+d.scgVol,0))} SCG Vol</span>
                           </div>
                           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
-                            <SumCard label="INTERN" vol={sumRows(kwIntern).scgVol} cash={sumRows(kwIntern).scgCash} netto={kwInternNetto} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-                            <SumCard label="EXTERN" vol={sumRows(kwExtern).scgVol} cash={sumRows(kwExtern).scgCash} netto={kwExternNetto} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
+                            <SumCard label="INTERN" vol={sumRows(kwIntern).internVol} cash={sumRows(kwIntern).internCash} netto={kwInternNetto} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
+                            <SumCard label="EXTERN" vol={sumRows(kwExtern).externVol} cash={sumRows(kwExtern).externCash} netto={kwExternNetto} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
                             <SumCard label="GESAMT" vol={sumRows(kwAll).scgVol} cash={sumRows(kwAll).scgCash} netto={kwNetto} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
                           </div>
                           {kwIntern.length>0&&<InternTable rows={kwIntern} label={kw}/>}
@@ -3826,8 +3826,8 @@ export default function Dashboard() {
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#e8ddd0",color:C.indigo,border:"1px solid #2a2a50"}}>{selectedMonth}</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(monatsIntern).scgVol} cash={sumRows(monatsIntern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-            <SumCard label="EXTERN" vol={sumRows(monatsExtern).scgVol} cash={sumRows(monatsExtern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter)))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
+            <SumCard label="INTERN" vol={sumRows(monatsIntern).internVol} cash={sumRows(monatsIntern).internCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&isInternCloser(d.setter)))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
+            <SumCard label="EXTERN" vol={sumRows(monatsExtern).externVol} cash={sumRows(monatsExtern).externCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth&&!isInternCloser(d.setter)))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
             <SumCard label="GESAMT" vol={sumRows(monatsRows).scgVol} cash={sumRows(monatsRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.monat===selectedMonth))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
           </div>
           <InternTable rows={monatsIntern} label={selectedMonth}/>
