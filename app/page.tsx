@@ -1554,7 +1554,7 @@ function parseCSV(text: string): Deal[] {
   console.log("Total data lines:", lines.length - headerIdx - 1);
   const col = (names: string[]) => {
     for (const n of names) {
-      const idx = headers.findIndex(h => h.includes(n.toLowerCase()));
+      const idx = headers.findIndex(h => h.replace(/\s+/g," ").trim().includes(n.toLowerCase()));
       if (idx !== -1) return idx;
     }
     return -1;
@@ -1575,10 +1575,10 @@ function parseCSV(text: string): Deal[] {
   const iKada     = col(["kada"]);
   const iSoeren   = col(["sören","soeren"]);
   const iRene     = col(["rene"]);
-  const iInternVol  = col(["intern volumen","intern_volumen"]);
-  const iInternCash = col(["intern cash in","intern_cash_in"]);
-  const iExternVol  = col(["extern volumen","extern_volumen"]);
-  const iExternCash = col(["extern cash in","extern_cash_in"]);
+  const iInternVol  = col(["intern volumen","intern_volumen","internvolumen"]);
+  const iInternCash = col(["intern cash in","intern_cash_in","interncash"]);
+  const iExternVol  = col(["extern volumen","extern_volumen","externvolumen"]);
+  const iExternCash = col(["extern cash in","extern_cash_in","externcash"]);
 
   const g = (cols: string[], i: number) => i >= 0 ? (cols[i]||"") : "";
   let skipped = 0;
