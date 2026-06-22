@@ -3728,6 +3728,9 @@ export default function Dashboard() {
             <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={sumRows(tagExtern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.externVol>0))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
             <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
           </div>
+          <div style={{background:"#fff3cd",border:"1px solid #ffc107",borderRadius:8,padding:"8px 14px",marginBottom:16,fontSize:12,color:"#856404"}}>
+            DEBUG: Intern Deals={deals.filter(d=>d.datum===selectedDatum&&d.internVol>0).length} | Extern Deals={deals.filter(d=>d.datum===selectedDatum&&d.externVol>0).length} | Gesamt Deals={deals.filter(d=>d.datum===selectedDatum).length} | Intern scgVol={sumRows(tagIntern).scgVol.toFixed(0)} | Extern scgVol={sumRows(tagExtern).scgVol.toFixed(0)} | Gesamt scgVol={sumRows(tagRows).scgVol.toFixed(0)}
+          </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
           <ExternTable rows={tagExtern} label={selectedDatum}/>
           <GesamtTable rows={tagRows} label={selectedDatum}/>
