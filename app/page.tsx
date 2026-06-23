@@ -1952,7 +1952,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   };
   const t = THEMES[settings.theme];
   const C = {...t};
-  const FS = settings.fontSize==="klein"?13:settings.fontSize==="gross"?17:15;
+  const FS = isNaN(Number(settings.fontSize)) ? (settings.fontSize==="klein"?13:settings.fontSize==="gross"?17:15) : Number(settings.fontSize);
   const FF = settings.fontFamily==="mono"?"'DM Mono',monospace":settings.fontFamily==="klassisch"?"Georgia,serif":"Inter,system-ui,sans-serif";
   const FW = settings.zahlenFett?700:400;
   const fmtN = (n: number) => new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
@@ -2448,9 +2448,9 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
             </div>
             <div style={{marginBottom:24}}>
               <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>SCHRIFTGRÖSSE</div>
-              <div style={{display:"flex",gap:8}}>
-                {([["klein","A Klein"],["mittel","A Mittel"],["gross","A Gross"]] as const).map(([val,lbl])=>(
-                  <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:val}))} style={{flex:1,padding:"10px 8px",borderRadius:8,fontSize:val==="klein"?11:val==="gross"?15:13,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===val?C.indigo:C.border}`,background:settings.fontSize===val?t.th:C.card,color:C.text}}>{lbl}</button>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {([10,11,12,13,14,15,16,17,18] as const).map(val=>(
+                  <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:String(val) as any}))} style={{width:40,padding:"8px 4px",borderRadius:8,fontSize:val,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===String(val)?C.indigo:C.border}`,background:settings.fontSize===String(val)?t.th:C.card,color:C.text}}>{val}</button>
                 ))}
               </div>
             </div>
@@ -3122,7 +3122,7 @@ export default function Dashboard() {
     pink:   settings.theme==="dark"?"#f87171":"#c0392b",
     cyan:   settings.theme==="dark"?"#67e8f9":"#1a6a8a",
   };
-  const FS = settings.fontSize==="klein"?13:settings.fontSize==="gross"?17:15;
+  const FS = isNaN(Number(settings.fontSize)) ? (settings.fontSize==="klein"?13:settings.fontSize==="gross"?17:15) : Number(settings.fontSize);
   const FF = settings.fontFamily==="mono"?"'DM Mono',monospace":settings.fontFamily==="klassisch"?"Georgia,serif":"Inter,system-ui,sans-serif";
   const FW = settings.zahlenFett?700:400;
   const TH: React.CSSProperties = {
@@ -3244,7 +3244,7 @@ export default function Dashboard() {
   }
 
   function nettoFromDeals(ds: Deal[]) {
-    return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - d.mert - d.kada - d.soeren - d.rene, 0);
+    return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - d.mert - d.kada - d.soeren - d.rene - (d.daniel||0), 0);
   }
 
   function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
@@ -3511,9 +3511,9 @@ export default function Dashboard() {
               </div>
               <div style={{marginBottom:24}}>
                 <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>SCHRIFTGRÖSSE</div>
-                <div style={{display:"flex",gap:8}}>
-                  {([["klein","A Klein"],["mittel","A Mittel"],["gross","A Gross"]] as const).map(([val,lbl])=>(
-                    <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:val}))} style={{flex:1,padding:"10px 8px",borderRadius:8,fontSize:val==="klein"?11:val==="gross"?15:13,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===val?C.indigo:C.border}`,background:settings.fontSize===val?t.th:C.card,color:C.text}}>{lbl}</button>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  {([10,11,12,13,14,15,16,17,18] as const).map(val=>(
+                    <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:String(val) as any}))} style={{width:40,padding:"8px 4px",borderRadius:8,fontSize:val,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===String(val)?C.indigo:C.border}`,background:settings.fontSize===String(val)?t.th:C.card,color:C.text}}>{val}</button>
                   ))}
                 </div>
               </div>
