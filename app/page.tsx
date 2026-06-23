@@ -3244,7 +3244,7 @@ export default function Dashboard() {
   }
 
   function nettoFromDeals(ds: Deal[]) {
-    return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - d.mert - d.kada - d.soeren - d.rene - (d.daniel||0), 0);
+    return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - d.mert - d.kada - d.soeren - d.rene, 0);
   }
 
   function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
