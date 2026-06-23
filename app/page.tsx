@@ -3404,7 +3404,9 @@ export default function Dashboard() {
         </div>
       </div>
     );
-  }=(active:boolean):React.CSSProperties=>({
+  }
+
+  const sideBtn=(active:boolean):React.CSSProperties=>({
     display:"flex",alignItems:"center",justifyContent:"space-between",
     width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,
     border:"none",cursor:"pointer",marginBottom:3,
