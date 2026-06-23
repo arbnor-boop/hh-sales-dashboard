@@ -3343,13 +3343,14 @@ export default function Dashboard() {
   function GesamtTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
     return(
-      <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
+      <div style={{...card(),padding:0,marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.indigo}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>GESAMT</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
         </div>
-        <table style={{width:"100%",borderCollapse:"collapse"}}>
+        <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        <table style={{minWidth:900,width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
             <th style={TH}>Partner</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
@@ -3400,11 +3401,10 @@ export default function Dashboard() {
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     );
-  }
-
-  const sideBtn=(active:boolean):React.CSSProperties=>({
+  }=(active:boolean):React.CSSProperties=>({
     display:"flex",alignItems:"center",justifyContent:"space-between",
     width:"100%",textAlign:"left",padding:"9px 12px",borderRadius:8,
     border:"none",cursor:"pointer",marginBottom:3,
