@@ -1941,7 +1941,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
-    fontSize: "mittel" as "klein"|"mittel"|"gross",
+    fontSize: "13" as string,
     fontFamily: "modern" as "modern"|"klassisch"|"mono",
     zahlenFett: false,
   });
@@ -2450,7 +2450,7 @@ function FirmenDashboard({onLogout}:{onLogout:()=>void}) {
               <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>SCHRIFTGRÖSSE</div>
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                 {([10,11,12,13,14,15,16,17,18] as const).map(val=>(
-                  <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:String(val) as any}))} style={{width:40,padding:"8px 4px",borderRadius:8,fontSize:val,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===String(val)?C.indigo:C.border}`,background:settings.fontSize===String(val)?t.th:C.card,color:C.text}}>{val}</button>
+                  <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:String(val)}))} style={{width:40,padding:"8px 4px",borderRadius:8,fontSize:val,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===String(val)?C.indigo:C.border}`,background:settings.fontSize===String(val)?t.th:C.card,color:C.text}}>{val}</button>
                 ))}
               </div>
             </div>
@@ -3057,7 +3057,7 @@ export default function Dashboard() {
   const TATSAECHLICH: Record<string,number> = {"Januar 2026":406645.15,"Februar 2026":515907.06,"März 2026":380995.44,"April 2026":552716.59,"Mai 2026":514168.31};
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
-    fontSize: "mittel" as "klein"|"mittel"|"gross",
+    fontSize: "13" as string,
     fontFamily: "modern" as "modern"|"klassisch"|"mono",
     zahlenFett: false,
   });
@@ -3513,7 +3513,7 @@ export default function Dashboard() {
                 <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>SCHRIFTGRÖSSE</div>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                   {([10,11,12,13,14,15,16,17,18] as const).map(val=>(
-                    <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:String(val) as any}))} style={{width:40,padding:"8px 4px",borderRadius:8,fontSize:val,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===String(val)?C.indigo:C.border}`,background:settings.fontSize===String(val)?t.th:C.card,color:C.text}}>{val}</button>
+                    <button key={val} onClick={()=>setSettings(s=>({...s,fontSize:String(val)}))} style={{width:40,padding:"8px 4px",borderRadius:8,fontSize:val,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.fontSize===String(val)?C.indigo:C.border}`,background:settings.fontSize===String(val)?t.th:C.card,color:C.text}}>{val}</button>
                   ))}
                 </div>
               </div>
