@@ -3918,7 +3918,7 @@ export default function Dashboard() {
                         const {m,vol,cash,intV,extV,dealCount,rate}=row.data;
                         const isSel=m===selectedMonth;
                         return(
-                          <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#d4c9b8":i%2===0?"transparent":"#f5f0e8",cursor:"pointer"}}>
+                          <tr key={m} onClick={()=>{setSelectedMonth(m);const t=[...new Set(deals.filter(d=>d.monat===m).map(d=>d.datum))].sort();if(t.length)setSelectedDatum(t[t.length-1]);}} style={{borderBottom:`1px solid ${C.border}`,background:isSel?"#d4c9b8":"transparent",cursor:"pointer"}}>
                             <td style={{...TD,fontWeight:isSel?700:600,color:isSel?C.indigo:C.text,paddingLeft:24}}>{m}</td>
                             <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(vol)}</td>
                             <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(cash)}</td>
