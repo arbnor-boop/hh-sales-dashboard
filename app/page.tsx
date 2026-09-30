@@ -3054,7 +3054,7 @@ export default function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selKW, setSelKW] = useState<string>("alle");
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
-  const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14};
+  const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46};
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "13" as string,
