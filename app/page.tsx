@@ -4356,9 +4356,12 @@ export default function Dashboard() {
             {name:"Jochen",       prov:0.10,  mitProv:0},
             {name:"Sarah",        prov:0.175, mitProv:0},
           ];
-          // Berechne Provisionen aus deals für den selectedMonth
-          // Für jeden Closer: suche Deals wo setter=name, berechne scgCash * prov%
-          const monthDeals = deals.filter(d=>d.monat===selectedMonth);
+          // Berechne Provisionen aus deals für den selectedMonth oder selectedDatum
+          const provView = closerView; // "monat" oder "tag"
+          const filterDeals = provView==="tag"
+            ? deals.filter(d=>d.datum===selectedDatum)
+            : deals.filter(d=>d.monat===selectedMonth);
+          const monthDeals = filterDeals;
           type CloserProvRow = {
             name:string; prov:number; mitProv:number;
             total:number; ersteRate:number;
@@ -4392,7 +4395,12 @@ export default function Dashboard() {
           return (
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
-                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {selectedMonth}</h2>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {provView==="tag"?selectedDatum:selectedMonth}</h2>
+                <div style={{display:"flex",gap:8}}>
+                  {(["monat","tag"] as const).map(v=>(
+                    <button key={v} onClick={()=>setCloserView(v)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${closerView===v?C.indigo:C.border}`,background:closerView===v?t.th:C.card,color:C.text}}>{v==="monat"?"📅 Monat":"📆 Tag"}</button>
+                  ))}
+                </div>
               </div>
               {/* Summary Cards */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}>
