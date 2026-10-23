@@ -4478,52 +4478,45 @@ export default function Dashboard() {
         })()}
 
         {activeTab==="netcash"&&(()=>{
-          // Alle Tage mit Deals, sortiert
-          const allDays = [...new Set(deals.map(d=>d.datum))].sort();
-          // Pro Tag: Net Cash (scgCash) und Sum Revenue (total)
-          type DayStats = {datum:string; netCash:number; sumRevenue:number};
-          const dayStats: DayStats[] = allDays.map(datum=>{
-            const dayDeals = deals.filter(d=>d.datum===datum);
-            return {
-              datum,
-              netCash: dayDeals.reduce((a,d)=>a+d.scgCash,0),
-              sumRevenue: dayDeals.reduce((a,d)=>a+d.total,0),
-            };
-          });
+          const ncMonths = [...new Set(deals.map(d=>d.monat))].sort();
+          const ncDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
+          // Alle Tage sortiert für Vortag-Berechnung
+          const allDaysSorted = [...new Set(deals.map(d=>d.datum))].sort();
+          const todayIdx = allDaysSorted.indexOf(selectedDatum);
+          const prevDatum = todayIdx>0?allDaysSorted[todayIdx-1]:null;
+          const todayDeals = deals.filter(d=>d.datum===selectedDatum);
+          const prevDeals = prevDatum?deals.filter(d=>d.datum===prevDatum):[];
+          const netCash = todayDeals.reduce((a,d)=>a+d.scgCash,0);
+          const sumRev = todayDeals.reduce((a,d)=>a+d.total,0);
+          const prevNetCash = prevDeals.reduce((a,d)=>a+d.scgCash,0);
+          const prevSumRev = prevDeals.reduce((a,d)=>a+d.total,0);
+          const netCashDiff = prevDatum?netCash-prevNetCash:null;
+          const revDiff = prevDatum?sumRev-prevSumRev:null;
           return (
             <div>
-              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>💵 Net-Cash-Update</h2>
-              <div style={{display:"flex",flexDirection:"column",gap:16}}>
-                {[...dayStats].reverse().map((day,i)=>{
-                  const prev = dayStats[dayStats.length-2-i];
-                  const netCashDiff = prev ? day.netCash - prev.netCash : null;
-                  const revDiff = prev ? day.sumRevenue - prev.sumRevenue : null;
-                  return (
-                    <div key={day.datum} style={{...card(),padding:"20px 24px"}}>
-                      <div style={{fontWeight:800,fontSize:16,color:C.text,marginBottom:14}}>{day.datum}</div>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-                        <div>
-                          <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1px",marginBottom:4}}>NET CASH</div>
-                          <div style={{fontSize:20,fontWeight:800,color:C.green}}>{fmt(day.netCash)}</div>
-                          {netCashDiff!==null&&(
-                            <div style={{fontSize:13,fontWeight:600,color:netCashDiff>=0?"#2a7a3a":"#c0392b",marginTop:4}}>
-                              {netCashDiff>=0?"+":""}{fmt(netCashDiff)} ggü. Vortag
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1px",marginBottom:4}}>SUM REVENUE</div>
-                          <div style={{fontSize:20,fontWeight:800,color:C.text}}>{fmt(day.sumRevenue)}</div>
-                          {revDiff!==null&&(
-                            <div style={{fontSize:13,fontWeight:600,color:revDiff>=0?"#2a7a3a":"#c0392b",marginTop:4}}>
-                              {revDiff>=0?"+":""}{fmt(revDiff)} ggü. Vortag
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💵 Tägliches Net-Cash-Update</h2>
+                <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                    {ncMonths.map(m=><option key={m} value={m}>{m}</option>)}
+                  </select>
+                  <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                    {ncDates.map(d=><option key={d} value={d}>{d.slice(0,5)}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{...card(),padding:"28px 32px",maxWidth:500}}>
+                <div style={{fontWeight:800,fontSize:17,color:C.text,marginBottom:20}}>{selectedDatum}</div>
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:13,color:C.muted,marginBottom:2}}>Net Cash:</div>
+                  <div style={{fontSize:22,fontWeight:800,color:C.green}}>{fmt(netCash)}</div>
+                  {netCashDiff!==null&&<div style={{fontSize:13,fontWeight:600,color:netCashDiff>=0?"#2a7a3a":"#c0392b",marginTop:2}}>Veränderung zum Vortag: {netCashDiff>=0?"+":""}{fmt(netCashDiff)}</div>}
+                </div>
+                <div>
+                  <div style={{fontSize:13,color:C.muted,marginBottom:2}}>Sum Revenue:</div>
+                  <div style={{fontSize:22,fontWeight:800,color:C.text}}>{fmt(sumRev)}</div>
+                  {revDiff!==null&&<div style={{fontSize:13,fontWeight:600,color:revDiff>=0?"#2a7a3a":"#c0392b",marginTop:2}}>Veränderung zum Vortag: {revDiff>=0?"+":""}{fmt(revDiff)}</div>}
+                </div>
               </div>
             </div>
           );
