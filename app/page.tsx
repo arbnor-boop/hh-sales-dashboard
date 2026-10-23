@@ -4430,7 +4430,7 @@ export default function Dashboard() {
                   const internProvs: Record<string,number> = {};
                   INTERN_COLS.forEach(col=>{
                     const key = col.toLowerCase()==="sören"?"soeren":col.toLowerCase()==="rene"?"rene":col.toLowerCase();
-                    internProvs[col] = setterDeals.reduce((a,d)=>a+(d as Record<string,number>)[key]||0,0);
+                    internProvs[col] = setterDeals.reduce((a,d)=>a+((d as Record<string,number>)[key]||0),0);
                   });
                   const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
                   return {...r, internProvs, nettoCash: r.scgCash - totalInternProv};
