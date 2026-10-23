@@ -4402,7 +4402,8 @@ export default function Dashboard() {
             const internProvs: Record<string,number> = {};
             INTERN_COLS.forEach(col=>{
               const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
-              internProvs[col] = setterDeals2.reduce((a,d)=>a+((d as Record<string,number>)[key]||0),0);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              internProvs[col] = setterDeals2.reduce((a,d)=>a+(((d as any)[key] as number)||0),0);
             });
             const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
             return {...r, internProvs, nettoCash: r.scgCash - totalInternProv};
