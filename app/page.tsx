@@ -3045,7 +3045,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -3423,7 +3423,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["provisionen","💰 Provisionen"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -4322,6 +4322,146 @@ export default function Dashboard() {
                 {externClosers.length>0&&<RankCard title="🌐 EXTERN CLOSER" closers={externClosers} color={C.pink} bg="#f0d4d4"/>}
               </div>
               {allClosers.length>0&&<RankCard title="🏆 GESAMT — INTERN + EXTERN" closers={allClosers} color={C.indigo} bg={t.th}/>}
+            </div>
+          );
+        })()}
+        {activeTab==="provisionen"&&(()=>{
+          // Closer Provisions-Sätze: [name, scgProv%, mitarbeiterProv%, zellgutProv?, zellgutMitarbeiterProv?]
+          const CLOSER_PROV: {name:string; prov:number; mitProv:number; zellgutProv?:number; zellgutMitProv?:number}[] = [
+            {name:"Marvin",       prov:0.04,  mitProv:0},
+            {name:"Montano",      prov:0.14,  mitProv:0.05},
+            {name:"Sascha",       prov:0.04,  mitProv:0},
+            {name:"Sülei",        prov:0.125, mitProv:0},
+            {name:"Tobias",       prov:0.04,  mitProv:0},
+            {name:"Emil",         prov:0.10,  mitProv:0},
+            {name:"Florian Schimpf", prov:0.15, mitProv:0},
+            {name:"Rene Grundl",  prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
+            {name:"Jana",         prov:0.04,  mitProv:0},
+            {name:"Felix",        prov:0.10,  mitProv:0},
+            {name:"Nico",         prov:0.10,  mitProv:0},
+            {name:"Yannis",       prov:0.10,  mitProv:0},
+            {name:"Cem",          prov:0.25,  mitProv:0.08},
+            {name:"Leon",         prov:0.20,  mitProv:0},
+            {name:"Olga Shvets",  prov:0.10,  mitProv:0},
+            {name:"Vanessa",      prov:0.10,  mitProv:0},
+            {name:"Mazyar",       prov:0.10,  mitProv:0},
+            {name:"Mert",         prov:0,     mitProv:0},
+            {name:"Sören",        prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
+            {name:"Oliver",       prov:0.10,  mitProv:0},
+            {name:"Michaela S",   prov:0.06,  mitProv:0},
+            {name:"Henrik",       prov:0,     mitProv:0},
+            {name:"Kada",         prov:0.20,  mitProv:0.075},
+            {name:"Elena",        prov:0.06,  mitProv:0},
+            {name:"Marcel",       prov:0.10,  mitProv:0},
+            {name:"Jochen",       prov:0.10,  mitProv:0},
+            {name:"Sarah",        prov:0.175, mitProv:0},
+          ];
+          // Berechne Provisionen aus deals für den selectedMonth
+          // Für jeden Closer: suche Deals wo setter=name, berechne scgCash * prov%
+          const monthDeals = deals.filter(d=>d.monat===selectedMonth);
+          type CloserProvRow = {
+            name:string; prov:number; mitProv:number;
+            total:number; ersteRate:number;
+            scgVol:number; scgCash:number;
+            provision:number; mitarbeiterProv:number; nettoCash:number;
+            dealCount:number;
+          };
+          const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
+            const setterDeals = monthDeals.filter(d=>{
+              const s = d.setter.trim().toLowerCase();
+              const n = cp.name.trim().toLowerCase();
+              return s===n || s.startsWith(n.split(" ")[0]+" ") || s===n.split(" ")[0];
+            });
+            const total = setterDeals.reduce((a,d)=>a+d.total,0);
+            const ersteRate = setterDeals.reduce((a,d)=>a+d.ersteRate,0);
+            const scgVol = setterDeals.reduce((a,d)=>a+d.scgVol,0);
+            const scgCash = setterDeals.reduce((a,d)=>a+d.scgCash,0);
+            const provision = scgCash * cp.prov;
+            const mitarbeiterProv = scgCash * cp.mitProv;
+            const nettoCash = scgCash - provision - mitarbeiterProv;
+            return {name:cp.name, prov:cp.prov, mitProv:cp.mitProv, total, ersteRate, scgVol, scgCash, provision, mitarbeiterProv, nettoCash, dealCount:setterDeals.length};
+          });
+          const activeRows = rows.filter(r=>r.scgCash>0);
+          const totals = activeRows.reduce((a,r)=>({
+            total:a.total+r.total, ersteRate:a.ersteRate+r.ersteRate,
+            scgVol:a.scgVol+r.scgVol, scgCash:a.scgCash+r.scgCash,
+            provision:a.provision+r.provision, mitarbeiterProv:a.mitarbeiterProv+r.mitarbeiterProv,
+            nettoCash:a.nettoCash+r.nettoCash, dealCount:a.dealCount+r.dealCount
+          }),{total:0,ersteRate:0,scgVol:0,scgCash:0,provision:0,mitarbeiterProv:0,nettoCash:0,dealCount:0});
+          const allRows = [...activeRows, ...rows.filter(r=>r.scgCash===0)];
+          return (
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {selectedMonth}</h2>
+              </div>
+              {/* Summary Cards */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}>
+                {[
+                  {label:"SCG CASH IN",val:totals.scgCash,color:C.green},
+                  {label:"PROVISION GESAMT",val:totals.provision,color:C.pink},
+                  {label:"MITARBEITER PROV",val:totals.mitarbeiterProv,color:"#c87000"},
+                  {label:"NETTO CASH-IN",val:totals.nettoCash,color:C.indigo},
+                ].map(s=>(
+                  <div key={s.label} style={{...card(),padding:"14px 18px"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:6}}>{s.label}</div>
+                    <div style={{fontSize:18,fontWeight:800,color:s.color}}>{fmt(s.val)}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Table */}
+              <div style={{...card(),padding:0,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:900}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH,textAlign:"left"}}>CLOSER</th>
+                      <th style={{...TH,textAlign:"right"}}>DEALS</th>
+                      <th style={{...TH,textAlign:"right"}}>TOTAL (€)</th>
+                      <th style={{...TH,textAlign:"right"}}>ERSTE RATE (€)</th>
+                      <th style={{...TH,textAlign:"right"}}>PROVISION %</th>
+                      <th style={{...TH,textAlign:"right"}}>MIT-PROV %</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG VOL (€)</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN (€)</th>
+                      <th style={{...TH,textAlign:"right"}}>PROVISION (€)</th>
+                      <th style={{...TH,textAlign:"right"}}>MIT-PROV (€)</th>
+                      <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN (€)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allRows.map((r,i)=>{
+                      const inactive = r.scgCash===0;
+                      return (
+                        <tr key={r.name} style={{borderBottom:`1px solid ${C.border}`,background:inactive?"transparent":i%2===0?"transparent":t.th,opacity:inactive?0.4:1}}>
+                          <td style={{...TD,fontWeight:600,color:C.text}}>{r.name}</td>
+                          <td style={{...TD,textAlign:"right",color:C.muted}}>{r.dealCount||"—"}</td>
+                          <td style={{...TD,textAlign:"right",...mono(C.text)}}>{r.total>0?fmt(r.total):"—"}</td>
+                          <td style={{...TD,textAlign:"right",...mono(C.text)}}>{r.ersteRate>0?fmt(r.ersteRate):"—"}</td>
+                          <td style={{...TD,textAlign:"right"}}>{r.prov>0?<span style={{padding:"2px 8px",borderRadius:10,background:t.th,fontSize:12,fontWeight:700,color:C.text}}>{(r.prov*100).toFixed(1)}%</span>:"—"}</td>
+                          <td style={{...TD,textAlign:"right"}}>{r.mitProv>0?<span style={{padding:"2px 8px",borderRadius:10,background:"#f0e8d4",fontSize:12,fontWeight:700,color:"#c87000"}}>{(r.mitProv*100).toFixed(1)}%</span>:"—"}</td>
+                          <td style={{...TD,textAlign:"right",...mono(C.text)}}>{r.scgVol>0?fmt(r.scgVol):"—"}</td>
+                          <td style={{...TD,textAlign:"right",...mono(C.green)}}>{r.scgCash>0?fmt(r.scgCash):"—"}</td>
+                          <td style={{...TD,textAlign:"right",...mono(C.pink)}}>{r.provision>0?fmt(r.provision):"—"}</td>
+                          <td style={{...TD,textAlign:"right",...mono("#c87000")}}>{r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}</td>
+                          <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{r.scgCash>0?fmt(r.nettoCash):"—"}</td>
+                        </tr>
+                      );
+                    })}
+                    {/* Totals row */}
+                    <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
+                      <td style={{...TD,fontWeight:800,color:C.text}}>GESAMT</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,color:C.muted}}>{totals.dealCount}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
+                      <td style={{...TD}}></td>
+                      <td style={{...TD}}></td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.pink)}}>{fmt(totals.provision)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono("#c87000")}}>{fmt(totals.mitarbeiterProv)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:800,...mono(C.indigo)}}>{fmt(totals.nettoCash)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           );
         })()}
