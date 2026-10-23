@@ -4416,11 +4416,21 @@ export default function Dashboard() {
             internProvs: INTERN_COLS.reduce((a,col)=>({...a,[col]:rows2.reduce((s,r)=>s+(r.internProvs[col]||0),0)}),{} as Record<string,number>),
             nettoCash: rows2.reduce((a,r)=>a+r.nettoCash,0),
           };
+          const allMonths = [...new Set(deals.map(d=>d.monat))].sort();
+          const provDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           return (
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
                 <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {provView==="tag"?selectedDatum:selectedMonth}</h2>
-                <div style={{display:"flex",gap:8}}>
+                <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                    {allMonths.map(m=><option key={m} value={m}>{m}</option>)}
+                  </select>
+                  {provView==="tag"&&(
+                    <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                      {provDates.map(d=><option key={d} value={d}>{d.slice(0,5)}</option>)}
+                    </select>
+                  )}
                   {(["monat","tag"] as const).map(v=>(
                     <button key={v} onClick={()=>setCloserView(v)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${closerView===v?C.indigo:C.border}`,background:closerView===v?t.th:C.card,color:C.text}}>{v==="monat"?"📅 Monat":"📆 Tag"}</button>
                   ))}
