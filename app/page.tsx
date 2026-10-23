@@ -3045,7 +3045,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen"|"netcash">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -3423,7 +3423,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["provisionen","💰 Provisionen"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["provisionen","💰 Provisionen"],["netcash","💵 Net-Cash-Update"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -4472,6 +4472,58 @@ export default function Dashboard() {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            </div>
+          );
+        })()}
+
+        {activeTab==="netcash"&&(()=>{
+          // Alle Tage mit Deals, sortiert
+          const allDays = [...new Set(deals.map(d=>d.datum))].sort();
+          // Pro Tag: Net Cash (scgCash) und Sum Revenue (total)
+          type DayStats = {datum:string; netCash:number; sumRevenue:number};
+          const dayStats: DayStats[] = allDays.map(datum=>{
+            const dayDeals = deals.filter(d=>d.datum===datum);
+            return {
+              datum,
+              netCash: dayDeals.reduce((a,d)=>a+d.scgCash,0),
+              sumRevenue: dayDeals.reduce((a,d)=>a+d.total,0),
+            };
+          });
+          return (
+            <div>
+              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>💵 Net-Cash-Update</h2>
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                {[...dayStats].reverse().map((day,i)=>{
+                  const prev = dayStats[dayStats.length-2-i];
+                  const netCashDiff = prev ? day.netCash - prev.netCash : null;
+                  const revDiff = prev ? day.sumRevenue - prev.sumRevenue : null;
+                  return (
+                    <div key={day.datum} style={{...card(),padding:"20px 24px"}}>
+                      <div style={{fontWeight:800,fontSize:16,color:C.text,marginBottom:14}}>{day.datum}</div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                        <div>
+                          <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1px",marginBottom:4}}>NET CASH</div>
+                          <div style={{fontSize:20,fontWeight:800,color:C.green}}>{fmt(day.netCash)}</div>
+                          {netCashDiff!==null&&(
+                            <div style={{fontSize:13,fontWeight:600,color:netCashDiff>=0?"#2a7a3a":"#c0392b",marginTop:4}}>
+                              {netCashDiff>=0?"+":""}{fmt(netCashDiff)} ggü. Vortag
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1px",marginBottom:4}}>SUM REVENUE</div>
+                          <div style={{fontSize:20,fontWeight:800,color:C.text}}>{fmt(day.sumRevenue)}</div>
+                          {revDiff!==null&&(
+                            <div style={{fontSize:13,fontWeight:600,color:revDiff>=0?"#2a7a3a":"#c0392b",marginTop:4}}>
+                              {revDiff>=0?"+":""}{fmt(revDiff)} ggü. Vortag
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
