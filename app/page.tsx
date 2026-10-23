@@ -3611,6 +3611,8 @@ export default function Dashboard() {
           const todayCash = todayDeals.reduce((a,d)=>a+d.scgCash,0);
           const todayVol = todayDeals.reduce((a,d)=>a+d.scgVol,0);
           const todayNetto = nettoFromDeals(todayDeals);
+          const todayRevVol = todayDeals.reduce((a,d)=>a+d.total,0);
+          const todayErsteRate = todayDeals.reduce((a,d)=>a+d.ersteRate,0);
           // This month
           const months = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
           const curMonth = `${months[today.getMonth()]} ${today.getFullYear()}`;
@@ -3671,6 +3673,8 @@ export default function Dashboard() {
                 <KPICard title="SCG VOLUMEN" value={todayVol>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayVol):"—"} sub="Heute" color={C.cyan} icon="📊"/>
                 <KPICard title="SCG CASH IN" value={todayCash>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayCash):"—"} sub="Heute" color={C.cyan} icon="💰"/>
                 <KPICard title="NETTO CASH-IN" value={todayNetto>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(todayNetto):"—"} sub="Nach Provision" color={C.green} icon="✅"/>
+                <KPICard title="REVENUE VOLUME" value={todayRevVol>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(todayRevVol):"—"} sub="Heute" color={C.amber} icon="📈"/>
+                <KPICard title="ERSTE RATE" value={todayErsteRate>0?new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(todayErsteRate):"—"} sub="Heute" color={C.pink} icon="💵"/>
                 <KPICard title="TOP CLOSER" value={topCloser?topCloser[0]:"—"} sub={topCloser?`${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(topCloser[1])} Vol.`:"Keine Deals"} color={C.amber} icon="🏆"/>
                 <KPICard title="TOP PARTNER" value={topPartner?topPartner[0]:"—"} sub={topPartner?`${new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(topPartner[1])} Cash`:"Keine Deals"} color={C.pink} icon="🏢"/>
               </div>
