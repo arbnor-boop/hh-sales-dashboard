@@ -4391,7 +4391,30 @@ export default function Dashboard() {
             provision:a.provision+r.provision, mitarbeiterProv:a.mitarbeiterProv+r.mitarbeiterProv,
             nettoCash:a.nettoCash+r.nettoCash, dealCount:a.dealCount+r.dealCount
           }),{total:0,ersteRate:0,scgVol:0,scgCash:0,provision:0,mitarbeiterProv:0,nettoCash:0,dealCount:0});
-          const allRows = [...activeRows, ...rows.filter(r=>r.scgCash===0)];
+          const INTERN_COLS = ["Montano","Cem","Mert","Kada","Sören","Rene"];
+          type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
+          const rows2: ProvRow2[] = activeRows.map(r=>{
+            const setterDeals2 = monthDeals.filter(d=>{
+              const s=d.setter.trim().toLowerCase();
+              const n=r.name.trim().toLowerCase();
+              return s===n||s.startsWith(n.split(" ")[0]+" ")||s===n.split(" ")[0];
+            });
+            const internProvs: Record<string,number> = {};
+            INTERN_COLS.forEach(col=>{
+              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
+              internProvs[col] = setterDeals2.reduce((a,d)=>a+((d as Record<string,number>)[key]||0),0);
+            });
+            const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
+            return {...r, internProvs, nettoCash: r.scgCash - totalInternProv};
+          });
+          const totals2 = {
+            total: rows2.reduce((a,r)=>a+r.total,0),
+            ersteRate: rows2.reduce((a,r)=>a+r.ersteRate,0),
+            scgVol: rows2.reduce((a,r)=>a+r.scgVol,0),
+            scgCash: rows2.reduce((a,r)=>a+r.scgCash,0),
+            internProvs: INTERN_COLS.reduce((a,col)=>({...a,[col]:rows2.reduce((s,r)=>s+(r.internProvs[col]||0),0)}),{} as Record<string,number>),
+            nettoCash: rows2.reduce((a,r)=>a+r.nettoCash,0),
+          };
           return (
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
@@ -4402,88 +4425,43 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-              {/* Summary Cards */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:14,marginBottom:24}}>
-                {[
-                  {label:"SCG CASH IN",val:totals.scgCash,color:C.green},
-                  {label:"PROVISION GESAMT",val:totals.provision,color:C.pink},
-                  {label:"MITARBEITER PROV",val:totals.mitarbeiterProv,color:"#c87000"},
-                  {label:"NETTO CASH-IN",val:totals.nettoCash,color:C.indigo},
-                ].map(s=>(
-                  <div key={s.label} style={{...card(),padding:"14px 18px"}}>
-                    <div style={{fontSize:10,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:6}}>{s.label}</div>
-                    <div style={{fontSize:18,fontWeight:800,color:s.color}}>{fmt(s.val)}</div>
-                  </div>
-                ))}
+              <div style={{...card(),padding:0,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH,textAlign:"left"}}>CLOSER</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM TOTAL</th>
+                      <th style={{...TH,textAlign:"right"}}>ERSTE RATE</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG VOL</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
+                      {INTERN_COLS.map(col=><th key={col} style={{...TH,textAlign:"right"}}>{col.toUpperCase()}</th>)}
+                      <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows2.map((r,i)=>(
+                      <tr key={r.name} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.name}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
+                        {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.internProvs[col]>0?fmt(r.internProvs[col]):"—"}</td>)}
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(r.nettoCash)}</td>
+                      </tr>
+                    ))}
+                    <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
+                      <td style={{...TD,fontWeight:800,color:C.text}}>GESAMTSUMME</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.total)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.ersteRate)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.scgVol)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals2.scgCash)}</td>
+                      {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals2.internProvs[col]||0)}</td>)}
+                      <td style={{...TD,textAlign:"right",fontWeight:800,...mono(C.indigo)}}>{fmt(totals2.nettoCash)}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              {/* Table */}
-              {(()=>{
-                const INTERN_COLS = ["Montano","Cem","Mert","Kada","Sören","Rene"];
-                // Berechne Intern-Provisions-Beträge pro Closer pro Intern-Mitarbeiter
-                type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
-                const rows2: ProvRow2[] = activeRows.map(r=>{
-                  const setterDeals = monthDeals.filter(d=>{
-                    const s=d.setter.trim().toLowerCase();
-                    const n=r.name.trim().toLowerCase();
-                    return s===n||s.startsWith(n.split(" ")[0]+" ")||s===n.split(" ")[0];
-                  });
-                  const internProvs: Record<string,number> = {};
-                  INTERN_COLS.forEach(col=>{
-                    const key = col.toLowerCase()==="sören"?"soeren":col.toLowerCase()==="rene"?"rene":col.toLowerCase();
-                    internProvs[col] = setterDeals.reduce((a,d)=>a+((d as Record<string,number>)[key]||0),0);
-                  });
-                  const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
-                  return {...r, internProvs, nettoCash: r.scgCash - totalInternProv};
-                });
-                const totals2 = {
-                  total: rows2.reduce((a,r)=>a+r.total,0),
-                  ersteRate: rows2.reduce((a,r)=>a+r.ersteRate,0),
-                  scgVol: rows2.reduce((a,r)=>a+r.scgVol,0),
-                  scgCash: rows2.reduce((a,r)=>a+r.scgCash,0),
-                  internProvs: INTERN_COLS.reduce((a,col)=>({...a,[col]:rows2.reduce((s,r)=>s+(r.internProvs[col]||0),0)}),{} as Record<string,number>),
-                  nettoCash: rows2.reduce((a,r)=>a+r.nettoCash,0),
-                  dealCount: rows2.reduce((a,r)=>a+r.dealCount,0),
-                };
-                return (
-                  <div style={{...card(),padding:0,overflow:"auto"}}>
-                    <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100}}>
-                      <thead>
-                        <tr style={{background:t.th}}>
-                          <th style={{...TH,textAlign:"left"}}>CLOSER</th>
-                          <th style={{...TH,textAlign:"right"}}>SUM TOTAL</th>
-                          <th style={{...TH,textAlign:"right"}}>ERSTE RATE</th>
-                          <th style={{...TH,textAlign:"right"}}>SCG VOL</th>
-                          <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
-                          {INTERN_COLS.map(col=><th key={col} style={{...TH,textAlign:"right"}}>{col.toUpperCase()}</th>)}
-                          <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rows2.map((r,i)=>(
-                          <tr key={r.name} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                            <td style={{...TD,fontWeight:600,color:C.text}}>{r.name}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
-                            <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
-                            {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.internProvs[col]>0?fmt(r.internProvs[col]):"0,00 €"}</td>)}
-                            <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(r.nettoCash)}</td>
-                          </tr>
-                        ))}
-                        <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
-                          <td style={{...TD,fontWeight:800,color:C.text}}>GESAMTSUMME</td>
-                          <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.total)}</td>
-                          <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.ersteRate)}</td>
-                          <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.scgVol)}</td>
-                          <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals2.scgCash)}</td>
-                          {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals2.internProvs[col]||0)}</td>)}
-                          <td style={{...TD,textAlign:"right",fontWeight:800,...mono(C.indigo)}}>{fmt(totals2.nettoCash)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                );
-              })()}
             </div>
           );
         })()}
