@@ -4481,15 +4481,22 @@ export default function Dashboard() {
           const ncMonths = [...new Set(deals.map(d=>d.monat))].sort();
           const ncDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           // Alle Tage sortiert für Vortag-Berechnung
-          const allDaysSorted = [...new Set(deals.map(d=>d.datum))].sort();
+          const allDaysSorted = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           const todayIdx = allDaysSorted.indexOf(selectedDatum);
           const prevDatum = todayIdx>0?allDaysSorted[todayIdx-1]:null;
-          const todayDeals = deals.filter(d=>d.datum===selectedDatum);
-          const prevDeals = prevDatum?deals.filter(d=>d.datum===prevDatum):[];
-          const netCash = todayDeals.reduce((a,d)=>a+d.scgCash,0);
-          const sumRev = todayDeals.reduce((a,d)=>a+d.total,0);
-          const prevNetCash = prevDeals.reduce((a,d)=>a+d.scgCash,0);
-          const prevSumRev = prevDeals.reduce((a,d)=>a+d.total,0);
+          // Kumuliert bis inkl. selectedDatum im Monat
+          const INTERN_KEYS2 = ["montano","cem","mert","kada","soeren","rene"];
+          const calcNetto = (ds: typeof deals) => ds.reduce((a,d)=>{
+            const internSum = INTERN_KEYS2.reduce((s,k)=>s+(((d as any)[k] as number)||0),0);
+            return a + d.scgCash - internSum;
+          },0);
+          const calcRev = (ds: typeof deals) => ds.reduce((a,d)=>a+d.total,0);
+          const dealsUpToToday = deals.filter(d=>d.monat===selectedMonth&&d.datum<=selectedDatum);
+          const dealsUpToPrev = prevDatum?deals.filter(d=>d.monat===selectedMonth&&d.datum<=prevDatum):[];
+          const netCash = calcNetto(dealsUpToToday);
+          const sumRev = calcRev(dealsUpToToday);
+          const prevNetCash = calcNetto(dealsUpToPrev);
+          const prevSumRev = calcRev(dealsUpToPrev);
           const netCashDiff = prevDatum?netCash-prevNetCash:null;
           const revDiff = prevDatum?sumRev-prevSumRev:null;
           return (
