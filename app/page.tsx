@@ -4490,15 +4490,19 @@ export default function Dashboard() {
             const internSum = INTERN_KEYS2.reduce((s,k)=>s+(((d as any)[k] as number)||0),0);
             return a + d.scgCash - internSum;
           },0);
-          const calcRev = (ds: typeof deals) => ds.reduce((a,d)=>a+d.total,0);
+          const calcVol = (ds: typeof deals) => ds.reduce((a,d)=>a+d.scgVol,0);
           const dealsUpToToday = deals.filter(d=>d.monat===selectedMonth&&d.datum<=selectedDatum);
           const dealsUpToPrev = prevDatum?deals.filter(d=>d.monat===selectedMonth&&d.datum<=prevDatum):[];
+          const dealsToday = deals.filter(d=>d.datum===selectedDatum);
+          const dealsPrev = prevDatum?deals.filter(d=>d.datum===prevDatum):[];
           const netCash = calcNetto(dealsUpToToday);
-          const sumRev = calcRev(dealsUpToToday);
+          const sumRev = calcVol(dealsUpToToday);
           const prevNetCash = calcNetto(dealsUpToPrev);
-          const prevSumRev = calcRev(dealsUpToPrev);
-          const netCashDiff = prevDatum?netCash-prevNetCash:null;
-          const revDiff = prevDatum?sumRev-prevSumRev:null;
+          const prevSumRev = calcVol(dealsUpToPrev);
+          const netCashDiffDay = calcNetto(dealsToday);
+          const revDiffDay = calcVol(dealsToday);
+          const netCashDiff = prevDatum?netCashDiffDay:null;
+          const revDiff = prevDatum?revDiffDay:null;
           return (
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
