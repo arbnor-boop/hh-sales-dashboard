@@ -4525,27 +4525,27 @@ export default function Dashboard() {
               </div>
               <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
                 <div style={{...card(),padding:"28px 32px",minWidth:300,flex:1}}>
-                  <div style={{fontWeight:800,fontSize:17,color:C.text,marginBottom:20}}>{selectedDatum}</div>
+                  <div style={{fontWeight:400,fontSize:17,color:C.text,marginBottom:20}}>{selectedDatum}</div>
                   <div style={{marginBottom:16}}>
                     <div style={{fontSize:13,color:C.muted,marginBottom:2}}>Net Cash:</div>
-                    <div style={{fontSize:22,fontWeight:800,color:C.green}}>{fmt(netCash)}</div>
-                    {netCashDiff!==null&&<div style={{fontSize:13,fontWeight:600,color:netCashDiff>=0?"#2a7a3a":"#c0392b",marginTop:2}}>Veränderung zum Vortag: {netCashDiff>=0?"+":""}{fmt(netCashDiff)}</div>}
+                    <div style={{fontSize:22,fontWeight:400,color:C.green}}>{fmt(netCash)}</div>
+                    {netCashDiff!==null&&<div style={{fontSize:13,fontWeight:400,color:netCashDiff>=0?"#2a7a3a":"#c0392b",marginTop:2}}>Veränderung zum Vortag: {netCashDiff>=0?"+":""}{fmt(netCashDiff)}</div>}
                   </div>
                   <div>
                     <div style={{fontSize:13,color:C.muted,marginBottom:2}}>Sum Revenue:</div>
-                    <div style={{fontSize:22,fontWeight:800,color:C.text}}>{fmt(sumRev)}</div>
-                    {revDiff!==null&&<div style={{fontSize:13,fontWeight:600,color:revDiff>=0?"#2a7a3a":"#c0392b",marginTop:2}}>Veränderung zum Vortag: {revDiff>=0?"+":""}{fmt(revDiff)}</div>}
+                    <div style={{fontSize:22,fontWeight:400,color:C.text}}>{fmt(sumRev)}</div>
+                    {revDiff!==null&&<div style={{fontSize:13,fontWeight:400,color:revDiff>=0?"#2a7a3a":"#c0392b",marginTop:2}}>Veränderung zum Vortag: {revDiff>=0?"+":""}{fmt(revDiff)}</div>}
                   </div>
                 </div>
                 <div style={{...card(),padding:"28px 32px",minWidth:300,flex:1}}>
-                  <div style={{fontWeight:800,fontSize:17,color:C.text,marginBottom:20}}>{selectedDatum} — Pro Tag</div>
+                  <div style={{fontWeight:400,fontSize:17,color:C.text,marginBottom:20}}>{selectedDatum}</div>
                   <div style={{marginBottom:16}}>
-                    <div style={{fontSize:13,color:C.muted,marginBottom:2}}>SUM von Total:</div>
-                    <div style={{fontSize:22,fontWeight:800,color:C.text}}>{todaySumTotal>0?fmt(todaySumTotal):"—"}</div>
+                    <div style={{fontSize:13,color:C.muted,marginBottom:2}}>Revenue Volume:</div>
+                    <div style={{fontSize:22,fontWeight:400,color:C.text}}>{todaySumTotal>0?fmt(todaySumTotal):"—"}</div>
                   </div>
                   <div>
-                    <div style={{fontSize:13,color:C.muted,marginBottom:2}}>SUM von Erste Rate:</div>
-                    <div style={{fontSize:22,fontWeight:800,color:C.indigo}}>{todayErsteRate>0?fmt(todayErsteRate):"—"}</div>
+                    <div style={{fontSize:13,color:C.muted,marginBottom:2}}>Erste Rate:</div>
+                    <div style={{fontSize:22,fontWeight:400,color:C.text}}>{todayErsteRate>0?fmt(todayErsteRate):"—"}</div>
                   </div>
                 </div>
               </div>
