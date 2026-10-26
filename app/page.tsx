@@ -4525,6 +4525,7 @@ export default function Dashboard() {
               </div>
               <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
                 <div style={{...card(),padding:"24px 28px",minWidth:280,flex:1}}>
+                  <div style={{fontSize:14,color:C.muted,marginBottom:4}}>Tägliches Net-Cash-Update</div>
                   <div style={{fontSize:14,color:C.text,marginBottom:16}}>{selectedDatum}</div>
                   <div style={{fontSize:14,color:C.text,marginBottom:6}}>Net Cash: <span style={{color:C.green}}>{fmt(netCash)}</span></div>
                   {netCashDiff!==null&&<div style={{fontSize:14,color:netCashDiff>=0?"#2a7a3a":"#c0392b",marginBottom:16}}>Veränderung zum Vortag: {netCashDiff>=0?"+":""}{fmt(netCashDiff)}</div>}
@@ -4532,6 +4533,7 @@ export default function Dashboard() {
                   {revDiff!==null&&<div style={{fontSize:14,color:revDiff>=0?"#2a7a3a":"#c0392b"}}>Veränderung zum Vortag: {revDiff>=0?"+":""}{fmt(revDiff)}</div>}
                 </div>
                 <div style={{...card(),padding:"24px 28px",minWidth:280,flex:1}}>
+                  <div style={{fontSize:14,color:C.muted,marginBottom:4}}>Tägliches Net-Cash-Update</div>
                   <div style={{fontSize:14,color:C.text,marginBottom:16}}>{selectedDatum}</div>
                   <div style={{fontSize:14,color:C.text,marginBottom:6}}>• Revenue Volume: {todaySumTotal>0?fmt(todaySumTotal):"—"}</div>
                   <div style={{fontSize:14,color:C.text}}>• Erste Rate: {todayErsteRate>0?fmt(todayErsteRate):"—"}</div>
