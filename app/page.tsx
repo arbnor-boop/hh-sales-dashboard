@@ -4388,7 +4388,7 @@ export default function Dashboard() {
             const nettoCash = scgCash - provision - mitarbeiterProv;
             return {name:cp.name, prov:cp.prov, mitProv:cp.mitProv, total, ersteRate, scgVol, scgCash, provision, mitarbeiterProv, nettoCash, dealCount:setterDeals.length};
           });
-          const activeRows = rows.filter(r=>r.scgCash>0);
+          const activeRows = rows.filter(r=>r.total>0);
           const totals = activeRows.reduce((a,r)=>({
             total:a.total+r.total, ersteRate:a.ersteRate+r.ersteRate,
             scgVol:a.scgVol+r.scgVol, scgCash:a.scgCash+r.scgCash,
