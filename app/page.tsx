@@ -3045,7 +3045,46 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen"|"netcash">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen"|"netcash"|"admin">("dashboard");
+  type CloserConfig = {name:string; prov:number; mitProv:number; zellgutProv?:number; zellgutMitProv?:number};
+  const DEFAULT_CLOSER: CloserConfig[] = [
+    {name:"Marvin",          prov:0.04,  mitProv:0},
+    {name:"Montano",         prov:0.14,  mitProv:0.05},
+    {name:"Sascha",          prov:0.04,  mitProv:0},
+    {name:"Sülei",           prov:0.125, mitProv:0},
+    {name:"Tobias",          prov:0.04,  mitProv:0},
+    {name:"Emil",            prov:0.10,  mitProv:0},
+    {name:"Florian Schimpf", prov:0.15,  mitProv:0},
+    {name:"Rene Grundl",     prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
+    {name:"Jana",            prov:0.04,  mitProv:0},
+    {name:"Felix",           prov:0.10,  mitProv:0},
+    {name:"Nico",            prov:0.10,  mitProv:0},
+    {name:"Yannis",          prov:0.10,  mitProv:0},
+    {name:"Cem",             prov:0.25,  mitProv:0.08},
+    {name:"Leon",            prov:0.20,  mitProv:0},
+    {name:"Olga Shvets",     prov:0.10,  mitProv:0},
+    {name:"Vanessa",         prov:0.10,  mitProv:0},
+    {name:"Mazyar",          prov:0.10,  mitProv:0},
+    {name:"Mert",            prov:0,     mitProv:0},
+    {name:"Sören",           prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
+    {name:"Oliver",          prov:0.10,  mitProv:0},
+    {name:"Michaela S",      prov:0.06,  mitProv:0},
+    {name:"Henrik",          prov:0,     mitProv:0},
+    {name:"Kada",            prov:0.20,  mitProv:0.075},
+    {name:"Elena",           prov:0.06,  mitProv:0},
+    {name:"Marcel",          prov:0.10,  mitProv:0},
+    {name:"Jochen",          prov:0.10,  mitProv:0},
+    {name:"Sarah",           prov:0.175, mitProv:0},
+    {name:"Frederik",        prov:0,     mitProv:0},
+  ];
+  const loadCloserConfig = (): CloserConfig[] => {
+    try { const s = localStorage.getItem("closerConfig"); return s ? JSON.parse(s) : DEFAULT_CLOSER; } catch { return DEFAULT_CLOSER; }
+  };
+  const [closerConfig, setCloserConfig] = React.useState<CloserConfig[]>(loadCloserConfig);
+  const saveCloserConfig = (cfg: CloserConfig[]) => {
+    setCloserConfig(cfg);
+    try { localStorage.setItem("closerConfig", JSON.stringify(cfg)); } catch {}
+  };
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -3423,7 +3462,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["provisionen","💰 Provisionen"],["netcash","💵 Net-Cash-Update"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["provisionen","💰 Provisionen"],["netcash","💵 Net-Cash-Update"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -4330,36 +4369,7 @@ export default function Dashboard() {
           );
         })()}
         {activeTab==="provisionen"&&(()=>{
-          // Closer Provisions-Sätze: [name, scgProv%, mitarbeiterProv%, zellgutProv?, zellgutMitarbeiterProv?]
-          const CLOSER_PROV: {name:string; prov:number; mitProv:number; zellgutProv?:number; zellgutMitProv?:number}[] = [
-            {name:"Marvin",       prov:0.04,  mitProv:0},
-            {name:"Montano",      prov:0.14,  mitProv:0.05},
-            {name:"Sascha",       prov:0.04,  mitProv:0},
-            {name:"Sülei",        prov:0.125, mitProv:0},
-            {name:"Tobias",       prov:0.04,  mitProv:0},
-            {name:"Emil",         prov:0.10,  mitProv:0},
-            {name:"Florian Schimpf", prov:0.15, mitProv:0},
-            {name:"Rene Grundl",  prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
-            {name:"Jana",         prov:0.04,  mitProv:0},
-            {name:"Felix",        prov:0.10,  mitProv:0},
-            {name:"Nico",         prov:0.10,  mitProv:0},
-            {name:"Yannis",       prov:0.10,  mitProv:0},
-            {name:"Cem",          prov:0.25,  mitProv:0.08},
-            {name:"Leon",         prov:0.20,  mitProv:0},
-            {name:"Olga Shvets",  prov:0.10,  mitProv:0},
-            {name:"Vanessa",      prov:0.10,  mitProv:0},
-            {name:"Mazyar",       prov:0.10,  mitProv:0},
-            {name:"Mert",         prov:0,     mitProv:0},
-            {name:"Sören",        prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
-            {name:"Oliver",       prov:0.10,  mitProv:0},
-            {name:"Michaela S",   prov:0.06,  mitProv:0},
-            {name:"Henrik",       prov:0,     mitProv:0},
-            {name:"Kada",         prov:0.20,  mitProv:0.075},
-            {name:"Elena",        prov:0.06,  mitProv:0},
-            {name:"Marcel",       prov:0.10,  mitProv:0},
-            {name:"Jochen",       prov:0.10,  mitProv:0},
-            {name:"Sarah",        prov:0.175, mitProv:0},
-          ];
+          const CLOSER_PROV = closerConfig;
           // Berechne Provisionen aus deals für den selectedMonth oder selectedDatum
           const provView = closerView; // "monat" oder "tag"
           const filterDeals = provView==="tag"
@@ -4539,6 +4549,87 @@ export default function Dashboard() {
                   <div style={{fontSize:14,color:C.text}}>• Erste Rate: {todayErsteRate>0?fmt(todayErsteRate):"—"}</div>
                 </div>
               </div>
+            </div>
+          );
+        })()}
+        {activeTab==="admin"&&(()=>{
+          const [newName, setNewName] = React.useState("");
+          const [newProv, setNewProv] = React.useState("0");
+          const [newMitProv, setNewMitProv] = React.useState("0");
+          const [editIdx, setEditIdx] = React.useState<number|null>(null);
+          const [editProv, setEditProv] = React.useState("0");
+          const [editMitProv, setEditMitProv] = React.useState("0");
+          const inp = (val:string, onChange:(v:string)=>void, w=80) => (
+            <input value={val} onChange={e=>onChange(e.target.value)} style={{width:w,padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13,textAlign:"right"}}/>
+          );
+          return (
+            <div>
+              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>⚙️ Closer Admin</h2>
+              {/* Neuer Closer */}
+              <div style={{...card(),padding:"20px 24px",marginBottom:24,maxWidth:600}}>
+                <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:16}}>Neuen Closer hinzufügen</div>
+                <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+                  <input placeholder="Name" value={newName} onChange={e=>setNewName(e.target.value)} style={{flex:1,minWidth:140,padding:"7px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13}}/>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:12,color:C.muted}}>Prov %</span>
+                    {inp(newProv, setNewProv, 70)}
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:12,color:C.muted}}>Mit-Prov %</span>
+                    {inp(newMitProv, setNewMitProv, 70)}
+                  </div>
+                  <button onClick={()=>{
+                    if(!newName.trim()) return;
+                    const cfg = [...closerConfig, {name:newName.trim(), prov:parseFloat(newProv)||0, mitProv:parseFloat(newMitProv)||0}];
+                    saveCloserConfig(cfg); setNewName(""); setNewProv("0"); setNewMitProv("0");
+                  }} style={{padding:"7px 18px",borderRadius:8,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+                    + Hinzufügen
+                  </button>
+                </div>
+              </div>
+              {/* Closer Liste */}
+              <div style={{...card(),padding:0,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH,textAlign:"left"}}>NAME</th>
+                      <th style={{...TH,textAlign:"right"}}>PROVISION %</th>
+                      <th style={{...TH,textAlign:"right"}}>MIT-PROV %</th>
+                      <th style={{...TH,textAlign:"center"}}>AKTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {closerConfig.map((c,i)=>(
+                      <tr key={i} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                        <td style={{...TD,fontWeight:600,color:C.text}}>{c.name}</td>
+                        <td style={{...TD,textAlign:"right"}}>
+                          {editIdx===i ? inp(editProv, setEditProv) : `${(c.prov*100).toFixed(1)}%`}
+                        </td>
+                        <td style={{...TD,textAlign:"right"}}>
+                          {editIdx===i ? inp(editMitProv, setEditMitProv) : `${(c.mitProv*100).toFixed(1)}%`}
+                        </td>
+                        <td style={{...TD,textAlign:"center"}}>
+                          {editIdx===i ? (
+                            <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                              <button onClick={()=>{
+                                const cfg = closerConfig.map((x,j)=>j===i?{...x,prov:(parseFloat(editProv)||0)/100,mitProv:(parseFloat(editMitProv)||0)/100}:x);
+                                saveCloserConfig(cfg); setEditIdx(null);
+                              }} style={{padding:"4px 12px",borderRadius:6,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✓ Speichern</button>
+                              <button onClick={()=>setEditIdx(null)} style={{padding:"4px 12px",borderRadius:6,background:C.border,color:C.text,border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✗</button>
+                            </div>
+                          ) : (
+                            <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                              <button onClick={()=>{setEditIdx(i);setEditProv(String((c.prov*100).toFixed(1)));setEditMitProv(String((c.mitProv*100).toFixed(1)));}} style={{padding:"4px 12px",borderRadius:6,background:C.indigo,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✏️ Bearbeiten</button>
+                              <button onClick={()=>{if(confirm(`${c.name} löschen?`)){saveCloserConfig(closerConfig.filter((_,j)=>j!==i));}}} style={{padding:"4px 12px",borderRadius:6,background:"#e74c3c",color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>🗑️</button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{marginTop:16,fontSize:12,color:C.muted}}>* Änderungen werden automatisch gespeichert und bleiben im Browser erhalten.</div>
             </div>
           );
         })()}
