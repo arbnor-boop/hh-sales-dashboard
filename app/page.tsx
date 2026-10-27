@@ -1570,7 +1570,7 @@ function parseCSV(text: string): Deal[] {
   console.log("Column indices - scgVol:", iScgVol, "scgCash:", iScgCash, "partner:", col(["partner"]), "date:", col(["date"]));
   const iMontano  = col(["montano"]);
   const iCem      = col(["cem"]);
-  const iYves     = col(["yves"]);
+  const iYves     = col(["daniel","yves"]);
   const iMert     = col(["mert"]);
   const iKada     = col(["kada"]);
   const iSoeren   = col(["sören","soeren"]);
