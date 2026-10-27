@@ -1441,7 +1441,7 @@ type PRow = {
   scgVol:number; scgCash:number;
   montano:number; cem:number; yves:number; mert:number; kada:number; soeren:number; rene:number;
 };
-const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.kada - r.soeren - r.rene; // r.yves already includes daniel field
+const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.kada - r.soeren - r.rene;
 
 function aggregate(deals:Deal[]):PRow[] {
   const map:Record<string,PRow> = {};
