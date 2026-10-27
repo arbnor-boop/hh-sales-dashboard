@@ -24,7 +24,7 @@ function isInternPartner(name: string): boolean {
   return INTERN_PARTNERS.has(n) || INTERN_PARTNERS.has(decodeHtml(n));
 }
 
-const SETTER = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
+const SETTER = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
 
 type Deal = {
   datum:string; monat:string; partner:string;
