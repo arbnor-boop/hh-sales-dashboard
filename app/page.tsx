@@ -3157,6 +3157,8 @@ export default function Dashboard() {
     {name:"Jochen",          prov:0.10,  mitProv:0},
     {name:"Sarah",           prov:0.175, mitProv:0},
     {name:"Frederik",        prov:0,     mitProv:0},
+    {name:"Marco Loch",      prov:0.15,  mitProv:0},
+    {name:"Daniel",          prov:0.01,  mitProv:0},
   ];
   const loadCloserConfig = (): CloserConfig[] => {
     try { const s = localStorage.getItem("closerConfig"); return s ? JSON.parse(s) : DEFAULT_CLOSER; } catch { return DEFAULT_CLOSER; }
@@ -4486,7 +4488,7 @@ export default function Dashboard() {
             provision:a.provision+r.provision, mitarbeiterProv:a.mitarbeiterProv+r.mitarbeiterProv,
             nettoCash:a.nettoCash+r.nettoCash, dealCount:a.dealCount+r.dealCount
           }),{total:0,ersteRate:0,scgVol:0,scgCash:0,provision:0,mitarbeiterProv:0,nettoCash:0,dealCount:0});
-          const INTERN_COLS = ["Montano","Cem","Mert","Kada","Sören","Rene"];
+          const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
           type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
           const rows2: ProvRow2[] = activeRows.map(r=>{
             const setterDeals2 = monthDeals.filter(d=>{
@@ -4580,7 +4582,7 @@ export default function Dashboard() {
           const todayIdx = allDaysSorted.indexOf(selectedDatum);
           const prevDatum = todayIdx>0?allDaysSorted[todayIdx-1]:null;
           // Kumuliert bis inkl. selectedDatum im Monat
-          const INTERN_KEYS2 = ["montano","cem","mert","kada","soeren","rene"];
+          const INTERN_KEYS2 = ["montano","cem","daniel","mert","kada","soeren","rene"];
           const calcNetto = (ds: typeof deals) => ds.reduce((a,d)=>{
             const internSum = INTERN_KEYS2.reduce((s,k)=>s+(((d as any)[k] as number)||0),0);
             return a + d.scgCash - internSum;
