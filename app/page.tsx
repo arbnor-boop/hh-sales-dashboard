@@ -2633,7 +2633,7 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
   if (f.includes("top") && (f.includes("closer") || f.includes("setter"))) {
     const src = datumFilter ? getDatum(datumFilter) : monatMatch ? getMonat(monatMatch) : deals;
     const label = datumFilter ? (isHeute?"heute":"gestern") : monatMatch ? `im ${monatMatch}` : "gesamt";
-    const SETTERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene","Daniel","Petrit","Henrik"];
+    const SETTERS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene","Daniel","Petrit","Henrik"];
     // Internal closers with provision
     const internStats = SETTERS.map(name => {
       const key = name==="Sören"?"soeren":name.toLowerCase();
@@ -3481,7 +3481,7 @@ export default function Dashboard() {
             <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
             <th style={{...TH,textAlign:"right",color:C.amber}}>Montano</th>
             <th style={{...TH,textAlign:"right",color:C.amber}}>Cem</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Yves</th>
+            <th style={{...TH,textAlign:"right",color:C.amber}}>Daniel</th>
             <th style={{...TH,textAlign:"right",color:C.amber}}>Mert</th>
             <th style={{...TH,textAlign:"right",color:C.amber}}>Kada</th>
             <th style={{...TH,textAlign:"right",color:C.amber}}>Sören</th>
@@ -4087,10 +4087,10 @@ export default function Dashboard() {
         {(activeTab==="closer_intern"||activeTab==="closer_extern")&&(()=>{
           const isIntern = activeTab==="closer_intern";
           const closerColor: Record<string,string> = {
-            Montano:C.indigo, Cem:C.green, Yves:C.amber, Mert:C.pink,
+            Montano:C.indigo, Cem:C.green, Daniel:C.amber, Mert:C.pink,
             Kada:C.cyan, Sören:"#a78bfa", Rene:"#fb923c"
           };
-          const INTERN_CLOSERS = ["Montano","Cem","Yves","Mert","Kada","Sören","Rene"];
+          const INTERN_CLOSERS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
           const INTERN_NO_PROVI = ["Petrit","Henrik"];
           const tageInMonat = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
           const filterDeals = closerView==="tag"
@@ -4124,7 +4124,7 @@ export default function Dashboard() {
                 {headerSection}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                   {INTERN_CLOSERS.map(name=>{
-                    const key = name === "Sören" ? "soeren" : name.toLowerCase();
+                    const key = name === "Sören" ? "soeren" : name === "Daniel" ? "yves" : name.toLowerCase();
                     const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return isInternCloser(d.setter) && typeof v==="number" && v>0; });
                     if (relevant.length===0) return null;
                     const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
@@ -4340,7 +4340,7 @@ export default function Dashboard() {
           const closerMap: Record<string,CloserStat> = {};
           monthDeals.forEach(d=>{
             const internFields:[string,number][] = [
-              ["Montano",d.montano],["Cem",d.cem],["Yves",d.yves],
+              ["Montano",d.montano],["Cem",d.cem],["Daniel",d.yves],
               ["Mert",d.mert],["Kada",d.kada],["Sören",d.soeren],["Rene",d.rene],
             ];
             internFields.forEach(([name,val])=>{
@@ -4498,7 +4498,7 @@ export default function Dashboard() {
             });
             const internProvs: Record<string,number> = {};
             INTERN_COLS.forEach(col=>{
-              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
+              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col==="Daniel"?"yves":col.toLowerCase();
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               internProvs[col] = setterDeals2.reduce((a,d)=>a+(((d as any)[key] as number)||0),0);
             });
