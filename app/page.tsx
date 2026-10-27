@@ -1453,7 +1453,7 @@ function aggregate(deals:Deal[]):PRow[] {
     r.internVol+=d.internVol; r.internCash+=d.internCash;
     r.externVol+=d.externVol; r.externCash+=d.externCash;
     r.scgVol+=d.scgVol; r.scgCash+=d.scgCash;
-    r.montano+=d.montano; r.cem+=d.cem; r.yves+=d.yves; r.mert+=d.mert;
+    r.montano+=d.montano; r.cem+=d.cem; r.yves+=d.yves+((d as any).daniel||0); r.mert+=d.mert;
     r.kada+=d.kada; r.soeren+=d.soeren; r.rene+=d.rene;
   }
   return Object.values(map).sort((a,b)=>b.total-a.total);
@@ -4124,10 +4124,18 @@ export default function Dashboard() {
                 {headerSection}
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
                   {INTERN_CLOSERS.map(name=>{
-                    const key = name === "Sören" ? "soeren" : name === "Daniel" ? "yves" : name.toLowerCase();
-                    const relevant = filterDeals.filter(d => { const v=(d as Record<string,unknown>)[key]; return isInternCloser(d.setter) && typeof v==="number" && v>0; });
+                    const key = name === "Sören" ? "soeren" : name.toLowerCase();
+                    const relevant = filterDeals.filter(d => {
+                      const v=(d as Record<string,unknown>)[key];
+                      const v2=name==="Daniel"?(d as Record<string,unknown>)["yves"]:0;
+                      return isInternCloser(d.setter) && ((typeof v==="number"&&v>0)||(typeof v2==="number"&&(v2 as number)>0));
+                    });
                     if (relevant.length===0) return null;
-                    const provi = relevant.reduce((a,d)=>{const v=(d as Record<string,unknown>)[key];return a+(typeof v==="number"?v:0);},0);
+                    const provi = relevant.reduce((a,d)=>{
+                      const v=(d as Record<string,unknown>)[key];
+                      const v2=name==="Daniel"?(d as Record<string,unknown>)["yves"]:0;
+                      return a+(typeof v==="number"?v:0)+(typeof v2==="number"?(v2 as number):0);
+                    },0);
                     const scgVol = relevant.reduce((a,d)=>a+d.scgVol,0);
                     const scgCash = relevant.reduce((a,d)=>a+d.scgCash,0);
                     const color = closerColor[name] || C.indigo;
@@ -4498,9 +4506,13 @@ export default function Dashboard() {
             });
             const internProvs: Record<string,number> = {};
             INTERN_COLS.forEach(col=>{
-              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col==="Daniel"?"yves":col.toLowerCase();
+              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              internProvs[col] = setterDeals2.reduce((a,d)=>a+(((d as any)[key] as number)||0),0);
+              internProvs[col] = setterDeals2.reduce((a,d)=>{
+                let v = (((d as any)[key] as number)||0);
+                if(col==="Daniel") v += (((d as any)["yves"] as number)||0);
+                return a+v;
+              },0);
             });
             const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
             return {...r, internProvs, nettoCash: r.scgCash - totalInternProv};
