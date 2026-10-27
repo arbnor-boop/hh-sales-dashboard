@@ -1441,7 +1441,7 @@ type PRow = {
   scgVol:number; scgCash:number;
   montano:number; cem:number; yves:number; mert:number; kada:number; soeren:number; rene:number;
 };
-const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.kada - r.soeren - r.rene;
+const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.kada - r.soeren - r.rene; // r.yves already includes daniel field
 
 function aggregate(deals:Deal[]):PRow[] {
   const map:Record<string,PRow> = {};
@@ -2682,7 +2682,7 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     const vol = src.reduce((a,d)=>a+d.scgVol,0);
     const cash = src.reduce((a,d)=>a+d.scgCash,0);
     const total = src.reduce((a,d)=>a+d.total,0);
-    const netto = src.reduce((a,d)=>a+d.scgCash-d.montano-d.cem-d.yves-d.mert-d.kada-d.soeren-d.rene,0);
+    const netto = src.reduce((a,d)=>a+d.scgCash-d.montano-d.cem-d.yves-((d as any).daniel||0)-d.mert-d.kada-d.soeren-d.rene,0);
     return `📋 ${partnerMatch} ${label}:\n\n  Deals: ${src.length}\n  Total: ${fmt(total)}\n  SCG Volumen: ${fmt(vol)}\n  SCG Cash IN: ${fmt(cash)}\n  Netto Cash-IN: ${fmt(netto)}`;
   }
 
@@ -3366,7 +3366,7 @@ export default function Dashboard() {
   }
 
   function nettoFromDeals(ds: Deal[]) {
-    return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - d.mert - d.kada - d.soeren - d.rene, 0);
+    return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - ((d as any).daniel||0) - d.mert - d.kada - d.soeren - d.rene, 0);
   }
 
   function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
@@ -4594,7 +4594,7 @@ export default function Dashboard() {
           const todayIdx = allDaysSorted.indexOf(selectedDatum);
           const prevDatum = todayIdx>0?allDaysSorted[todayIdx-1]:null;
           // Kumuliert bis inkl. selectedDatum im Monat
-          const INTERN_KEYS2 = ["montano","cem","daniel","mert","kada","soeren","rene"];
+          const INTERN_KEYS2 = ["montano","cem","daniel","yves","mert","kada","soeren","rene"];
           const calcNetto = (ds: typeof deals) => ds.reduce((a,d)=>{
             const internSum = INTERN_KEYS2.reduce((s,k)=>s+(((d as any)[k] as number)||0),0);
             return a + d.scgCash - internSum;
