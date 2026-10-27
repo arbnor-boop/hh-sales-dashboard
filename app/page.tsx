@@ -3017,6 +3017,88 @@ const FIRMEN_SHORT: Record<string,string> = {
   "Hamann & Kollegen Immobilien GmbH": "Hamann & Kollegen",
 };
 
+type CloserConfig = {name:string; prov:number; mitProv:number; zellgutProv?:number; zellgutMitProv?:number};
+
+function AdminTab({closerConfig, saveCloserConfig, C, t, TH, TD, card}: {
+  closerConfig: CloserConfig[];
+  saveCloserConfig: (cfg: CloserConfig[]) => void;
+  C: Record<string,string>;
+  t: Record<string,string>;
+  TH: React.CSSProperties;
+  TD: React.CSSProperties;
+  card: () => React.CSSProperties;
+}) {
+  const [newName, setNewName] = useState("");
+  const [newProv, setNewProv] = useState("0");
+  const [newMitProv, setNewMitProv] = useState("0");
+  const [editIdx, setEditIdx] = useState<number|null>(null);
+  const [editProv, setEditProv] = useState("0");
+  const [editMitProv, setEditMitProv] = useState("0");
+  const inp = (val:string, onChange:(v:string)=>void, w=80) => (
+    <input value={val} onChange={e=>onChange(e.target.value)} style={{width:w,padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13,textAlign:"right"}}/>
+  );
+  return (
+    <div>
+      <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>⚙️ Closer Admin</h2>
+      <div style={{...card(),padding:"20px 24px",marginBottom:24,maxWidth:600}}>
+        <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:16}}>Neuen Closer hinzufügen</div>
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+          <input placeholder="Name" value={newName} onChange={e=>setNewName(e.target.value)} style={{flex:1,minWidth:140,padding:"7px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13}}/>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:12,color:C.muted}}>Prov %</span>
+            {inp(newProv, setNewProv, 70)}
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:12,color:C.muted}}>Mit-Prov %</span>
+            {inp(newMitProv, setNewMitProv, 70)}
+          </div>
+          <button onClick={()=>{
+            if(!newName.trim()) return;
+            saveCloserConfig([...closerConfig,{name:newName.trim(),prov:(parseFloat(newProv)||0)/100,mitProv:(parseFloat(newMitProv)||0)/100}]);
+            setNewName(""); setNewProv("0"); setNewMitProv("0");
+          }} style={{padding:"7px 18px",borderRadius:8,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:13,cursor:"pointer"}}>
+            + Hinzufügen
+          </button>
+        </div>
+      </div>
+      <div style={{...card(),padding:0,overflow:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead>
+            <tr style={{background:t.th}}>
+              <th style={{...TH,textAlign:"left"}}>NAME</th>
+              <th style={{...TH,textAlign:"right"}}>PROVISION %</th>
+              <th style={{...TH,textAlign:"right"}}>MIT-PROV %</th>
+              <th style={{...TH,textAlign:"center"}}>AKTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {closerConfig.map((c,i)=>(
+              <tr key={i} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{c.name}</td>
+                <td style={{...TD,textAlign:"right"}}>{editIdx===i?inp(editProv,setEditProv):`${(c.prov*100).toFixed(1)}%`}</td>
+                <td style={{...TD,textAlign:"right"}}>{editIdx===i?inp(editMitProv,setEditMitProv):`${(c.mitProv*100).toFixed(1)}%`}</td>
+                <td style={{...TD,textAlign:"center"}}>
+                  {editIdx===i?(
+                    <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                      <button onClick={()=>{saveCloserConfig(closerConfig.map((x,j)=>j===i?{...x,prov:(parseFloat(editProv)||0)/100,mitProv:(parseFloat(editMitProv)||0)/100}:x));setEditIdx(null);}} style={{padding:"4px 12px",borderRadius:6,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✓ Speichern</button>
+                      <button onClick={()=>setEditIdx(null)} style={{padding:"4px 12px",borderRadius:6,background:C.border,color:C.text,border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✗</button>
+                    </div>
+                  ):(
+                    <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                      <button onClick={()=>{setEditIdx(i);setEditProv(String((c.prov*100).toFixed(1)));setEditMitProv(String((c.mitProv*100).toFixed(1)));}} style={{padding:"4px 12px",borderRadius:6,background:C.indigo,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✏️ Bearbeiten</button>
+                      <button onClick={()=>{if(window.confirm(`${c.name} löschen?`)){saveCloserConfig(closerConfig.filter((_,j)=>j!==i));}}} style={{padding:"4px 12px",borderRadius:6,background:"#e74c3c",color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>🗑️</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{marginTop:16,fontSize:12,color:C.muted}}>* Änderungen werden automatisch gespeichert und bleiben im Browser erhalten.</div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -3046,7 +3128,6 @@ export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
   const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen"|"netcash"|"admin">("dashboard");
-  type CloserConfig = {name:string; prov:number; mitProv:number; zellgutProv?:number; zellgutMitProv?:number};
   const DEFAULT_CLOSER: CloserConfig[] = [
     {name:"Marvin",          prov:0.04,  mitProv:0},
     {name:"Montano",         prov:0.14,  mitProv:0.05},
@@ -4552,87 +4633,7 @@ export default function Dashboard() {
             </div>
           );
         })()}
-        {activeTab==="admin"&&(()=>{
-          const [newName, setNewName] = React.useState("");
-          const [newProv, setNewProv] = React.useState("0");
-          const [newMitProv, setNewMitProv] = React.useState("0");
-          const [editIdx, setEditIdx] = React.useState<number|null>(null);
-          const [editProv, setEditProv] = React.useState("0");
-          const [editMitProv, setEditMitProv] = React.useState("0");
-          const inp = (val:string, onChange:(v:string)=>void, w=80) => (
-            <input value={val} onChange={e=>onChange(e.target.value)} style={{width:w,padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13,textAlign:"right"}}/>
-          );
-          return (
-            <div>
-              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>⚙️ Closer Admin</h2>
-              {/* Neuer Closer */}
-              <div style={{...card(),padding:"20px 24px",marginBottom:24,maxWidth:600}}>
-                <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:16}}>Neuen Closer hinzufügen</div>
-                <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
-                  <input placeholder="Name" value={newName} onChange={e=>setNewName(e.target.value)} style={{flex:1,minWidth:140,padding:"7px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13}}/>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:12,color:C.muted}}>Prov %</span>
-                    {inp(newProv, setNewProv, 70)}
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:12,color:C.muted}}>Mit-Prov %</span>
-                    {inp(newMitProv, setNewMitProv, 70)}
-                  </div>
-                  <button onClick={()=>{
-                    if(!newName.trim()) return;
-                    const cfg = [...closerConfig, {name:newName.trim(), prov:parseFloat(newProv)||0, mitProv:parseFloat(newMitProv)||0}];
-                    saveCloserConfig(cfg); setNewName(""); setNewProv("0"); setNewMitProv("0");
-                  }} style={{padding:"7px 18px",borderRadius:8,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:13,cursor:"pointer"}}>
-                    + Hinzufügen
-                  </button>
-                </div>
-              </div>
-              {/* Closer Liste */}
-              <div style={{...card(),padding:0,overflow:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse"}}>
-                  <thead>
-                    <tr style={{background:t.th}}>
-                      <th style={{...TH,textAlign:"left"}}>NAME</th>
-                      <th style={{...TH,textAlign:"right"}}>PROVISION %</th>
-                      <th style={{...TH,textAlign:"right"}}>MIT-PROV %</th>
-                      <th style={{...TH,textAlign:"center"}}>AKTION</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {closerConfig.map((c,i)=>(
-                      <tr key={i} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                        <td style={{...TD,fontWeight:600,color:C.text}}>{c.name}</td>
-                        <td style={{...TD,textAlign:"right"}}>
-                          {editIdx===i ? inp(editProv, setEditProv) : `${(c.prov*100).toFixed(1)}%`}
-                        </td>
-                        <td style={{...TD,textAlign:"right"}}>
-                          {editIdx===i ? inp(editMitProv, setEditMitProv) : `${(c.mitProv*100).toFixed(1)}%`}
-                        </td>
-                        <td style={{...TD,textAlign:"center"}}>
-                          {editIdx===i ? (
-                            <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                              <button onClick={()=>{
-                                const cfg = closerConfig.map((x,j)=>j===i?{...x,prov:(parseFloat(editProv)||0)/100,mitProv:(parseFloat(editMitProv)||0)/100}:x);
-                                saveCloserConfig(cfg); setEditIdx(null);
-                              }} style={{padding:"4px 12px",borderRadius:6,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✓ Speichern</button>
-                              <button onClick={()=>setEditIdx(null)} style={{padding:"4px 12px",borderRadius:6,background:C.border,color:C.text,border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✗</button>
-                            </div>
-                          ) : (
-                            <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                              <button onClick={()=>{setEditIdx(i);setEditProv(String((c.prov*100).toFixed(1)));setEditMitProv(String((c.mitProv*100).toFixed(1)));}} style={{padding:"4px 12px",borderRadius:6,background:C.indigo,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✏️ Bearbeiten</button>
-                              <button onClick={()=>{if(confirm(`${c.name} löschen?`)){saveCloserConfig(closerConfig.filter((_,j)=>j!==i));}}} style={{padding:"4px 12px",borderRadius:6,background:"#e74c3c",color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>🗑️</button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div style={{marginTop:16,fontSize:12,color:C.muted}}>* Änderungen werden automatisch gespeichert und bleiben im Browser erhalten.</div>
-            </div>
-          );
-        })()}
+        {activeTab==="admin"&&<AdminTab closerConfig={closerConfig} saveCloserConfig={saveCloserConfig} C={C} t={t} TH={TH} TD={TD} card={card}/>}
       </div>
     </div>
   );
