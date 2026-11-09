@@ -4485,12 +4485,21 @@ export default function Dashboard() {
             provision:number; mitarbeiterProv:number; nettoCash:number;
             dealCount:number;
           };
+          // Helper: match deal to closer config entry considering partner-based Rene splits
+          const matchDealToCloser = (d: Deal, cp: {name:string}) => {
+            const s = d.setter.trim().toLowerCase();
+            const n = cp.name.trim().toLowerCase();
+            const p = d.partner.trim().toLowerCase();
+            // Partner-specific Rene entries
+            if (cp.name === "Rene Grundl") return s === "rene" && p.includes("grundl");
+            if (cp.name === "Rene Tax Angels II") return s === "rene" && p === "tax angels ii";
+            if (cp.name === "Rene Tax Angels") return s === "rene" && p === "tax angels";
+            // Generic "Rene" entry: only match if NOT one of the partner-specific ones
+            if (n === "rene") return s === "rene" && !p.includes("grundl") && p !== "tax angels" && p !== "tax angels ii";
+            return s===n || s.startsWith(n.split(" ")[0]+" ") || s===n.split(" ")[0];
+          };
           const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
-            const setterDeals = monthDeals.filter(d=>{
-              const s = d.setter.trim().toLowerCase();
-              const n = cp.name.trim().toLowerCase();
-              return s===n || s.startsWith(n.split(" ")[0]+" ") || s===n.split(" ")[0];
-            });
+            const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp));
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
             const ersteRate = setterDeals.reduce((a,d)=>a+d.ersteRate,0);
             const scgVol = setterDeals.reduce((a,d)=>a+d.scgVol,0);
@@ -4510,11 +4519,7 @@ export default function Dashboard() {
           const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
           type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
           const rows2: ProvRow2[] = activeRows.map(r=>{
-            const setterDeals2 = monthDeals.filter(d=>{
-              const s=d.setter.trim().toLowerCase();
-              const n=r.name.trim().toLowerCase();
-              return s===n||s.startsWith(n.split(" ")[0]+" ")||s===n.split(" ")[0];
-            });
+            const setterDeals2 = monthDeals.filter(d=> matchDealToCloser(d, r));
             const internProvs: Record<string,number> = {};
             INTERN_COLS.forEach(col=>{
               const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
