@@ -4486,21 +4486,30 @@ export default function Dashboard() {
             dealCount:number;
           };
           // Helper: match deal to closer config entry considering partner-based Rene splits
-          const matchDealToCloser = (d: Deal, cp: {name:string}) => {
+          const matchDealToCloser = (d: Deal, cp: {name:string}, allClosers: {name:string}[]) => {
             const s = d.setter.trim().toLowerCase();
             const n = cp.name.trim().toLowerCase();
             const p = d.partner.trim().toLowerCase();
-            // Partner-specific Rene entries
-            if (cp.name === "Rene Grundl") return s === "rene" && p.includes("grundl");
-            if (cp.name === "Rene Tax Angels II") return s === "rene" && p === "tax angels ii";
-            if (cp.name === "Rene Tax Angels") return s === "rene" && p === "tax angels";
-            if (cp.name === "Rene Zellgut") return s === "rene" && p.includes("zellgut");
-            // Generic "Rene" entry: only match if NOT one of the partner-specific ones
-            if (n === "rene") return s === "rene" && !p.includes("grundl") && p !== "tax angels" && p !== "tax angels ii" && !p.includes("zellgut");
+            // If entry starts with "Rene " → partner-specific: match only if setter=rene AND partner contains the keyword
+            if (cp.name.startsWith("Rene ")) {
+              if (s !== "rene") return false;
+              const keyword = cp.name.slice(5).trim().toLowerCase(); // e.g. "Tax Angels II" → "tax angels ii"
+              return p.includes(keyword) || keyword.split(" ").every(w => p.includes(w));
+            }
+            // Generic "Rene" entry: match only if no partner-specific Rene entry matches this deal
+            if (n === "rene") {
+              const hasSpecific = allClosers.some(other =>
+                other.name.startsWith("Rene ") && (() => {
+                  const kw = other.name.slice(5).trim().toLowerCase();
+                  return p.includes(kw) || kw.split(" ").every(w => p.includes(w));
+                })()
+              );
+              return s === "rene" && !hasSpecific;
+            }
             return s===n || s.startsWith(n+" ");
           };
           const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
-            const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp));
+            const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
             const ersteRate = setterDeals.reduce((a,d)=>a+d.ersteRate,0);
             const scgVol = setterDeals.reduce((a,d)=>a+d.scgVol,0);
