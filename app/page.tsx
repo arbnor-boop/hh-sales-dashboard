@@ -4494,9 +4494,10 @@ export default function Dashboard() {
             if (cp.name === "Rene Grundl") return s === "rene" && p.includes("grundl");
             if (cp.name === "Rene Tax Angels II") return s === "rene" && p === "tax angels ii";
             if (cp.name === "Rene Tax Angels") return s === "rene" && p === "tax angels";
+            if (cp.name === "Rene Zellgut") return s === "rene" && p.includes("zellgut");
             // Generic "Rene" entry: only match if NOT one of the partner-specific ones
-            if (n === "rene") return s === "rene" && !p.includes("grundl") && p !== "tax angels" && p !== "tax angels ii";
-            return s===n || s.startsWith(n.split(" ")[0]+" ") || s===n.split(" ")[0];
+            if (n === "rene") return s === "rene" && !p.includes("grundl") && p !== "tax angels" && p !== "tax angels ii" && !p.includes("zellgut");
+            return s===n || s.startsWith(n+" ");
           };
           const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp));
