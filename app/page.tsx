@@ -3147,7 +3147,7 @@ export default function Dashboard() {
     {name:"Tobias",          prov:0.04,  mitProv:0},
     {name:"Emil",            prov:0.10,  mitProv:0},
     {name:"Florian Schimpf", prov:0.15,  mitProv:0},
-    {name:"Rene Grundl",     prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
+    {name:"Rene",     prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
     {name:"Jana",            prov:0.04,  mitProv:0},
     {name:"Felix",           prov:0.10,  mitProv:0},
     {name:"Nico",            prov:0.10,  mitProv:0},
