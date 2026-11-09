@@ -13,6 +13,17 @@ const INTERN_PARTNERS = new Set([
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
   "Hamann & Kollegen Immobilien GmbH","Candidate-flow"
 ]);
+function normalizeSetter(setter: string): string {
+  const s = setter.trim();
+  const sl = s.toLowerCase();
+  const INTERN_FIRST = ["montano","cem","yves","mert","kada","sören","soeren","rene","daniel","petrit","henrik"];
+  for (const n of INTERN_FIRST) {
+    if (sl === n || sl.startsWith(n+" ") || sl.endsWith(" "+n)) {
+      return s.split(" ")[0].charAt(0).toUpperCase() + s.split(" ")[0].slice(1);
+    }
+  }
+  return s;
+}
 function isInternCloser(setter: string): boolean {
   const s = setter.trim().toLowerCase();
   const SETTER_NAMES = ["montano","cem","yves","mert","kada","sören","soeren","rene","daniel","petrit","henrik"];
@@ -2645,7 +2656,7 @@ function beantworteFrageLokal(frage: string, deals: Deal[]): string {
     // All closers by SCG Vol
     const allCloserMap: Record<string,{scgVol:number,scgCash:number,cnt:number}> = {};
     src.forEach(d=>{
-      const name=(d.setter||"").trim();
+      const name=normalizeSetter(d.setter||"");
       if(!name) return;
       if(!allCloserMap[name]) allCloserMap[name]={scgVol:0,scgCash:0,cnt:0};
       allCloserMap[name].scgVol+=d.scgVol;
@@ -3176,7 +3187,7 @@ export default function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selKW, setSelKW] = useState<string>("alle");
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
-  const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46,"Oktober 2026":486645.74};
+  const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46};
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "13" as string,
@@ -3754,7 +3765,7 @@ export default function Dashboard() {
           const weekNetto = nettoFromDeals(weekDeals);
           // Top closer today
           const closerMap: Record<string,number> = {};
-          todayDeals.forEach(d=>{const s=(d.setter||"").trim();if(s)closerMap[s]=(closerMap[s]||0)+d.scgVol;});
+          todayDeals.forEach(d=>{const s=normalizeSetter(d.setter||"");if(s)closerMap[s]=(closerMap[s]||0)+d.scgVol;});
           const topCloser = Object.entries(closerMap).sort((a,b)=>b[1]-a[1])[0];
           // Top partner today
           const partnerMap: Record<string,number> = {};
@@ -3825,7 +3836,7 @@ export default function Dashboard() {
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:28}}>
                 {(() => {
                   const cm: Record<string,{vol:number,cash:number,cnt:number}> = {};
-                  monthDeals.forEach(d=>{const s=(d.setter||"").trim();if(s){if(!cm[s])cm[s]={vol:0,cash:0,cnt:0};cm[s].vol+=d.scgVol;cm[s].cash+=d.scgCash;cm[s].cnt+=1;}});
+                  monthDeals.forEach(d=>{const s=normalizeSetter(d.setter||"");if(s){if(!cm[s])cm[s]={vol:0,cash:0,cnt:0};cm[s].vol+=d.scgVol;cm[s].cash+=d.scgCash;cm[s].cnt+=1;}}));
                   const sorted = Object.entries(cm).sort((a,b)=>b[1].vol-a[1].vol).slice(0,7);
                   const maxVol = sorted[0]?.[1]?.vol || 1;
                   return sorted.map(([name,s],i)=>(
@@ -4198,12 +4209,12 @@ export default function Dashboard() {
             );
           } else {
             const externDeals = filterDeals.filter(d => {
-              const setter = (d.setter||"").trim();
+              const setter = normalizeSetter(d.setter||"");
               return setter && !isInternCloser(setter) && setter !== "Closer";
             });
             const closerMap: Record<string,{scgVol:number,scgCash:number,deals:number}> = {};
             externDeals.forEach(d => {
-              const name = (d.setter||"").trim();
+              const name = normalizeSetter(d.setter||"");
               if (!name || name==="Closer") return;
               if (!closerMap[name]) closerMap[name] = {scgVol:0,scgCash:0,deals:0};
               closerMap[name].scgVol += d.scgVol;
@@ -4361,8 +4372,8 @@ export default function Dashboard() {
             });
           });
           monthDeals.filter(d=>!isInternCloser(d.setter)&&d.setter&&d.setter.trim()).forEach(d=>{
-            const k="ext_"+d.setter.trim();
-            if(!closerMap[k]) closerMap[k]={name:d.setter.trim(),cash:0,vol:0,deals:0,type:"extern"};
+            const k="ext_"+normalizeSetter(d.setter);
+            if(!closerMap[k]) closerMap[k]={name:normalizeSetter(d.setter),cash:0,vol:0,deals:0,type:"extern"};
             closerMap[k].cash+=d.scgCash;
             closerMap[k].vol+=d.scgVol;
             closerMap[k].deals+=1;
