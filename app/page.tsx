@@ -4490,20 +4490,28 @@ export default function Dashboard() {
             const s = d.setter.trim().toLowerCase();
             const n = cp.name.trim().toLowerCase();
             const p = d.partner.trim().toLowerCase();
-            // If entry starts with "Rene " → partner-specific: match only if setter=rene AND partner contains the keyword
+            // If entry starts with "Rene " → partner-specific: match only if setter=rene AND partner matches keyword exactly
             if (cp.name.startsWith("Rene ")) {
               if (s !== "rene") return false;
               const keyword = cp.name.slice(5).trim().toLowerCase(); // e.g. "Tax Angels II" → "tax angels ii"
-              return p.includes(keyword) || keyword.split(" ").every(w => p.includes(w));
+              // Find the most specific (longest) matching closer for this deal
+              const matchingClosers = allClosers
+                .filter(other => other.name.startsWith("Rene "))
+                .filter(other => {
+                  const kw = other.name.slice(5).trim().toLowerCase();
+                  return p === kw || p.startsWith(kw+" ") || p.endsWith(" "+kw) || p.includes(" "+kw+" ");
+                })
+                .sort((a,b) => b.name.length - a.name.length); // longest match first
+              if (matchingClosers.length === 0) return false;
+              return matchingClosers[0].name === cp.name;
             }
             // Generic "Rene" entry: match only if no partner-specific Rene entry matches this deal
             if (n === "rene") {
-              const hasSpecific = allClosers.some(other =>
-                other.name.startsWith("Rene ") && (() => {
-                  const kw = other.name.slice(5).trim().toLowerCase();
-                  return p.includes(kw) || kw.split(" ").every(w => p.includes(w));
-                })()
-              );
+              const hasSpecific = allClosers.some(other => {
+                if (!other.name.startsWith("Rene ")) return false;
+                const kw = other.name.slice(5).trim().toLowerCase();
+                return p === kw || p.startsWith(kw+" ") || p.endsWith(" "+kw) || p.includes(" "+kw+" ");
+              });
               return s === "rene" && !hasSpecific;
             }
             return s===n || s.startsWith(n+" ");
