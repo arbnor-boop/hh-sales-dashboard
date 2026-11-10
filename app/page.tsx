@@ -4518,7 +4518,8 @@ export default function Dashboard() {
           };
           // Debug: log Rene deals and their partners
           const reneDeals = monthDeals.filter(d => d.setter.trim().toLowerCase() === "rene");
-          if (reneDeals.length > 0) console.log("RENE DEALS:", reneDeals.map(d => ({partner: d.partner, partnerLower: d.partner.trim().toLowerCase()})));
+          console.log("RENE DEALS COUNT:", reneDeals.length, "monthDeals total:", monthDeals.length);
+          if (reneDeals.length > 0) console.log("RENE DEALS:", reneDeals.map(d => ({partner: d.partner, partnerLower: d.partner.trim().toLowerCase(), setter: d.setter})));
           const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
@@ -4540,7 +4541,7 @@ export default function Dashboard() {
           const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
           type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
           const rows2: ProvRow2[] = activeRows.map(r=>{
-            const setterDeals2 = monthDeals.filter(d=> matchDealToCloser(d, r));
+            const setterDeals2 = monthDeals.filter(d=> matchDealToCloser(d, r, CLOSER_PROV));
             const internProvs: Record<string,number> = {};
             INTERN_COLS.forEach(col=>{
               const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
