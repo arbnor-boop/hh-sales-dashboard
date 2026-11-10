@@ -5854,7 +5854,7 @@ export default function Dashboard() {
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden",marginBottom:28}}>
                 {(() => {
                   const cm: Record<string,{vol:number,cash:number,cnt:number}> = {};
-                  monthDeals.forEach(d=>{const s=normalizeSetter(d.setter||"");if(s){if(!cm[s])cm[s]={vol:0,cash:0,cnt:0};cm[s].vol+=d.scgVol;cm[s].cash+=d.scgCash;cm[s].cnt+=1;}}));
+                  monthDeals.forEach(d=>{const s=normalizeSetter(d.setter||"");if(s){if(!cm[s])cm[s]={vol:0,cash:0,cnt:0};cm[s].vol+=d.scgVol;cm[s].cash+=d.scgCash;cm[s].cnt+=1;}});
                   const sorted = Object.entries(cm).sort((a,b)=>b[1].vol-a[1].vol).slice(0,7);
                   const maxVol = sorted[0]?.[1]?.vol || 1;
                   return sorted.map(([name,s],i)=>(
