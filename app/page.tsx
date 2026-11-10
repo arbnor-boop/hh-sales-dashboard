@@ -5189,25 +5189,13 @@ export default function Dashboard() {
     {name:"Daniel",          prov:0.01,  mitProv:0},
   ];
   const loadCloserConfig = (): CloserConfig[] => {
-    try {
-      const s = localStorage.getItem("closerConfig");
-      if (!s) return DEFAULT_CLOSER;
-      let cfg: CloserConfig[] = JSON.parse(s);
-      // Migrate: rename "Rene Grundl" → "Rene"
-      cfg = cfg.map(c => c.name === "Rene Grundl" ? {...c, name:"Rene"} : c);
-      // Ensure Florian Speiseder exists
-      if (!cfg.find(c => c.name === "Florian Speiseder")) {
-        cfg.push({name:"Florian Speiseder", prov:0.15, mitProv:0});
-      }
-      // Save migrated config back
-      localStorage.setItem("closerConfig", JSON.stringify(cfg));
-      return cfg;
-    } catch { return DEFAULT_CLOSER; }
+    // Always start from DEFAULT_CLOSER — ignore localStorage to avoid stale names
+    try { localStorage.removeItem("closerConfig"); } catch {}
+    return DEFAULT_CLOSER;
   };
   const [closerConfig, setCloserConfig] = React.useState<CloserConfig[]>(loadCloserConfig);
   const saveCloserConfig = (cfg: CloserConfig[]) => {
     setCloserConfig(cfg);
-    try { localStorage.setItem("closerConfig", JSON.stringify(cfg)); } catch {}
   };
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
