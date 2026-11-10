@@ -5044,88 +5044,6 @@ const FIRMEN_SHORT: Record<string,string> = {
   "Hamann & Kollegen Immobilien GmbH": "Hamann & Kollegen",
 };
 
-type CloserConfig = {name:string; prov:number; mitProv:number; zellgutProv?:number; zellgutMitProv?:number};
-
-function AdminTab({closerConfig, saveCloserConfig, C, t, TH, TD, card}: {
-  closerConfig: CloserConfig[];
-  saveCloserConfig: (cfg: CloserConfig[]) => void;
-  C: Record<string,string>;
-  t: Record<string,string>;
-  TH: React.CSSProperties;
-  TD: React.CSSProperties;
-  card: () => React.CSSProperties;
-}) {
-  const [newName, setNewName] = useState("");
-  const [newProv, setNewProv] = useState("0");
-  const [newMitProv, setNewMitProv] = useState("0");
-  const [editIdx, setEditIdx] = useState<number|null>(null);
-  const [editProv, setEditProv] = useState("0");
-  const [editMitProv, setEditMitProv] = useState("0");
-  const inp = (val:string, onChange:(v:string)=>void, w=80) => (
-    <input value={val} onChange={e=>onChange(e.target.value)} style={{width:w,padding:"5px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13,textAlign:"right"}}/>
-  );
-  return (
-    <div>
-      <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>⚙️ Closer Admin</h2>
-      <div style={{...card(),padding:"20px 24px",marginBottom:24,maxWidth:600}}>
-        <div style={{fontWeight:700,fontSize:14,color:C.text,marginBottom:16}}>Neuen Closer hinzufügen</div>
-        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
-          <input placeholder="Name" value={newName} onChange={e=>setNewName(e.target.value)} style={{flex:1,minWidth:140,padding:"7px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:13}}/>
-          <div style={{display:"flex",alignItems:"center",gap:6}}>
-            <span style={{fontSize:12,color:C.muted}}>Prov %</span>
-            {inp(newProv, setNewProv, 70)}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:6}}>
-            <span style={{fontSize:12,color:C.muted}}>Mit-Prov %</span>
-            {inp(newMitProv, setNewMitProv, 70)}
-          </div>
-          <button onClick={()=>{
-            if(!newName.trim()) return;
-            saveCloserConfig([...closerConfig,{name:newName.trim(),prov:(parseFloat(newProv)||0)/100,mitProv:(parseFloat(newMitProv)||0)/100}]);
-            setNewName(""); setNewProv("0"); setNewMitProv("0");
-          }} style={{padding:"7px 18px",borderRadius:8,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:13,cursor:"pointer"}}>
-            + Hinzufügen
-          </button>
-        </div>
-      </div>
-      <div style={{...card(),padding:0,overflow:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse"}}>
-          <thead>
-            <tr style={{background:t.th}}>
-              <th style={{...TH,textAlign:"left"}}>NAME</th>
-              <th style={{...TH,textAlign:"right"}}>PROVISION %</th>
-              <th style={{...TH,textAlign:"right"}}>MIT-PROV %</th>
-              <th style={{...TH,textAlign:"center"}}>AKTION</th>
-            </tr>
-          </thead>
-          <tbody>
-            {closerConfig.map((c,i)=>(
-              <tr key={i} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                <td style={{...TD,fontWeight:600,color:C.text}}>{c.name}</td>
-                <td style={{...TD,textAlign:"right"}}>{editIdx===i?inp(editProv,setEditProv):`${(c.prov*100).toFixed(1)}%`}</td>
-                <td style={{...TD,textAlign:"right"}}>{editIdx===i?inp(editMitProv,setEditMitProv):`${(c.mitProv*100).toFixed(1)}%`}</td>
-                <td style={{...TD,textAlign:"center"}}>
-                  {editIdx===i?(
-                    <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                      <button onClick={()=>{saveCloserConfig(closerConfig.map((x,j)=>j===i?{...x,prov:(parseFloat(editProv)||0)/100,mitProv:(parseFloat(editMitProv)||0)/100}:x));setEditIdx(null);}} style={{padding:"4px 12px",borderRadius:6,background:C.green,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✓ Speichern</button>
-                      <button onClick={()=>setEditIdx(null)} style={{padding:"4px 12px",borderRadius:6,background:C.border,color:C.text,border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✗</button>
-                    </div>
-                  ):(
-                    <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                      <button onClick={()=>{setEditIdx(i);setEditProv(String((c.prov*100).toFixed(1)));setEditMitProv(String((c.mitProv*100).toFixed(1)));}} style={{padding:"4px 12px",borderRadius:6,background:C.indigo,color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>✏️ Bearbeiten</button>
-                      <button onClick={()=>{if(window.confirm(`${c.name} löschen?`)){saveCloserConfig(closerConfig.filter((_,j)=>j!==i));}}} style={{padding:"4px 12px",borderRadius:6,background:"#e74c3c",color:"#fff",border:"none",fontWeight:700,fontSize:12,cursor:"pointer"}}>🗑️</button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div style={{marginTop:16,fontSize:12,color:C.muted}}>* Änderungen werden automatisch gespeichert und bleiben im Browser erhalten.</div>
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -5154,49 +5072,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"admin">("dashboard");
-  const DEFAULT_CLOSER: CloserConfig[] = [
-    {name:"Marvin",          prov:0.04,  mitProv:0},
-    {name:"Montano",         prov:0.14,  mitProv:0.05},
-    {name:"Sascha",          prov:0.04,  mitProv:0},
-    {name:"Sülei",           prov:0.125, mitProv:0},
-    {name:"Tobias",          prov:0.04,  mitProv:0},
-    {name:"Emil",            prov:0.10,  mitProv:0},
-    {name:"Florian Schimpf",  prov:0.15,  mitProv:0},
-    {name:"Florian Speiseder",prov:0.15,  mitProv:0},
-    {name:"Rene",     prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
-    {name:"Jana",            prov:0.04,  mitProv:0},
-    {name:"Felix",           prov:0.10,  mitProv:0},
-    {name:"Nico",            prov:0.10,  mitProv:0},
-    {name:"Yannis",          prov:0.10,  mitProv:0},
-    {name:"Cem",             prov:0.25,  mitProv:0.08},
-    {name:"Leon",            prov:0.20,  mitProv:0},
-    {name:"Olga Shvets",     prov:0.10,  mitProv:0},
-    {name:"Vanessa",         prov:0.10,  mitProv:0},
-    {name:"Mazyar",          prov:0.10,  mitProv:0},
-    {name:"Mert",            prov:0,     mitProv:0},
-    {name:"Sören",           prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
-    {name:"Oliver",          prov:0.10,  mitProv:0},
-    {name:"Michaela S",      prov:0.06,  mitProv:0},
-    {name:"Henrik",          prov:0,     mitProv:0},
-    {name:"Kada",            prov:0.20,  mitProv:0.075},
-    {name:"Elena",           prov:0.06,  mitProv:0},
-    {name:"Marcel",          prov:0.10,  mitProv:0},
-    {name:"Jochen",          prov:0.10,  mitProv:0},
-    {name:"Sarah",           prov:0.175, mitProv:0},
-    {name:"Frederik",        prov:0,     mitProv:0},
-    {name:"Marco Loch",      prov:0.15,  mitProv:0},
-    {name:"Daniel",          prov:0.01,  mitProv:0},
-  ];
-  const loadCloserConfig = (): CloserConfig[] => {
-    // Always use DEFAULT_CLOSER — clear any stale localStorage data
-    try { localStorage.removeItem("closerConfig"); } catch {}
-    return DEFAULT_CLOSER;
-  };
-  const [closerConfig, setCloserConfig] = React.useState<CloserConfig[]>(loadCloserConfig);
-  const saveCloserConfig = (cfg: CloserConfig[]) => {
-    setCloserConfig(cfg);
-  };
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"provisionen"|"admin">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -5574,7 +5450,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -6550,7 +6426,131 @@ export default function Dashboard() {
             </div>
           );
         })()}
-        {activeTab==="admin"&&<AdminTab closerConfig={closerConfig} saveCloserConfig={saveCloserConfig} C={C} t={t} TH={TH} TD={TD} card={card}/>}
+        {activeTab==="provisionen"&&(()=>{
+          const provView = closerView;
+          const filterDeals = provView==="tag"
+            ? deals.filter(d=>d.datum===selectedDatum)
+            : deals.filter(d=>d.monat===selectedMonth);
+          const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
+          type ProvRow = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
+          const setterNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
+          const rows: ProvRow[] = setterNames.map(name=>{
+            const sd = filterDeals.filter(d=>d.setter.trim()===name);
+            const total = sd.reduce((a,d)=>a+d.total,0);
+            const ersteRate = sd.reduce((a,d)=>a+d.ersteRate,0);
+            const scgVol = sd.reduce((a,d)=>a+d.scgVol,0);
+            const scgCash = sd.reduce((a,d)=>a+d.scgCash,0);
+            const internProvs: Record<string,number> = {};
+            INTERN_COLS.forEach(col=>{
+              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              internProvs[col] = sd.reduce((a,d)=>{
+                let v = (((d as any)[key] as number)||0);
+                if(col==="Daniel") v += (((d as any)["yves"] as number)||0);
+                return a+v;
+              },0);
+            });
+            const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
+            return {name, total, ersteRate, scgVol, scgCash, internProvs, nettoCash: scgCash - totalInternProv, dealCount: sd.length};
+          }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
+          const totals = {
+            total: rows.reduce((a,r)=>a+r.total,0),
+            ersteRate: rows.reduce((a,r)=>a+r.ersteRate,0),
+            scgVol: rows.reduce((a,r)=>a+r.scgVol,0),
+            scgCash: rows.reduce((a,r)=>a+r.scgCash,0),
+            internProvs: INTERN_COLS.reduce((a,col)=>({...a,[col]:rows.reduce((s,r)=>s+(r.internProvs[col]||0),0)}),{} as Record<string,number>),
+            nettoCash: rows.reduce((a,r)=>a+r.nettoCash,0),
+          };
+          const allMonths = [...new Set(deals.map(d=>d.monat))].sort();
+          const provDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
+          return (
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {provView==="tag"?selectedDatum:selectedMonth}</h2>
+                <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                    {allMonths.map(m=><option key={m} value={m}>{m}</option>)}
+                  </select>
+                  {provView==="tag"&&(
+                    <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                      {provDates.map(d=><option key={d} value={d}>{d.slice(0,5)}</option>)}
+                    </select>
+                  )}
+                  {(["monat","tag"] as const).map(v=>(
+                    <button key={v} onClick={()=>setCloserView(v)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${closerView===v?C.indigo:C.border}`,background:closerView===v?t.th:C.card,color:C.text}}>{v==="monat"?"📅 Monat":"📆 Tag"}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{...card(),padding:0,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH,textAlign:"left"}}>CLOSER</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM TOTAL</th>
+                      <th style={{...TH,textAlign:"right"}}>ERSTE RATE</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG VOL</th>
+                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
+                      {INTERN_COLS.map(col=><th key={col} style={{...TH,textAlign:"right"}}>{col.toUpperCase()}</th>)}
+                      <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r,i)=>(
+                      <tr key={r.name} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.name}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
+                        {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.internProvs[col]>0?fmt(r.internProvs[col]):"—"}</td>)}
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(r.nettoCash)}</td>
+                      </tr>
+                    ))}
+                    <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
+                      <td style={{...TD,fontWeight:800,color:C.text}}>GESAMTSUMME</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
+                      {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.internProvs[col]||0)}</td>)}
+                      <td style={{...TD,textAlign:"right",fontWeight:800,...mono(C.indigo)}}>{fmt(totals.nettoCash)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
+        {activeTab==="admin"&&(()=>{
+          const setterNames = [...new Set(deals.map(d=>d.setter.trim()).filter(Boolean))].sort();
+          return (
+            <div>
+              <h2 style={{fontSize:22,fontWeight:800,color:C.text,marginBottom:24}}>⚙️ Closer Admin</h2>
+              <div style={{...card(),padding:0,overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH,textAlign:"left"}}>CLOSER NAME (aus Google Sheets)</th>
+                      <th style={{...TH,textAlign:"right"}}>ANZAHL DEALS (gesamt)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {setterNames.map((name,i)=>{
+                      const cnt = deals.filter(d=>d.setter.trim()===name).length;
+                      return (
+                        <tr key={name} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                          <td style={{...TD,fontWeight:600,color:C.text}}>{name}</td>
+                          <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{cnt}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{marginTop:16,fontSize:12,color:C.muted}}>Alle Closer-Namen direkt aus Google Sheets (Spalte "Closer").</div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
