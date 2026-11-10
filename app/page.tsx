@@ -6489,90 +6489,33 @@ export default function Dashboard() {
           );
         })()}
         {activeTab==="provisionen"&&(()=>{
-          const CLOSER_PROV = closerConfig;
-          // Berechne Provisionen aus deals für den selectedMonth oder selectedDatum
-          const provView = closerView; // "monat" oder "tag"
+          const provView = closerView;
           const filterDeals = provView==="tag"
             ? deals.filter(d=>d.datum===selectedDatum)
             : deals.filter(d=>d.monat===selectedMonth);
-          const monthDeals = filterDeals;
-          type CloserProvRow = {
-            name:string; prov:number; mitProv:number;
-            total:number; ersteRate:number;
-            scgVol:number; scgCash:number;
-            provision:number; mitarbeiterProv:number; nettoCash:number;
-            dealCount:number;
-          };
-          // Helper: match deal to closer config entry considering partner-based Rene splits
-          const matchDealToCloser = (d: Deal, cp: {name:string}, allClosers: {name:string}[]) => {
-            const s = d.setter.trim().toLowerCase();
-            const n = cp.name.trim().toLowerCase();
-            const p = d.partner.trim().toLowerCase();
-            // If entry starts with "Rene " → partner-specific: match only if setter=rene AND partner matches keyword exactly
-            if (cp.name.startsWith("Rene ")) {
-              if (s !== "rene") return false;
-              const keyword = cp.name.slice(5).trim().toLowerCase(); // e.g. "Tax Angels II" → "tax angels ii"
-              // Find the most specific (longest) matching closer for this deal
-              const matchingClosers = allClosers
-                .filter(other => other.name.startsWith("Rene "))
-                .filter(other => {
-                  const kw = other.name.slice(5).trim().toLowerCase();
-                  return p === kw || p.startsWith(kw+" ") || p.endsWith(" "+kw) || p.includes(" "+kw+" ");
-                })
-                .sort((a,b) => b.name.length - a.name.length); // longest match first
-              if (matchingClosers.length === 0) return false;
-              return matchingClosers[0].name === cp.name;
-            }
-            // Generic "Rene" entry: match only if no partner-specific Rene entry matches this deal
-            if (n === "rene") {
-              const hasSpecific = allClosers.some(other => {
-                if (!other.name.startsWith("Rene ")) return false;
-                const kw = other.name.slice(5).trim().toLowerCase();
-                return p === kw || p.startsWith(kw+" ") || p.endsWith(" "+kw) || p.includes(" "+kw+" ");
-              });
-              return s === "rene" && !hasSpecific;
-            }
-            return s===n;
-          };
-const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
-            const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
+          const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
+          // Group deals directly by setter name from CSV — no matching logic needed
+          const setterNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
+          type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
+          const rows2: ProvRow2[] = setterNames.map(name=>{
+            const setterDeals = filterDeals.filter(d=>d.setter.trim()===name);
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
             const ersteRate = setterDeals.reduce((a,d)=>a+d.ersteRate,0);
             const scgVol = setterDeals.reduce((a,d)=>a+d.scgVol,0);
             const scgCash = setterDeals.reduce((a,d)=>a+d.scgCash,0);
-            // For Rene entries: use the rene column directly from CSV instead of calculating by %
-            const isReneEntry = cp.name === "Rene" || cp.name.startsWith("Rene ");
-            const provision = isReneEntry
-              ? setterDeals.reduce((a,d)=>a+d.rene,0)
-              : scgCash * cp.prov;
-            const mitarbeiterProv = scgCash * cp.mitProv;
-            const nettoCash = scgCash - provision - mitarbeiterProv;
-            return {name:cp.name, prov:cp.prov, mitProv:cp.mitProv, total, ersteRate, scgVol, scgCash, provision, mitarbeiterProv, nettoCash, dealCount:setterDeals.length};
-          });
-          const activeRows = rows.filter(r=>r.total>0);
-          const totals = activeRows.reduce((a,r)=>({
-            total:a.total+r.total, ersteRate:a.ersteRate+r.ersteRate,
-            scgVol:a.scgVol+r.scgVol, scgCash:a.scgCash+r.scgCash,
-            provision:a.provision+r.provision, mitarbeiterProv:a.mitarbeiterProv+r.mitarbeiterProv,
-            nettoCash:a.nettoCash+r.nettoCash, dealCount:a.dealCount+r.dealCount
-          }),{total:0,ersteRate:0,scgVol:0,scgCash:0,provision:0,mitarbeiterProv:0,nettoCash:0,dealCount:0});
-          const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
-          type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
-          const rows2: ProvRow2[] = activeRows.map(r=>{
-            const setterDeals2 = monthDeals.filter(d=> matchDealToCloser(d, r, CLOSER_PROV));
             const internProvs: Record<string,number> = {};
             INTERN_COLS.forEach(col=>{
               const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              internProvs[col] = setterDeals2.reduce((a,d)=>{
+              internProvs[col] = setterDeals.reduce((a,d)=>{
                 let v = (((d as any)[key] as number)||0);
                 if(col==="Daniel") v += (((d as any)["yves"] as number)||0);
                 return a+v;
               },0);
             });
             const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
-            return {...r, internProvs, nettoCash: r.scgCash - totalInternProv};
-          });
+            return {name, total, ersteRate, scgVol, scgCash, internProvs, nettoCash: scgCash - totalInternProv, dealCount:setterDeals.length};
+          }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
           const totals2 = {
             total: rows2.reduce((a,r)=>a+r.total,0),
             ersteRate: rows2.reduce((a,r)=>a+r.ersteRate,0),
