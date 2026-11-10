@@ -3570,7 +3570,7 @@ function parseCSV(text: string): Deal[] {
         internVol:parseEur(cols[21]), internCash:parseEur(cols[22]),
         externVol:parseEur(cols[23]), externCash:parseEur(cols[24]),
         montano:parseEur(cols[12]), cem:parseEur(cols[13]), yves:parseEur(cols[14]),
-        mert:parseEur(cols[15]), kada:parseEur(cols[17]), soeren:parseEur(cols[19]), rene:parseEur(cols[20]), daniel:parseEur(cols[18]),
+        mert:parseEur(cols[15]), kada:parseEur(cols[17]), soeren:parseEur(cols[19]), rene:parseEur(cols[20]),
       } as Deal;
     }).filter(d => d.partner && d.datum);
   }
@@ -3640,7 +3640,6 @@ function parseCSV(text: string): Deal[] {
       kada: parseEur(g(cols,iKada)),
       soeren: parseEur(g(cols,iSoeren)),
       rene: parseEur(g(cols,iRene)),
-      daniel: parseEur(g(cols,iYves)),
     } as Deal;
   }).filter(Boolean) as Deal[];
 }
@@ -5163,7 +5162,8 @@ export default function Dashboard() {
     {name:"Sülei",           prov:0.125, mitProv:0},
     {name:"Tobias",          prov:0.04,  mitProv:0},
     {name:"Emil",            prov:0.10,  mitProv:0},
-    {name:"Florian Schimpf", prov:0.15,  mitProv:0},
+    {name:"Florian Schimpf",  prov:0.15,  mitProv:0},
+    {name:"Florian Speiseder",prov:0.15,  mitProv:0},
     {name:"Rene",     prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
     {name:"Jana",            prov:0.04,  mitProv:0},
     {name:"Felix",           prov:0.10,  mitProv:0},
@@ -6531,7 +6531,7 @@ export default function Dashboard() {
               });
               return s === "rene" && !hasSpecific;
             }
-            return s===n || s.startsWith(n+" ");
+            return s===n;
           };
 const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
