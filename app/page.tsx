@@ -6532,7 +6532,7 @@ export default function Dashboard() {
               });
               return s === "rene" && !hasSpecific;
             }
-            return s===n || s.startsWith(n+" ");
+            return s===n;
           };
 const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
