@@ -5162,8 +5162,7 @@ export default function Dashboard() {
     {name:"Sülei",           prov:0.125, mitProv:0},
     {name:"Tobias",          prov:0.04,  mitProv:0},
     {name:"Emil",            prov:0.10,  mitProv:0},
-    {name:"Florian Schimpf",  prov:0.15,  mitProv:0},
-    {name:"Florian Speiseder",prov:0.15,  mitProv:0},
+    {name:"Florian Schimpf", prov:0.15,  mitProv:0},
     {name:"Rene",     prov:0.20,  mitProv:0.075, zellgutProv:0.175, zellgutMitProv:0.05},
     {name:"Jana",            prov:0.04,  mitProv:0},
     {name:"Felix",           prov:0.10,  mitProv:0},
@@ -6502,36 +6501,11 @@ export default function Dashboard() {
             provision:number; mitarbeiterProv:number; nettoCash:number;
             dealCount:number;
           };
-          // Helper: match deal to closer config entry considering partner-based Rene splits
-          const matchDealToCloser = (d: Deal, cp: {name:string}, allClosers: {name:string}[]) => {
+          // Helper: match deal to closer — exact name match only
+          const matchDealToCloser = (d: Deal, cp: {name:string}, _allClosers: {name:string}[]) => {
             const s = d.setter.trim().toLowerCase();
             const n = cp.name.trim().toLowerCase();
-            const p = d.partner.trim().toLowerCase();
-            // If entry starts with "Rene " → partner-specific: match only if setter=rene AND partner matches keyword exactly
-            if (cp.name.startsWith("Rene ")) {
-              if (s !== "rene") return false;
-              const keyword = cp.name.slice(5).trim().toLowerCase(); // e.g. "Tax Angels II" → "tax angels ii"
-              // Find the most specific (longest) matching closer for this deal
-              const matchingClosers = allClosers
-                .filter(other => other.name.startsWith("Rene "))
-                .filter(other => {
-                  const kw = other.name.slice(5).trim().toLowerCase();
-                  return p === kw || p.startsWith(kw+" ") || p.endsWith(" "+kw) || p.includes(" "+kw+" ");
-                })
-                .sort((a,b) => b.name.length - a.name.length); // longest match first
-              if (matchingClosers.length === 0) return false;
-              return matchingClosers[0].name === cp.name;
-            }
-            // Generic "Rene" entry: match only if no partner-specific Rene entry matches this deal
-            if (n === "rene") {
-              const hasSpecific = allClosers.some(other => {
-                if (!other.name.startsWith("Rene ")) return false;
-                const kw = other.name.slice(5).trim().toLowerCase();
-                return p === kw || p.startsWith(kw+" ") || p.endsWith(" "+kw) || p.includes(" "+kw+" ");
-              });
-              return s === "rene" && !hasSpecific;
-            }
-            return s===n;
+            return s === n;
           };
 const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
