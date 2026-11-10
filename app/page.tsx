@@ -4516,6 +4516,9 @@ export default function Dashboard() {
             }
             return s===n || s.startsWith(n+" ");
           };
+          // Debug: log Rene deals and their partners
+          const reneDeals = monthDeals.filter(d => d.setter.trim().toLowerCase() === "rene");
+          if (reneDeals.length > 0) console.log("RENE DEALS:", reneDeals.map(d => ({partner: d.partner, partnerLower: d.partner.trim().toLowerCase()})));
           const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
