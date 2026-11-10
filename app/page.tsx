@@ -5189,7 +5189,7 @@ export default function Dashboard() {
     {name:"Daniel",          prov:0.01,  mitProv:0},
   ];
   const loadCloserConfig = (): CloserConfig[] => {
-    // Always start from DEFAULT_CLOSER — ignore localStorage to avoid stale names
+    // Always use DEFAULT_CLOSER — clear any stale localStorage data
     try { localStorage.removeItem("closerConfig"); } catch {}
     return DEFAULT_CLOSER;
   };
