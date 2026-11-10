@@ -3570,7 +3570,7 @@ function parseCSV(text: string): Deal[] {
         internVol:parseEur(cols[21]), internCash:parseEur(cols[22]),
         externVol:parseEur(cols[23]), externCash:parseEur(cols[24]),
         montano:parseEur(cols[12]), cem:parseEur(cols[13]), yves:parseEur(cols[14]),
-        mert:parseEur(cols[15]), kada:parseEur(cols[17]), soeren:parseEur(cols[19]), rene:parseEur(cols[20]),
+        mert:parseEur(cols[15]), kada:parseEur(cols[17]), soeren:parseEur(cols[19]), rene:parseEur(cols[20]), daniel:parseEur(cols[18]),
       } as Deal;
     }).filter(d => d.partner && d.datum);
   }
@@ -3640,6 +3640,7 @@ function parseCSV(text: string): Deal[] {
       kada: parseEur(g(cols,iKada)),
       soeren: parseEur(g(cols,iSoeren)),
       rene: parseEur(g(cols,iRene)),
+      daniel: parseEur(g(cols,iYves)),
     } as Deal;
   }).filter(Boolean) as Deal[];
 }
