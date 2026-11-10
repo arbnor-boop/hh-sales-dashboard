@@ -6489,14 +6489,14 @@ export default function Dashboard() {
           );
         })()}
         {activeTab==="provisionen"&&(()=>{
+          // Group deals directly by setter name from CSV — no matching logic needed
           const provView = closerView;
           const filterDeals = provView==="tag"
             ? deals.filter(d=>d.datum===selectedDatum)
             : deals.filter(d=>d.monat===selectedMonth);
           const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
-          // Group deals directly by setter name from CSV — no matching logic needed
-          const setterNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
           type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
+          const setterNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
           const rows2: ProvRow2[] = setterNames.map(name=>{
             const setterDeals = filterDeals.filter(d=>d.setter.trim()===name);
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
@@ -6514,7 +6514,7 @@ export default function Dashboard() {
               },0);
             });
             const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
-            return {name, total, ersteRate, scgVol, scgCash, internProvs, nettoCash: scgCash - totalInternProv, dealCount:setterDeals.length};
+            return {name, total, ersteRate, scgVol, scgCash, internProvs, nettoCash: scgCash - totalInternProv, dealCount: setterDeals.length};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
           const totals2 = {
             total: rows2.reduce((a,r)=>a+r.total,0),
