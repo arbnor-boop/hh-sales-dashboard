@@ -5154,7 +5154,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"provisionen"|"netcash"|"admin">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"admin">("dashboard");
   const DEFAULT_CLOSER: CloserConfig[] = [
     {name:"Marvin",          prov:0.04,  mitProv:0},
     {name:"Montano",         prov:0.14,  mitProv:0.05},
@@ -5574,7 +5574,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["provisionen","💰 Provisionen"],["netcash","💵 Net-Cash-Update"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -6485,102 +6485,6 @@ export default function Dashboard() {
                 {externClosers.length>0&&<RankCard title="🌐 EXTERN CLOSER" closers={externClosers} color={C.pink} bg="#f0d4d4"/>}
               </div>
               {allClosers.length>0&&<RankCard title="🏆 GESAMT — INTERN + EXTERN" closers={allClosers} color={C.indigo} bg={t.th}/>}
-            </div>
-          );
-        })()}
-        {activeTab==="provisionen"&&(()=>{
-          // Group deals directly by setter name from CSV — no matching logic needed
-          const provView = closerView;
-          const filterDeals = provView==="tag"
-            ? deals.filter(d=>d.datum===selectedDatum)
-            : deals.filter(d=>d.monat===selectedMonth);
-          const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
-          type ProvRow2 = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
-          const setterNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
-          const rows2: ProvRow2[] = setterNames.map(name=>{
-            const setterDeals = filterDeals.filter(d=>d.setter.trim()===name);
-            const total = setterDeals.reduce((a,d)=>a+d.total,0);
-            const ersteRate = setterDeals.reduce((a,d)=>a+d.ersteRate,0);
-            const scgVol = setterDeals.reduce((a,d)=>a+d.scgVol,0);
-            const scgCash = setterDeals.reduce((a,d)=>a+d.scgCash,0);
-            const internProvs: Record<string,number> = {};
-            INTERN_COLS.forEach(col=>{
-              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              internProvs[col] = setterDeals.reduce((a,d)=>{
-                let v = (((d as any)[key] as number)||0);
-                if(col==="Daniel") v += (((d as any)["yves"] as number)||0);
-                return a+v;
-              },0);
-            });
-            const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
-            return {name, total, ersteRate, scgVol, scgCash, internProvs, nettoCash: scgCash - totalInternProv, dealCount: setterDeals.length};
-          }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
-          const totals2 = {
-            total: rows2.reduce((a,r)=>a+r.total,0),
-            ersteRate: rows2.reduce((a,r)=>a+r.ersteRate,0),
-            scgVol: rows2.reduce((a,r)=>a+r.scgVol,0),
-            scgCash: rows2.reduce((a,r)=>a+r.scgCash,0),
-            internProvs: INTERN_COLS.reduce((a,col)=>({...a,[col]:rows2.reduce((s,r)=>s+(r.internProvs[col]||0),0)}),{} as Record<string,number>),
-            nettoCash: rows2.reduce((a,r)=>a+r.nettoCash,0),
-          };
-          const allMonths = [...new Set(deals.map(d=>d.monat))].sort();
-          const provDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
-          return (
-            <div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
-                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {provView==="tag"?selectedDatum:selectedMonth}</h2>
-                <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                  <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
-                    {allMonths.map(m=><option key={m} value={m}>{m}</option>)}
-                  </select>
-                  {provView==="tag"&&(
-                    <select value={selectedDatum} onChange={e=>setSelectedDatum(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
-                      {provDates.map(d=><option key={d} value={d}>{d.slice(0,5)}</option>)}
-                    </select>
-                  )}
-                  {(["monat","tag"] as const).map(v=>(
-                    <button key={v} onClick={()=>setCloserView(v)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${closerView===v?C.indigo:C.border}`,background:closerView===v?t.th:C.card,color:C.text}}>{v==="monat"?"📅 Monat":"📆 Tag"}</button>
-                  ))}
-                </div>
-              </div>
-              <div style={{...card(),padding:0,overflow:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100}}>
-                  <thead>
-                    <tr style={{background:t.th}}>
-                      <th style={{...TH,textAlign:"left"}}>CLOSER</th>
-                      <th style={{...TH,textAlign:"right"}}>SUM TOTAL</th>
-                      <th style={{...TH,textAlign:"right"}}>ERSTE RATE</th>
-                      <th style={{...TH,textAlign:"right"}}>SCG VOL</th>
-                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
-                      {INTERN_COLS.map(col=><th key={col} style={{...TH,textAlign:"right"}}>{col.toUpperCase()}</th>)}
-                      <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows2.map((r,i)=>(
-                      <tr key={r.name} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.name}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
-                        {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.internProvs[col]>0?fmt(r.internProvs[col]):"—"}</td>)}
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(r.nettoCash)}</td>
-                      </tr>
-                    ))}
-                    <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
-                      <td style={{...TD,fontWeight:800,color:C.text}}>GESAMTSUMME</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.total)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.ersteRate)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals2.scgVol)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals2.scgCash)}</td>
-                      {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals2.internProvs[col]||0)}</td>)}
-                      <td style={{...TD,textAlign:"right",fontWeight:800,...mono(C.indigo)}}>{fmt(totals2.nettoCash)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
             </div>
           );
         })()}
