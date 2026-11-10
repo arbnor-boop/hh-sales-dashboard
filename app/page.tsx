@@ -4516,17 +4516,17 @@ export default function Dashboard() {
             }
             return s===n || s.startsWith(n+" ");
           };
-          // Debug: log Rene deals and their partners
-          const reneDeals = monthDeals.filter(d => d.setter.trim().toLowerCase() === "rene");
-          console.log("RENE DEALS COUNT:", reneDeals.length, "monthDeals total:", monthDeals.length);
-          if (reneDeals.length > 0) console.log("RENE DEALS:", reneDeals.map(d => ({partner: d.partner, partnerLower: d.partner.trim().toLowerCase(), setter: d.setter})));
-          const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
+const rows: CloserProvRow[] = CLOSER_PROV.map(cp=>{
             const setterDeals = monthDeals.filter(d=> matchDealToCloser(d, cp, CLOSER_PROV));
             const total = setterDeals.reduce((a,d)=>a+d.total,0);
             const ersteRate = setterDeals.reduce((a,d)=>a+d.ersteRate,0);
             const scgVol = setterDeals.reduce((a,d)=>a+d.scgVol,0);
             const scgCash = setterDeals.reduce((a,d)=>a+d.scgCash,0);
-            const provision = scgCash * cp.prov;
+            // For Rene entries: use the rene column directly from CSV instead of calculating by %
+            const isReneEntry = cp.name === "Rene" || cp.name.startsWith("Rene ");
+            const provision = isReneEntry
+              ? setterDeals.reduce((a,d)=>a+d.rene,0)
+              : scgCash * cp.prov;
             const mitarbeiterProv = scgCash * cp.mitProv;
             const nettoCash = scgCash - provision - mitarbeiterProv;
             return {name:cp.name, prov:cp.prov, mitProv:cp.mitProv, total, ersteRate, scgVol, scgCash, provision, mitarbeiterProv, nettoCash, dealCount:setterDeals.length};
