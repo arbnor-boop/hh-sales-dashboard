@@ -6556,60 +6556,73 @@ export default function Dashboard() {
           const allMonths = [...new Set(deals.map(d=>d.monat))].sort();
           const provDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
 
-          // Per-partner calculation using provConfig rates
-          type ProvPartnerRow = {
-            partner:string; dealCount:number;
-            total:number; ersteRate:number;
-            scgVol:number; scgCash:number;
-            isIntern:boolean;
-            provPct:number; provBetrag:number;
-            mitarbeiterProv:number; nettoCash:number;
-          };
-
-          const FLORIAN_SCHIMPF_CLOSER = ["Florian","Florian Schimpf"];
-
-          function getProvPct(partner: string, isIntern: boolean, setter: string): number {
-            const cfg = provConfig[partner]||{intern:0,extern:0,mitarbeiter:0};
-            // ProvipAnda/Investmentpunk: wenn Sülei closed → höhere Rate
-            if ((partner==="ProvipAnda"||partner==="Investmentpunk") && cfg.suelei && setter.toLowerCase().includes("sülei")) return cfg.suelei;
-            // SML: Florian bekommt 1%
-            if (partner==="SML Solution GmbH" && cfg.florian && FLORIAN_SCHIMPF_CLOSER.some(n=>setter.toLowerCase().includes(n.toLowerCase()))) return cfg.florian;
-            return isIntern ? cfg.intern : cfg.extern;
+          // Helper: get provision % for a deal based on partner config
+          const FLORIAN_NAMES = ["florian","florian schimpf"];
+          function getDealProvPct(d: Deal): number {
+            const cfg = provConfig[d.partner]||{intern:0,extern:0,mitarbeiter:0};
+            const setterL = d.setter.trim().toLowerCase();
+            if ((d.partner==="ProvipAnda"||d.partner==="Investmentpunk") && cfg.suelei && setterL.includes("sülei")) return cfg.suelei!;
+            if (d.partner==="SML Solution GmbH" && cfg.florian && FLORIAN_NAMES.some(n=>setterL.includes(n))) return cfg.florian!;
+            const isInt = d.internVol > 0;
+            return isInt ? cfg.intern : cfg.extern;
           }
 
-          // Group by partner
-          const partnerNames = [...new Set(filterDeals.map(d=>d.partner))].sort();
-          const partnerRows: ProvPartnerRow[] = partnerNames.map(partner=>{
-            const pd = filterDeals.filter(d=>d.partner===partner);
-            const isIntern = pd.some(d=>d.internVol>0);
-            const scgCash = pd.reduce((a,d)=>a+d.scgCash,0);
-            const total = pd.reduce((a,d)=>a+d.total,0);
-            const ersteRate = pd.reduce((a,d)=>a+d.ersteRate,0);
-            const scgVol = pd.reduce((a,d)=>a+d.scgVol,0);
-            // For prov %, use first deal's setter (most common)
-            const setter = pd[0]?.setter||"";
-            const provPct = getProvPct(partner, isIntern, setter);
-            const provBetrag = scgCash * provPct / 100;
-            // Mitarbeiter-Provision: only intern, sum from deal closer fields
-            const mitarbeiterProv = isIntern ? pd.reduce((a,d)=>{
-              return a+d.montano+d.cem+d.yves+d.mert+d.kada+d.soeren+d.rene+d.daniel;
-            },0) : 0;
+          // Intern closer names (for individual MA-prov columns)
+          const MITARB_COLS: {label:string; key:keyof Deal}[] = [
+            {label:"Montano", key:"montano"},
+            {label:"Cem",     key:"cem"},
+            {label:"Daniel",  key:"yves"},
+            {label:"Mert",    key:"mert"},
+            {label:"Kada",    key:"kada"},
+            {label:"Sören",   key:"soeren"},
+            {label:"Rene",    key:"rene"},
+          ];
+          // Only show MA columns that have any value
+          const activeMACols = MITARB_COLS.filter(col=>filterDeals.some(d=>(d[col.key] as number)>0));
+
+          // Group by CLOSER (setter)
+          type CloserProvRow = {
+            closer:string;
+            total:number; ersteRate:number;
+            scgVol:number; scgCash:number;
+            provPct:number;          // weighted avg or single value
+            provBetrag:number;       // sum of (scgCash * provPct) per deal
+            mitarbeiterProv:number;  // sum of MA-prov fields
+            maCols:Record<string,number>; // per-MA-col totals
+            nettoCash:number;
+          };
+
+          const closerNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
+          const closerRows: CloserProvRow[] = closerNames.map(closer=>{
+            const cd = filterDeals.filter(d=>d.setter.trim()===closer);
+            const total = cd.reduce((a,d)=>a+d.total,0);
+            const ersteRate = cd.reduce((a,d)=>a+d.ersteRate,0);
+            const scgVol = cd.reduce((a,d)=>a+d.scgVol,0);
+            const scgCash = cd.reduce((a,d)=>a+d.scgCash,0);
+            // Provision: sum per deal
+            const provBetrag = cd.reduce((a,d)=>a + d.scgCash * getDealProvPct(d) / 100, 0);
+            const provPct = scgCash > 0 ? provBetrag / scgCash * 100 : 0;
+            // MA-prov per column
+            const maCols: Record<string,number> = {};
+            activeMACols.forEach(col=>{
+              maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
+            });
+            const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
             const nettoCash = provBetrag - mitarbeiterProv;
-            return {partner,dealCount:pd.length,total,ersteRate,scgVol,scgCash,isIntern,provPct,provBetrag,mitarbeiterProv,nettoCash};
+            return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,maCols,nettoCash};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
 
           const totals = {
-            dealCount: partnerRows.reduce((a,r)=>a+r.dealCount,0),
-            total: partnerRows.reduce((a,r)=>a+r.total,0),
-            ersteRate: partnerRows.reduce((a,r)=>a+r.ersteRate,0),
-            scgVol: partnerRows.reduce((a,r)=>a+r.scgVol,0),
-            scgCash: partnerRows.reduce((a,r)=>a+r.scgCash,0),
-            provBetrag: partnerRows.reduce((a,r)=>a+r.provBetrag,0),
-            mitarbeiterProv: partnerRows.reduce((a,r)=>a+r.mitarbeiterProv,0),
-            nettoCash: partnerRows.reduce((a,r)=>a+r.nettoCash,0),
+            total: closerRows.reduce((a,r)=>a+r.total,0),
+            ersteRate: closerRows.reduce((a,r)=>a+r.ersteRate,0),
+            scgVol: closerRows.reduce((a,r)=>a+r.scgVol,0),
+            scgCash: closerRows.reduce((a,r)=>a+r.scgCash,0),
+            provBetrag: closerRows.reduce((a,r)=>a+r.provBetrag,0),
+            mitarbeiterProv: closerRows.reduce((a,r)=>a+r.mitarbeiterProv,0),
+            maCols: activeMACols.reduce((acc,col)=>({...acc,[col.label]:closerRows.reduce((a,r)=>a+(r.maCols[col.label]||0),0)}),{} as Record<string,number>),
+            nettoCash: closerRows.reduce((a,r)=>a+r.nettoCash,0),
           };
 
-          // Partners that have config (for edit panel)
           const configPartners = Object.keys(DEFAULT_PROV_CONFIG);
 
           return (
@@ -6636,14 +6649,13 @@ export default function Dashboard() {
               {/* Editable rates panel */}
               {provEditOpen&&(
                 <div style={{...card(),padding:20,marginBottom:20,overflow:"auto"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:14}}>⚙️ Provision-Raten bearbeiten (werden im Browser gespeichert)</div>
+                  <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:14}}>⚙️ Provision-Raten pro Partner (gespeichert im Browser)</div>
                   <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                     <thead>
                       <tr style={{background:t.th}}>
                         <th style={{...TH,textAlign:"left",fontSize:11}}>PARTNER</th>
                         <th style={{...TH,textAlign:"center",fontSize:11}}>INTERN %</th>
                         <th style={{...TH,textAlign:"center",fontSize:11}}>EXTERN %</th>
-                        <th style={{...TH,textAlign:"center",fontSize:11}}>MITARBEITER %</th>
                         <th style={{...TH,textAlign:"center",fontSize:11}}>SÜLEI %</th>
                         <th style={{...TH,textAlign:"center",fontSize:11}}>FLORIAN %</th>
                       </tr>
@@ -6652,8 +6664,7 @@ export default function Dashboard() {
                       {configPartners.map((partner,i)=>{
                         const cfg = provConfig[partner]||DEFAULT_PROV_CONFIG[partner]||{intern:0,extern:0,mitarbeiter:0};
                         const inp = (field: keyof ProvRate) => (
-                          <input
-                            type="number" step="0.5" min="0" max="50"
+                          <input type="number" step="0.5" min="0" max="50"
                             value={cfg[field]??""}
                             onChange={e=>updateProvRate(partner,field,parseFloat(e.target.value)||0)}
                             style={{width:60,padding:"4px 6px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:12,textAlign:"center"}}
@@ -6664,80 +6675,62 @@ export default function Dashboard() {
                             <td style={{...TD,fontWeight:600,color:C.text,fontSize:12}}>{partner}</td>
                             <td style={{...TD,textAlign:"center"}}>{inp("intern")}</td>
                             <td style={{...TD,textAlign:"center"}}>{inp("extern")}</td>
-                            <td style={{...TD,textAlign:"center"}}>{inp("mitarbeiter")}</td>
-                            <td style={{...TD,textAlign:"center"}}>
-                              {DEFAULT_PROV_CONFIG[partner]?.suelei!==undefined ? inp("suelei") : <span style={{color:C.muted}}>—</span>}
-                            </td>
-                            <td style={{...TD,textAlign:"center"}}>
-                              {DEFAULT_PROV_CONFIG[partner]?.florian!==undefined ? inp("florian") : <span style={{color:C.muted}}>—</span>}
-                            </td>
+                            <td style={{...TD,textAlign:"center"}}>{DEFAULT_PROV_CONFIG[partner]?.suelei!==undefined?inp("suelei"):<span style={{color:C.muted}}>—</span>}</td>
+                            <td style={{...TD,textAlign:"center"}}>{DEFAULT_PROV_CONFIG[partner]?.florian!==undefined?inp("florian"):<span style={{color:C.muted}}>—</span>}</td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
-                  <div style={{fontSize:11,color:C.muted,marginTop:10}}>
-                    Alle Änderungen werden automatisch gespeichert. Externe Mitarbeiter bekommen keine Mitarbeiter-Provision.
-                  </div>
+                  <div style={{fontSize:11,color:C.muted,marginTop:10}}>Änderungen werden sofort gespeichert.</div>
                 </div>
               )}
 
-              {/* Main provisions table */}
+              {/* Main table: per CLOSER */}
               <div style={{...card(),padding:0,overflow:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",minWidth:900}}>
                   <thead>
                     <tr style={{background:t.th}}>
-                      <th style={{...TH,textAlign:"left"}}>PARTNER</th>
-                      <th style={{...TH,textAlign:"center"}}>TYP</th>
-                      <th style={{...TH,textAlign:"center"}}>DEALS</th>
-                      <th style={{...TH,textAlign:"right"}}>TOTAL</th>
-                      <th style={{...TH,textAlign:"right"}}>ERSTE RATE</th>
-                      <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
-                      <th style={{...TH,textAlign:"center"}}>PROV %</th>
-                      <th style={{...TH,textAlign:"right"}}>PROVISION</th>
-                      <th style={{...TH,textAlign:"right"}}>MITARB.-PROV</th>
+                      <th style={{...TH,textAlign:"left"}}>CLOSER</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM VON TOTAL</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM VON ERSTE RATE</th>
+                      <th style={{...TH,textAlign:"center"}}>PROVISION (%)</th>
+                      <th style={{...TH,textAlign:"right"}}>MITARBEITER-PROVISION</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM VON SCG VOLUMEN</th>
+                      <th style={{...TH,textAlign:"right"}}>SUM VON SCG CASH IN</th>
+                      {activeMACols.map(col=><th key={col.label} style={{...TH,textAlign:"right"}}>{col.label.toUpperCase()}</th>)}
                       <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {partnerRows.map((r,i)=>(
-                      <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
-                        <td style={{...TD,textAlign:"center"}}>
-                          <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:12,background:r.isIntern?"#dbeafe":"#f3e8ff",color:r.isIntern?"#1d4ed8":"#7c3aed"}}>{r.isIntern?"Intern":"Extern"}</span>
-                        </td>
-                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
+                    {closerRows.map((r,i)=>(
+                      <tr key={r.closer} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.closer}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
+                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.mitarbeiterProv)}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
-                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>{r.provPct > 0 ? r.provPct+"%" : "—"}</td>
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{r.provBetrag>0?fmt(r.provBetrag):"—"}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}</td>
+                        {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",...mono(C.muted)}}>{(r.maCols[col.label]||0)>0?fmt(r.maCols[col.label]):"0,00 €"}</td>)}
                         <td style={{...TD,textAlign:"right",fontWeight:700,...mono(r.nettoCash>=0?C.green:"#c0392b")}}>{fmt(r.nettoCash)}</td>
                       </tr>
                     ))}
                     <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
-                      <td style={{...TD,fontWeight:800,color:C.text}}>GESAMTSUMME</td>
-                      <td style={{...TD}}></td>
-                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.text)}}>{totals.dealCount}</td>
+                      <td style={{...TD,fontWeight:800,color:C.text}}></td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
                       <td style={{...TD}}></td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(totals.provBetrag)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.mitarbeiterProv)}</td>
+                      <td style={{...TD}}></td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
+                      {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.maCols[col.label]||0)}</td>)}
                       <td style={{...TD,textAlign:"right",fontWeight:800,...mono(totals.nettoCash>=0?C.green:"#c0392b")}}>{fmt(totals.nettoCash)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-
-              {/* Info box */}
-              <div style={{marginTop:12,fontSize:11,color:C.muted,display:"flex",gap:16,flexWrap:"wrap"}}>
-                <span>💡 Provision berechnet aus SCG Cash IN × Provision %</span>
-                <span>• Externe Partner → keine Mitarbeiter-Provision</span>
-                <span>• Raten über ⚙️ editierbar, gespeichert im Browser</span>
-              </div>
+              <div style={{marginTop:12,fontSize:11,color:C.muted}}>💡 Provision = SCG Cash IN × Partner-Rate. Netto = Provision − Mitarbeiter-Provision. Raten über ⚙️ editierbar.</div>
             </div>
           );
         })()}
