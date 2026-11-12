@@ -5087,6 +5087,9 @@ export default function Dashboard() {
   const [closerProvOverride, setCloserProvOverride] = useState<Record<string,number>>({});
   const [editingCloserProv, setEditingCloserProv] = useState<string|null>(null);
   const [editingCloserVal, setEditingCloserVal] = useState<string>("");
+  const [maProvOverride, setMaProvOverride] = useState<Record<string,number>>({});
+  const [editingMaProv, setEditingMaProv] = useState<string|null>(null);
+  const [editingMaVal, setEditingMaVal] = useState<string>("");
 
   type ProvRate = {intern:number; extern:number; mitarbeiter:number; suelei?:number; florian?:number};
   const DEFAULT_PROV_CONFIG: Record<string,ProvRate> = {
@@ -6631,8 +6634,10 @@ export default function Dashboard() {
             activeMACols.forEach(col=>{
               maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
             });
-            const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
-            const mitarbeiterProvPct = scgCash > 0 ? mitarbeiterProv / scgCash * 100 : 0;
+            const mitarbeiterProvRaw = Object.values(maCols).reduce((a,v)=>a+v,0);
+            const maOverridePct = maProvOverride[closer];
+            const mitarbeiterProv = maOverridePct !== undefined ? scgCash * maOverridePct / 100 : mitarbeiterProvRaw;
+            const mitarbeiterProvPct = maOverridePct !== undefined ? maOverridePct : (scgCash > 0 ? mitarbeiterProvRaw / scgCash * 100 : 0);
             const nettoCash = scgCash - mitarbeiterProv;
             return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,mitarbeiterProvPct,maCols,nettoCash};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
@@ -6766,7 +6771,32 @@ export default function Dashboard() {
                             : <>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️</>
                           }
                         </td>
-                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"0,00%"}</td>
+                        <td style={{...TD,textAlign:"center",...mono(C.muted),cursor:"pointer"}}
+                          onClick={()=>{if(editingMaProv!==r.closer){setEditingMaProv(r.closer);setEditingMaVal(r.mitarbeiterProvPct.toFixed(2));}}}>
+                          {editingMaProv===r.closer
+                            ? <input
+                                autoFocus
+                                type="number"
+                                value={editingMaVal}
+                                onChange={e=>setEditingMaVal(e.target.value)}
+                                onBlur={()=>{
+                                  const n=parseFloat(editingMaVal.replace(",","."));
+                                  if(!isNaN(n)) setMaProvOverride(prev=>({...prev,[r.closer]:n}));
+                                  setEditingMaProv(null);
+                                }}
+                                onKeyDown={e=>{
+                                  if(e.key==="Enter"){
+                                    const n=parseFloat(editingMaVal.replace(",","."));
+                                    if(!isNaN(n)) setMaProvOverride(prev=>({...prev,[r.closer]:n}));
+                                    setEditingMaProv(null);
+                                  }
+                                  if(e.key==="Escape") setEditingMaProv(null);
+                                }}
+                                style={{width:60,textAlign:"center",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 4px",background:C.card,color:C.muted,fontWeight:700}}
+                              />
+                            : <>{r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"0,00%"} ✏️</>
+                          }
+                        </td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
                         {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",...mono(C.muted)}}>{(r.maCols[col.label]||0)>0?fmt(r.maCols[col.label]):"—"}</td>)}
