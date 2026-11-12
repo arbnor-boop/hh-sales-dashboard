@@ -3467,6 +3467,7 @@ type PRow = {
   internVol:number; internCash:number; externVol:number; externCash:number;
   scgVol:number; scgCash:number;
   montano:number; cem:number; yves:number; mert:number; kada:number; soeren:number; rene:number;
+  dealCount:number;
 };
 const nettoOf = (r:PRow) => r.scgCash - r.montano - r.cem - r.yves - r.mert - r.kada - r.soeren - r.rene;
 
@@ -3474,7 +3475,7 @@ function aggregate(deals:Deal[]):PRow[] {
   const map:Record<string,PRow> = {};
   for(const d of deals){
     const k=d.partner.trim().replace(/\s+/g," ");
-    if(!map[k]) map[k]={partner:k,total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0};
+    if(!map[k]) map[k]={partner:k,total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0,dealCount:0};
     const r=map[k];
     r.total+=d.total; r.ersteRate+=d.ersteRate;
     r.internVol+=d.internVol; r.internCash+=d.internCash;
@@ -3482,6 +3483,7 @@ function aggregate(deals:Deal[]):PRow[] {
     r.scgVol+=d.scgVol; r.scgCash+=d.scgCash;
     r.montano+=d.montano; r.cem+=d.cem; r.yves+=d.yves+((d as any).daniel||0); r.mert+=d.mert;
     r.kada+=d.kada; r.soeren+=d.soeren; r.rene+=d.rene;
+    r.dealCount+=1;
   }
   return Object.values(map).sort((a,b)=>b.total-a.total);
 }
@@ -3493,8 +3495,9 @@ function sumRows(rows:PRow[]):PRow {
     externVol:acc.externVol+r.externVol,externCash:acc.externCash+r.externCash,
     scgVol:acc.scgVol+r.scgVol,scgCash:acc.scgCash+r.scgCash,
     montano:acc.montano+r.montano,cem:acc.cem+r.cem,yves:acc.yves+r.yves,mert:acc.mert+r.mert,
-    kada:acc.kada+r.kada,soeren:acc.soeren+r.soeren,rene:acc.rene+r.rene
-  }),{partner:"",total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0});
+    kada:acc.kada+r.kada,soeren:acc.soeren+r.soeren,rene:acc.rene+r.rene,
+    dealCount:acc.dealCount+r.dealCount
+  }),{partner:"",total:0,ersteRate:0,internVol:0,internCash:0,externVol:0,externCash:0,scgVol:0,scgCash:0,montano:0,cem:0,yves:0,mert:0,kada:0,soeren:0,rene:0,dealCount:0});
 }
 
 function decodeHtml(s: string): string {
@@ -5289,33 +5292,47 @@ export default function Dashboard() {
 
   function InternTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
+    const topPartner = rows.length>0 ? rows.reduce((a,b)=>a.internCash>b.internCash?a:b).partner : null;
+    if(rows.length===0) return (
+      <div style={{...card(),padding:"18px 24px",marginBottom:28,color:C.muted,fontSize:13}}>
+        <div style={{width:8,height:8,borderRadius:"50%",background:C.green,display:"inline-block",marginRight:8}}/>
+        <span style={{fontWeight:700,letterSpacing:"1px"}}>INTERN</span> — Keine internen Deals {label}
+      </div>
+    );
     return(
       <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>INTERN</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
+          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{rows.reduce((a,r)=>a+r.dealCount,0)} Deals</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
             <th style={TH}>Partner</th>
+            <th style={{...TH,textAlign:"center"}}>Deals</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
             <th style={{...TH,textAlign:"right",color:C.green}}>SUM von SCG Volumen</th>
             <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
           </tr></thead>
           <tbody>
-            {rows.map((r,i)=>(
-              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
-                <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+            {rows.map((r,i)=>{
+              const isTop = r.partner===topPartner && rows.length>1;
+              return (
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:isTop?"#fef9e7":i%2===0?"transparent":"#f5f0e8"}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{isTop&&<span style={{marginRight:6}}>🥇</span>}{r.partner}</td>
+                <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internVol)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internCash)}</td>
               </tr>
-            ))}
+              );
+            })}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
+              <td style={{...TD,textAlign:"center",fontWeight:400,...mono("#1a1208")}}>{sum.dealCount}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.internVol)}</td>
@@ -5329,33 +5346,41 @@ export default function Dashboard() {
 
   function ExternTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
+    const topPartner = rows.length>0 ? rows.reduce((a,b)=>a.externCash>b.externCash?a:b).partner : null;
     return(
       <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.pink}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>EXTERN</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
+          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{rows.reduce((a,r)=>a+r.dealCount,0)} Deals</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
             <th style={TH}>Partner</th>
+            <th style={{...TH,textAlign:"center"}}>Deals</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
             <th style={{...TH,textAlign:"right",color:C.pink}}>SUM von SCG Volumen</th>
             <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
           </tr></thead>
           <tbody>
-            {rows.map((r,i)=>(
-              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
-                <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+            {rows.map((r,i)=>{
+              const isTop = r.partner===topPartner && rows.length>1;
+              return (
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:isTop?"#fef9e7":i%2===0?"transparent":"#f5f0e8"}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{isTop&&<span style={{marginRight:6}}>🥇</span>}{r.partner}</td>
+                <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externVol)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externCash)}</td>
               </tr>
-            ))}
+              );
+            })}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
+              <td style={{...TD,textAlign:"center",fontWeight:400,...mono("#1a1208")}}>{sum.dealCount}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.externVol)}</td>
@@ -5369,17 +5394,20 @@ export default function Dashboard() {
 
   function GesamtTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
+    const topPartner = rows.length>0 ? rows.reduce((a,b)=>a.scgCash>b.scgCash?a:b).partner : null;
     return(
       <div style={{...card(),padding:0,marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.indigo}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>GESAMT</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
+          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{rows.reduce((a,r)=>a+r.dealCount,0)} Deals</span>
         </div>
         <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
         <table style={{minWidth:900,width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
             <th style={TH}>Partner</th>
+            <th style={{...TH,textAlign:"center"}}>Deals</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Total</th>
             <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
             <th style={{...TH,textAlign:"right",color:C.indigo}}>SUM von SCG Volumen</th>
@@ -5394,9 +5422,12 @@ export default function Dashboard() {
             <th style={{...TH,textAlign:"right",color:C.green}}>Netto Cash-IN</th>
           </tr></thead>
           <tbody>
-            {rows.map((r,i)=>(
-              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":"#f5f0e8"}}>
-                <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+            {rows.map((r,i)=>{
+              const isTop = r.partner===topPartner && rows.length>1;
+              return (
+              <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:isTop?"#fef9e7":i%2===0?"transparent":"#f5f0e8"}}>
+                <td style={{...TD,fontWeight:600,color:C.text}}>{isTop&&<span style={{marginRight:6}}>🥇</span>}{r.partner}</td>
+                <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.total)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgVol)}</td>
@@ -5410,9 +5441,11 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(r.rene?C.amber:C.dimmed)}}>{fmt(r.rene)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208"),fontWeight:600}}>{fmt(nettoOf(r))}</td>
               </tr>
-            ))}
+              );
+            })}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
+              <td style={{...TD,textAlign:"center",fontWeight:400,...mono("#1a1208")}}>{sum.dealCount}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.total)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgVol)}</td>
@@ -5750,21 +5783,57 @@ export default function Dashboard() {
           );
         })()}
 
-        {activeTab==="tagesansicht"&&(<>
+        {activeTab==="tagesansicht"&&(()=>{
+          // Vortag berechnen
+          const allDaysSorted=[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort((a,b)=>{
+            const [ad,am,ay]=a.split(".").map(Number); const [bd,bm,by]=b.split(".").map(Number);
+            return new Date(ay,am-1,ad).getTime()-new Date(by,bm-1,bd).getTime();
+          });
+          const todayIdx=allDaysSorted.indexOf(selectedDatum);
+          const prevDatum=todayIdx>0?allDaysSorted[todayIdx-1]:null;
+          const prevDeals=prevDatum?deals.filter(d=>d.datum===prevDatum):[];
+          const prevIntern=prevDeals.filter(d=>d.internVol>0);
+          const prevExtern=prevDeals.filter(d=>d.externVol>0&&d.internVol===0);
+          function deltaArrow(curr:number,prev:number){
+            if(!prev) return null;
+            const pct=Math.round((curr-prev)/prev*100);
+            const up=curr>=prev;
+            return <span style={{fontSize:11,fontWeight:700,color:up?"#2a7a2a":"#c0392b",marginLeft:6}}>
+              {up?"▲":"▼"} {Math.abs(pct)}%
+            </span>;
+          }
+          const todayCashGesamt=sumRows(tagRows).scgCash;
+          const prevCashGesamt=sumRows(aggregate(prevDeals)).scgCash;
+          const todayCashIntern=sumRows(tagIntern).scgCash;
+          const prevCashIntern=sumRows(aggregate(prevIntern)).scgCash;
+          const todayCashExtern=sumRows(tagExtern).scgCash;
+          const prevCashExtern=sumRows(aggregate(prevExtern)).scgCash;
+          return (<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Tagesansicht</h1>
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,fontWeight:700,background:"#e8ddd0",color:C.amber,border:"1px solid #3a3a20"}}>{selectedDatum}</span>
             <span style={{padding:"3px 12px",borderRadius:20,fontSize:11,background:"#e8ddd0",color:C.muted,border:`1px solid ${C.border}`}}>{selectedMonth}</span>
+            {prevDatum&&<span style={{fontSize:11,color:C.muted}}>vs. Vortag {prevDatum}</span>}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <SumCard label="INTERN" vol={sumRows(tagIntern).scgVol} cash={sumRows(tagIntern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.internVol>0))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-            <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={sumRows(tagExtern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.externVol>0&&d.internVol===0))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
-            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
+            <div>
+              <SumCard label="INTERN" vol={sumRows(tagIntern).scgVol} cash={todayCashIntern} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.internVol>0))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
+              {prevDatum&&<div style={{textAlign:"center",marginTop:4,fontSize:12,color:C.muted}}>Cash IN {deltaArrow(todayCashIntern,prevCashIntern)}</div>}
+            </div>
+            <div>
+              <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={todayCashExtern} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.externVol>0&&d.internVol===0))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
+              {prevDatum&&<div style={{textAlign:"center",marginTop:4,fontSize:12,color:C.muted}}>Cash IN {deltaArrow(todayCashExtern,prevCashExtern)}</div>}
+            </div>
+            <div>
+              <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={todayCashGesamt} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
+              {prevDatum&&<div style={{textAlign:"center",marginTop:4,fontSize:12,color:C.muted}}>Cash IN {deltaArrow(todayCashGesamt,prevCashGesamt)}</div>}
+            </div>
           </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
           <ExternTable rows={tagExtern} label={selectedDatum}/>
           <GesamtTable rows={tagRows} label={selectedDatum}/>
-        </>)}
+          </>);
+        })()}
 
         {activeTab==="wochenansicht"&&(()=>{
           // Group deals by month → KW
