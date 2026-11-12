@@ -6559,13 +6559,16 @@ export default function Dashboard() {
           // Helper: get provision % for a deal based on partner config
           const FLORIAN_NAMES = ["florian","florian schimpf"];
           function getDealProvPct(d: Deal): number {
-            const cfg = provConfig[d.partner]||{intern:0,extern:0,mitarbeiter:0};
+            const cfg = provConfig[d.partner];
+            if (!cfg) return 0; // Partner nicht konfiguriert → 0% (kein Eintrag in Tabelle)
             const setterL = d.setter.trim().toLowerCase();
             if ((d.partner==="ProvipAnda"||d.partner==="Investmentpunk") && cfg.suelei && setterL.includes("sülei")) return cfg.suelei!;
             if (d.partner==="SML Solution GmbH" && cfg.florian && FLORIAN_NAMES.some(n=>setterL.includes(n))) return cfg.florian!;
             const isInt = d.internVol > 0;
             return isInt ? cfg.intern : cfg.extern;
           }
+          // All unique partners in filtered deals, with their config status
+          const unknownPartners = [...new Set(filterDeals.map(d=>d.partner))].filter(p=>!provConfig[p]);
 
           // Intern closer names (for individual MA-prov columns)
           const MITARB_COLS: {label:string; key:keyof Deal}[] = [
@@ -6683,6 +6686,50 @@ export default function Dashboard() {
                     </tbody>
                   </table>
                   <div style={{fontSize:11,color:C.muted,marginTop:10}}>Änderungen werden sofort gespeichert.</div>
+                  {/* Unknown partners section */}
+                  {unknownPartners.length>0&&(
+                    <div style={{marginTop:16,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"#c0392b",marginBottom:10}}>⚠️ Partner ohne Rate (Provision = 0%):</div>
+                      <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                        <thead>
+                          <tr style={{background:t.th}}>
+                            <th style={{...TH,textAlign:"left",fontSize:11}}>PARTNER</th>
+                            <th style={{...TH,textAlign:"center",fontSize:11}}>INTERN %</th>
+                            <th style={{...TH,textAlign:"center",fontSize:11}}>EXTERN %</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {unknownPartners.map((partner,i)=>{
+                            const cfg = provConfig[partner]||{intern:0,extern:0,mitarbeiter:0};
+                            return (
+                              <tr key={partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                                <td style={{...TD,fontWeight:600,color:"#c0392b",fontSize:12}}>{partner}</td>
+                                <td style={{...TD,textAlign:"center"}}>
+                                  <input type="number" step="0.5" min="0" max="50" value={cfg.intern||""}
+                                    onChange={e=>updateProvRate(partner,"intern",parseFloat(e.target.value)||0)}
+                                    style={{width:60,padding:"4px 6px",borderRadius:6,border:`1px solid #c0392b`,background:C.bg,color:C.text,fontSize:12,textAlign:"center"}}
+                                  />
+                                </td>
+                                <td style={{...TD,textAlign:"center"}}>
+                                  <input type="number" step="0.5" min="0" max="50" value={cfg.extern||""}
+                                    onChange={e=>updateProvRate(partner,"extern",parseFloat(e.target.value)||0)}
+                                    style={{width:60,padding:"4px 6px",borderRadius:6,border:`1px solid #c0392b`,background:C.bg,color:C.text,fontSize:12,textAlign:"center"}}
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Warning for unknown partners */}
+              {unknownPartners.length>0&&(
+                <div style={{background:"#fef3cd",border:"1px solid #f0c040",borderRadius:8,padding:"10px 16px",marginBottom:12,fontSize:12,color:"#7a5a00"}}>
+                  ⚠️ Folgende Partner haben keine Provision-Rate konfiguriert (werden mit 0% gerechnet): <strong>{unknownPartners.join(", ")}</strong>. Bitte unter ⚙️ Raten bearbeiten eintragen.
                 </div>
               )}
 
@@ -6708,11 +6755,13 @@ export default function Dashboard() {
                         <td style={{...TD,fontWeight:600,color:C.text}}>{r.closer}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
-                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{fmt(r.mitarbeiterProv)}</td>
+                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>
+                          {r.provPct>0?r.provPct.toFixed(2)+"%":"—"}
+                        </td>
+                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
-                        {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",...mono(C.muted)}}>{(r.maCols[col.label]||0)>0?fmt(r.maCols[col.label]):"0,00 €"}</td>)}
+                        {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",...mono(C.muted)}}>{(r.maCols[col.label]||0)>0?fmt(r.maCols[col.label]):"—"}</td>)}
                         <td style={{...TD,textAlign:"right",fontWeight:700,...mono(r.nettoCash>=0?C.green:"#c0392b")}}>{fmt(r.nettoCash)}</td>
                       </tr>
                     ))}
@@ -6721,7 +6770,7 @@ export default function Dashboard() {
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
                       <td style={{...TD}}></td>
-                      <td style={{...TD}}></td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{totals.mitarbeiterProv>0?fmt(totals.mitarbeiterProv):"—"}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
                       {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.maCols[col.label]||0)}</td>)}
