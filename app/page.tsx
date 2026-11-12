@@ -5400,6 +5400,15 @@ export default function Dashboard() {
   function GesamtTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
     const topPartner=rows.length>1?rows.reduce((a,b)=>a.scgCash>b.scgCash?a:b).partner:null;
+    // Nur Closer-Spalten anzeigen die Werte > 0 haben
+    const showMontano = sum.montano>0;
+    const showCem     = sum.cem>0;
+    const showDaniel  = sum.yves>0;
+    const showMert    = sum.mert>0;
+    const showKada    = sum.kada>0;
+    const showSoeren  = sum.soeren>0;
+    const showRene    = sum.rene>0;
+    const anyCloser   = showMontano||showCem||showDaniel||showMert||showKada||showSoeren||showRene;
     return(
       <div style={{...card(),padding:0,marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
@@ -5409,7 +5418,7 @@ export default function Dashboard() {
           <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{sum.dealCount} Deals</span>
         </div>
         <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-        <table style={{minWidth:900,width:"100%",borderCollapse:"collapse"}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
             <th style={TH}>Partner</th>
             <th style={{...TH,textAlign:"center"}}>Deals</th>
@@ -5417,13 +5426,13 @@ export default function Dashboard() {
             <th style={{...TH,textAlign:"right"}}>SUM von Erste Rate</th>
             <th style={{...TH,textAlign:"right",color:C.indigo}}>SUM von SCG Volumen</th>
             <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Montano</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Cem</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Daniel</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Mert</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Kada</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Sören</th>
-            <th style={{...TH,textAlign:"right",color:C.amber}}>Rene</th>
+            {showMontano&&<th style={{...TH,textAlign:"right",color:C.amber}}>Montano</th>}
+            {showCem&&    <th style={{...TH,textAlign:"right",color:C.amber}}>Cem</th>}
+            {showDaniel&& <th style={{...TH,textAlign:"right",color:C.amber}}>Daniel</th>}
+            {showMert&&   <th style={{...TH,textAlign:"right",color:C.amber}}>Mert</th>}
+            {showKada&&   <th style={{...TH,textAlign:"right",color:C.amber}}>Kada</th>}
+            {showSoeren&& <th style={{...TH,textAlign:"right",color:C.amber}}>Sören</th>}
+            {showRene&&   <th style={{...TH,textAlign:"right",color:C.amber}}>Rene</th>}
             <th style={{...TH,textAlign:"right",color:C.green}}>Netto Cash-IN</th>
           </tr></thead>
           <tbody>
@@ -5435,13 +5444,13 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.ersteRate)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgVol)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.scgCash)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.montano?C.amber:C.dimmed)}}>{fmt(r.montano)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.cem?C.amber:C.dimmed)}}>{fmt(r.cem)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.yves?C.amber:C.dimmed)}}>{fmt(r.yves)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.mert?C.amber:C.dimmed)}}>{fmt(r.mert)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.kada?C.amber:C.dimmed)}}>{fmt(r.kada)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.soeren?C.amber:C.dimmed)}}>{fmt(r.soeren)}</td>
-                <td style={{...TD,textAlign:"right",...mono(r.rene?C.amber:C.dimmed)}}>{fmt(r.rene)}</td>
+                {showMontano&&<td style={{...TD,textAlign:"right",...mono(r.montano?C.amber:C.dimmed)}}>{fmt(r.montano)}</td>}
+                {showCem&&    <td style={{...TD,textAlign:"right",...mono(r.cem?C.amber:C.dimmed)}}>{fmt(r.cem)}</td>}
+                {showDaniel&& <td style={{...TD,textAlign:"right",...mono(r.yves?C.amber:C.dimmed)}}>{fmt(r.yves)}</td>}
+                {showMert&&   <td style={{...TD,textAlign:"right",...mono(r.mert?C.amber:C.dimmed)}}>{fmt(r.mert)}</td>}
+                {showKada&&   <td style={{...TD,textAlign:"right",...mono(r.kada?C.amber:C.dimmed)}}>{fmt(r.kada)}</td>}
+                {showSoeren&& <td style={{...TD,textAlign:"right",...mono(r.soeren?C.amber:C.dimmed)}}>{fmt(r.soeren)}</td>}
+                {showRene&&   <td style={{...TD,textAlign:"right",...mono(r.rene?C.amber:C.dimmed)}}>{fmt(r.rene)}</td>}
                 <td style={{...TD,textAlign:"right",...mono("#1a1208"),fontWeight:600}}>{fmt(nettoOf(r))}</td>
               </tr>
             );})}
@@ -5452,18 +5461,19 @@ export default function Dashboard() {
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.ersteRate)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgVol)}</td>
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.scgCash)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.montano)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.cem)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.yves)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.mert)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.kada)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.soeren)}</td>
-              <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.rene)}</td>
+              {showMontano&&<td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.montano)}</td>}
+              {showCem&&    <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.cem)}</td>}
+              {showDaniel&& <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.yves)}</td>}
+              {showMert&&   <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.mert)}</td>}
+              {showKada&&   <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.kada)}</td>}
+              {showSoeren&& <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.soeren)}</td>}
+              {showRene&&   <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(sum.rene)}</td>}
               <td style={{...TD,textAlign:"right",fontWeight:400,...mono("#1a1208")}}>{fmt(nettoOf(sum))}</td>
             </tr>
           </tbody>
         </table>
         </div>
+        {!anyCloser&&<div style={{padding:"8px 20px",fontSize:10,color:C.muted,borderTop:`1px solid ${C.border}`}}>Keine Provisionen an diesem Tag</div>}
       </div>
     );
   }
