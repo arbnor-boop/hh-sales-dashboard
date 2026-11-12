@@ -5083,6 +5083,26 @@ export default function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selKW, setSelKW] = useState<string>("alle");
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
+  const [provEditOpen, setProvEditOpen] = useState(false);
+
+  type ProvRate = {intern:number; extern:number; mitarbeiter:number; suelei?:number; florian?:number};
+  const DEFAULT_PROV_CONFIG: Record<string,ProvRate> = {
+    "Candidate-flow":           {intern:14, extern:4,  mitarbeiter:5},
+    "Grundl Leadership":        {intern:20, extern:10, mitarbeiter:7.5},
+    "Schippke":                 {intern:25, extern:10, mitarbeiter:8},
+    "Florian Schimpf":          {intern:15, extern:15, mitarbeiter:0},
+    "ProvipAnda":               {intern:10, extern:10, mitarbeiter:0, suelei:12.5},
+    "Eitel Invest AG":          {intern:12.5, extern:12.5, mitarbeiter:0},
+    "Tax Angels":               {intern:25, extern:15, mitarbeiter:9},
+    "Reviso Treuhand AG":       {intern:25, extern:15, mitarbeiter:9},
+    "2b AHEAD ThinkTank GmbH":  {intern:15, extern:15, mitarbeiter:0},
+    "ZELLGUT GmbH":             {intern:20, extern:6,  mitarbeiter:7.5},
+    "Investmentpunk":           {intern:10, extern:10, mitarbeiter:0, suelei:12.5},
+    "Close Consulting - Leon":  {intern:20, extern:20, mitarbeiter:0},
+    "OD Solutions GmbH":        {intern:10, extern:10, mitarbeiter:0},
+    "SML Solution GmbH":        {intern:15, extern:15, mitarbeiter:0, florian:1},
+  };
+  const [provConfig, setProvConfig] = useState<Record<string,ProvRate>>(DEFAULT_PROV_CONFIG);
   const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46};
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
@@ -5114,6 +5134,23 @@ export default function Dashboard() {
   }
 
   const deals = uploadedDeals ?? DEALS;
+
+  // Load provConfig from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("hh_prov_config");
+      if (saved) setProvConfig({...DEFAULT_PROV_CONFIG, ...JSON.parse(saved)});
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function updateProvRate(partner: string, field: keyof ProvRate, val: number) {
+    setProvConfig(prev => {
+      const next = {...prev, [partner]: {...(prev[partner]||DEFAULT_PROV_CONFIG[partner]||{intern:0,extern:0,mitarbeiter:0}), [field]: val}};
+      try { localStorage.setItem("hh_prov_config", JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
 
   useEffect(() => {
     async function fetchSheetData() {
@@ -6516,41 +6553,68 @@ export default function Dashboard() {
           const filterDeals = provView==="tag"
             ? deals.filter(d=>d.datum===selectedDatum)
             : deals.filter(d=>d.monat===selectedMonth);
-          const INTERN_COLS = ["Montano","Cem","Daniel","Mert","Kada","Sören","Rene"];
-          type ProvRow = {name:string;total:number;ersteRate:number;scgVol:number;scgCash:number;internProvs:Record<string,number>;nettoCash:number;dealCount:number};
-          const setterNames = [...new Set(filterDeals.map(d=>d.setter.trim()).filter(Boolean))].sort();
-          const rows: ProvRow[] = setterNames.map(name=>{
-            const sd = filterDeals.filter(d=>d.setter.trim()===name);
-            const total = sd.reduce((a,d)=>a+d.total,0);
-            const ersteRate = sd.reduce((a,d)=>a+d.ersteRate,0);
-            const scgVol = sd.reduce((a,d)=>a+d.scgVol,0);
-            const scgCash = sd.reduce((a,d)=>a+d.scgCash,0);
-            const internProvs: Record<string,number> = {};
-            INTERN_COLS.forEach(col=>{
-              const key = col==="Sören"?"soeren":col==="Rene"?"rene":col.toLowerCase();
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              internProvs[col] = sd.reduce((a,d)=>{
-                let v = (((d as any)[key] as number)||0);
-                if(col==="Daniel") v += (((d as any)["yves"] as number)||0);
-                return a+v;
-              },0);
-            });
-            const totalInternProv = Object.values(internProvs).reduce((a,v)=>a+v,0);
-            return {name, total, ersteRate, scgVol, scgCash, internProvs, nettoCash: scgCash - totalInternProv, dealCount: sd.length};
-          }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
-          const totals = {
-            total: rows.reduce((a,r)=>a+r.total,0),
-            ersteRate: rows.reduce((a,r)=>a+r.ersteRate,0),
-            scgVol: rows.reduce((a,r)=>a+r.scgVol,0),
-            scgCash: rows.reduce((a,r)=>a+r.scgCash,0),
-            internProvs: INTERN_COLS.reduce((a,col)=>({...a,[col]:rows.reduce((s,r)=>s+(r.internProvs[col]||0),0)}),{} as Record<string,number>),
-            nettoCash: rows.reduce((a,r)=>a+r.nettoCash,0),
-          };
           const allMonths = [...new Set(deals.map(d=>d.monat))].sort();
           const provDates = [...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort();
+
+          // Per-partner calculation using provConfig rates
+          type ProvPartnerRow = {
+            partner:string; dealCount:number;
+            total:number; ersteRate:number;
+            scgVol:number; scgCash:number;
+            isIntern:boolean;
+            provPct:number; provBetrag:number;
+            mitarbeiterProv:number; nettoCash:number;
+          };
+
+          const FLORIAN_SCHIMPF_CLOSER = ["Florian","Florian Schimpf"];
+
+          function getProvPct(partner: string, isIntern: boolean, setter: string): number {
+            const cfg = provConfig[partner]||{intern:0,extern:0,mitarbeiter:0};
+            // ProvipAnda/Investmentpunk: wenn Sülei closed → höhere Rate
+            if ((partner==="ProvipAnda"||partner==="Investmentpunk") && cfg.suelei && setter.toLowerCase().includes("sülei")) return cfg.suelei;
+            // SML: Florian bekommt 1%
+            if (partner==="SML Solution GmbH" && cfg.florian && FLORIAN_SCHIMPF_CLOSER.some(n=>setter.toLowerCase().includes(n.toLowerCase()))) return cfg.florian;
+            return isIntern ? cfg.intern : cfg.extern;
+          }
+
+          // Group by partner
+          const partnerNames = [...new Set(filterDeals.map(d=>d.partner))].sort();
+          const partnerRows: ProvPartnerRow[] = partnerNames.map(partner=>{
+            const pd = filterDeals.filter(d=>d.partner===partner);
+            const isIntern = pd.some(d=>d.internVol>0);
+            const scgCash = pd.reduce((a,d)=>a+d.scgCash,0);
+            const total = pd.reduce((a,d)=>a+d.total,0);
+            const ersteRate = pd.reduce((a,d)=>a+d.ersteRate,0);
+            const scgVol = pd.reduce((a,d)=>a+d.scgVol,0);
+            // For prov %, use first deal's setter (most common)
+            const setter = pd[0]?.setter||"";
+            const provPct = getProvPct(partner, isIntern, setter);
+            const provBetrag = scgCash * provPct / 100;
+            // Mitarbeiter-Provision: only intern, sum from deal closer fields
+            const mitarbeiterProv = isIntern ? pd.reduce((a,d)=>{
+              return a+d.montano+d.cem+d.yves+d.mert+d.kada+d.soeren+d.rene+d.daniel;
+            },0) : 0;
+            const nettoCash = provBetrag - mitarbeiterProv;
+            return {partner,dealCount:pd.length,total,ersteRate,scgVol,scgCash,isIntern,provPct,provBetrag,mitarbeiterProv,nettoCash};
+          }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
+
+          const totals = {
+            dealCount: partnerRows.reduce((a,r)=>a+r.dealCount,0),
+            total: partnerRows.reduce((a,r)=>a+r.total,0),
+            ersteRate: partnerRows.reduce((a,r)=>a+r.ersteRate,0),
+            scgVol: partnerRows.reduce((a,r)=>a+r.scgVol,0),
+            scgCash: partnerRows.reduce((a,r)=>a+r.scgCash,0),
+            provBetrag: partnerRows.reduce((a,r)=>a+r.provBetrag,0),
+            mitarbeiterProv: partnerRows.reduce((a,r)=>a+r.mitarbeiterProv,0),
+            nettoCash: partnerRows.reduce((a,r)=>a+r.nettoCash,0),
+          };
+
+          // Partners that have config (for edit panel)
+          const configPartners = Object.keys(DEFAULT_PROV_CONFIG);
+
           return (
             <div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:12}}>
                 <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>💰 Provisionen — {provView==="tag"?selectedDatum:selectedMonth}</h2>
                 <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                   <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
@@ -6564,44 +6628,115 @@ export default function Dashboard() {
                   {(["monat","tag"] as const).map(v=>(
                     <button key={v} onClick={()=>setCloserView(v)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${closerView===v?C.indigo:C.border}`,background:closerView===v?t.th:C.card,color:C.text}}>{v==="monat"?"📅 Monat":"📆 Tag"}</button>
                   ))}
+                  <button onClick={()=>setProvEditOpen(o=>!o)} style={{padding:"7px 14px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${provEditOpen?C.indigo:C.border}`,background:provEditOpen?t.th:C.card,color:C.text}}>⚙️ Raten bearbeiten</button>
+                  <button onClick={()=>{setProvConfig(DEFAULT_PROV_CONFIG);try{localStorage.removeItem("hh_prov_config")}catch{}}} style={{padding:"7px 14px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.muted}}>↩ Reset</button>
                 </div>
               </div>
+
+              {/* Editable rates panel */}
+              {provEditOpen&&(
+                <div style={{...card(),padding:20,marginBottom:20,overflow:"auto"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:C.text,marginBottom:14}}>⚙️ Provision-Raten bearbeiten (werden im Browser gespeichert)</div>
+                  <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                    <thead>
+                      <tr style={{background:t.th}}>
+                        <th style={{...TH,textAlign:"left",fontSize:11}}>PARTNER</th>
+                        <th style={{...TH,textAlign:"center",fontSize:11}}>INTERN %</th>
+                        <th style={{...TH,textAlign:"center",fontSize:11}}>EXTERN %</th>
+                        <th style={{...TH,textAlign:"center",fontSize:11}}>MITARBEITER %</th>
+                        <th style={{...TH,textAlign:"center",fontSize:11}}>SÜLEI %</th>
+                        <th style={{...TH,textAlign:"center",fontSize:11}}>FLORIAN %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {configPartners.map((partner,i)=>{
+                        const cfg = provConfig[partner]||DEFAULT_PROV_CONFIG[partner]||{intern:0,extern:0,mitarbeiter:0};
+                        const inp = (field: keyof ProvRate) => (
+                          <input
+                            type="number" step="0.5" min="0" max="50"
+                            value={cfg[field]??""}
+                            onChange={e=>updateProvRate(partner,field,parseFloat(e.target.value)||0)}
+                            style={{width:60,padding:"4px 6px",borderRadius:6,border:`1px solid ${C.border}`,background:C.bg,color:C.text,fontSize:12,textAlign:"center"}}
+                          />
+                        );
+                        return (
+                          <tr key={partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                            <td style={{...TD,fontWeight:600,color:C.text,fontSize:12}}>{partner}</td>
+                            <td style={{...TD,textAlign:"center"}}>{inp("intern")}</td>
+                            <td style={{...TD,textAlign:"center"}}>{inp("extern")}</td>
+                            <td style={{...TD,textAlign:"center"}}>{inp("mitarbeiter")}</td>
+                            <td style={{...TD,textAlign:"center"}}>
+                              {DEFAULT_PROV_CONFIG[partner]?.suelei!==undefined ? inp("suelei") : <span style={{color:C.muted}}>—</span>}
+                            </td>
+                            <td style={{...TD,textAlign:"center"}}>
+                              {DEFAULT_PROV_CONFIG[partner]?.florian!==undefined ? inp("florian") : <span style={{color:C.muted}}>—</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <div style={{fontSize:11,color:C.muted,marginTop:10}}>
+                    Alle Änderungen werden automatisch gespeichert. Externe Mitarbeiter bekommen keine Mitarbeiter-Provision.
+                  </div>
+                </div>
+              )}
+
+              {/* Main provisions table */}
               <div style={{...card(),padding:0,overflow:"auto"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",minWidth:1100}}>
+                <table style={{width:"100%",borderCollapse:"collapse",minWidth:900}}>
                   <thead>
                     <tr style={{background:t.th}}>
-                      <th style={{...TH,textAlign:"left"}}>CLOSER</th>
-                      <th style={{...TH,textAlign:"right"}}>SUM TOTAL</th>
+                      <th style={{...TH,textAlign:"left"}}>PARTNER</th>
+                      <th style={{...TH,textAlign:"center"}}>TYP</th>
+                      <th style={{...TH,textAlign:"center"}}>DEALS</th>
+                      <th style={{...TH,textAlign:"right"}}>TOTAL</th>
                       <th style={{...TH,textAlign:"right"}}>ERSTE RATE</th>
-                      <th style={{...TH,textAlign:"right"}}>SCG VOL</th>
                       <th style={{...TH,textAlign:"right"}}>SCG CASH IN</th>
-                      {INTERN_COLS.map(col=><th key={col} style={{...TH,textAlign:"right"}}>{col.toUpperCase()}</th>)}
+                      <th style={{...TH,textAlign:"center"}}>PROV %</th>
+                      <th style={{...TH,textAlign:"right"}}>PROVISION</th>
+                      <th style={{...TH,textAlign:"right"}}>MITARB.-PROV</th>
                       <th style={{...TH,textAlign:"right"}}>NETTO CASH-IN</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((r,i)=>(
-                      <tr key={r.name} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.name}</td>
+                    {partnerRows.map((r,i)=>(
+                      <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                        <td style={{...TD,fontWeight:600,color:C.text}}>{r.partner}</td>
+                        <td style={{...TD,textAlign:"center"}}>
+                          <span style={{fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:12,background:r.isIntern?"#dbeafe":"#f3e8ff",color:r.isIntern?"#1d4ed8":"#7c3aed"}}>{r.isIntern?"Intern":"Extern"}</span>
+                        </td>
+                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
-                        <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
-                        {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.internProvs[col]>0?fmt(r.internProvs[col]):"—"}</td>)}
-                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(r.nettoCash)}</td>
+                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>{r.provPct > 0 ? r.provPct+"%" : "—"}</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{r.provBetrag>0?fmt(r.provBetrag):"—"}</td>
+                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}</td>
+                        <td style={{...TD,textAlign:"right",fontWeight:700,...mono(r.nettoCash>=0?C.green:"#c0392b")}}>{fmt(r.nettoCash)}</td>
                       </tr>
                     ))}
                     <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
                       <td style={{...TD,fontWeight:800,color:C.text}}>GESAMTSUMME</td>
+                      <td style={{...TD}}></td>
+                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.text)}}>{totals.dealCount}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
-                      {INTERN_COLS.map(col=><td key={col} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.internProvs[col]||0)}</td>)}
-                      <td style={{...TD,textAlign:"right",fontWeight:800,...mono(C.indigo)}}>{fmt(totals.nettoCash)}</td>
+                      <td style={{...TD}}></td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.indigo)}}>{fmt(totals.provBetrag)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.mitarbeiterProv)}</td>
+                      <td style={{...TD,textAlign:"right",fontWeight:800,...mono(totals.nettoCash>=0?C.green:"#c0392b")}}>{fmt(totals.nettoCash)}</td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              {/* Info box */}
+              <div style={{marginTop:12,fontSize:11,color:C.muted,display:"flex",gap:16,flexWrap:"wrap"}}>
+                <span>💡 Provision berechnet aus SCG Cash IN × Provision %</span>
+                <span>• Externe Partner → keine Mitarbeiter-Provision</span>
+                <span>• Raten über ⚙️ editierbar, gespeichert im Browser</span>
               </div>
             </div>
           );
