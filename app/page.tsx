@@ -3482,8 +3482,7 @@ function aggregate(deals:Deal[]):PRow[] {
     r.externVol+=d.externVol; r.externCash+=d.externCash;
     r.scgVol+=d.scgVol; r.scgCash+=d.scgCash;
     r.montano+=d.montano; r.cem+=d.cem; r.yves+=d.yves+((d as any).daniel||0); r.mert+=d.mert;
-    r.kada+=d.kada; r.soeren+=d.soeren; r.rene+=d.rene;
-    r.dealCount+=1;
+    r.kada+=d.kada; r.soeren+=d.soeren; r.rene+=d.rene; r.dealCount+=1;
   }
   return Object.values(map).sort((a,b)=>b.total-a.total);
 }
@@ -5277,7 +5276,11 @@ export default function Dashboard() {
     return ds.reduce((a,d) => a + d.scgCash - d.montano - d.cem - d.yves - ((d as any).daniel||0) - d.mert - d.kada - d.soeren - d.rene, 0);
   }
 
-  function SumCard({label,vol,cash,netto,color,bg,border}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string}) {
+  function SumCard({label,vol,cash,netto,color,bg,border,prevCash}:{label:string;vol:number;cash:number;netto?:number;color:string;bg:string;border:string;prevCash?:number}) {
+    const hasPrev = prevCash!==undefined && prevCash!==null;
+    const diff = hasPrev ? cash - prevCash! : 0;
+    const pct = hasPrev && prevCash! ? Math.round(diff/prevCash!*100) : null;
+    const up = diff >= 0;
     return(
       <div style={{background:bg,border:`1px solid ${border}`,borderRadius:12,padding:"18px 22px"}}>
         <div style={{fontSize:10,color,textTransform:"uppercase",letterSpacing:"2px",marginBottom:14,fontWeight:700}}>{label}</div>
@@ -5286,17 +5289,27 @@ export default function Dashboard() {
           <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:19,fontWeight:400,...mono("#1a1208")}}>{fmt0(cash)}</div></div>
           {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:19,fontWeight:400,...mono("#1a1208")}}>{fmt0(netto)}</div></div>}
         </div>
+        {hasPrev&&<div style={{marginTop:12,paddingTop:10,borderTop:`1px solid ${border}`,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          <span style={{fontSize:10,color:C.muted}}>Vortag Cash IN:</span>
+          <span style={{fontSize:11,...mono(C.muted)}}>{fmt0(prevCash!)}</span>
+          {pct!==null&&<span style={{fontSize:12,fontWeight:700,color:up?"#2a7a2a":"#c0392b"}}>
+            {up?"▲":"▼"} {Math.abs(pct)}%
+          </span>}
+          <span style={{fontSize:11,color:up?"#2a7a2a":"#c0392b",...mono(up?"#2a7a2a":"#c0392b")}}>
+            ({up?"+":""}{fmt0(diff)})
+          </span>
+        </div>}
       </div>
     );
   }
 
   function InternTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
-    const topPartner = rows.length>0 ? rows.reduce((a,b)=>a.internCash>b.internCash?a:b).partner : null;
-    if(rows.length===0) return (
-      <div style={{...card(),padding:"18px 24px",marginBottom:28,color:C.muted,fontSize:13}}>
-        <div style={{width:8,height:8,borderRadius:"50%",background:C.green,display:"inline-block",marginRight:8}}/>
-        <span style={{fontWeight:700,letterSpacing:"1px"}}>INTERN</span> — Keine internen Deals {label}
+    const topPartner=rows.length>1?rows.reduce((a,b)=>a.internCash>b.internCash?a:b).partner:null;
+    if(rows.length===0) return(
+      <div style={{...card(),padding:"16px 22px",marginBottom:28,color:C.muted,fontSize:13}}>
+        <span style={{width:8,height:8,borderRadius:"50%",background:C.green,display:"inline-block",marginRight:8}}/>
+        <strong>INTERN</strong> — Keine internen Deals {label}
       </div>
     );
     return(
@@ -5305,7 +5318,7 @@ export default function Dashboard() {
           <div style={{width:8,height:8,borderRadius:"50%",background:C.green}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>INTERN</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
-          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{rows.reduce((a,r)=>a+r.dealCount,0)} Deals</span>
+          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{sum.dealCount} Deals</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
@@ -5317,9 +5330,7 @@ export default function Dashboard() {
             <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
           </tr></thead>
           <tbody>
-            {rows.map((r,i)=>{
-              const isTop = r.partner===topPartner && rows.length>1;
-              return (
+            {rows.map((r,i)=>{const isTop=r.partner===topPartner;return(
               <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:isTop?"#fef9e7":i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{isTop&&<span style={{marginRight:6}}>🥇</span>}{r.partner}</td>
                 <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
@@ -5328,8 +5339,7 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internVol)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.internCash)}</td>
               </tr>
-              );
-            })}
+            );})}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"center",fontWeight:400,...mono("#1a1208")}}>{sum.dealCount}</td>
@@ -5346,14 +5356,14 @@ export default function Dashboard() {
 
   function ExternTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
-    const topPartner = rows.length>0 ? rows.reduce((a,b)=>a.externCash>b.externCash?a:b).partner : null;
+    const topPartner=rows.length>1?rows.reduce((a,b)=>a.externCash>b.externCash?a:b).partner:null;
     return(
       <div style={{...card(),padding:0,overflow:"auto",marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.pink}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>EXTERN</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
-          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{rows.reduce((a,r)=>a+r.dealCount,0)} Deals</span>
+          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{sum.dealCount} Deals</span>
         </div>
         <table style={{width:"100%",borderCollapse:"collapse"}}>
           <thead><tr>
@@ -5365,9 +5375,7 @@ export default function Dashboard() {
             <th style={{...TH,textAlign:"right",color:C.cyan}}>SUM von SCG Cash IN</th>
           </tr></thead>
           <tbody>
-            {rows.map((r,i)=>{
-              const isTop = r.partner===topPartner && rows.length>1;
-              return (
+            {rows.map((r,i)=>{const isTop=r.partner===topPartner;return(
               <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:isTop?"#fef9e7":i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{isTop&&<span style={{marginRight:6}}>🥇</span>}{r.partner}</td>
                 <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
@@ -5376,8 +5384,7 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externVol)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208")}}>{fmt(r.externCash)}</td>
               </tr>
-              );
-            })}
+            );})}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"center",fontWeight:400,...mono("#1a1208")}}>{sum.dealCount}</td>
@@ -5394,14 +5401,14 @@ export default function Dashboard() {
 
   function GesamtTable({rows,label}:{rows:PRow[];label:string}) {
     const sum=sumRows(rows);
-    const topPartner = rows.length>0 ? rows.reduce((a,b)=>a.scgCash>b.scgCash?a:b).partner : null;
+    const topPartner=rows.length>1?rows.reduce((a,b)=>a.scgCash>b.scgCash?a:b).partner:null;
     return(
       <div style={{...card(),padding:0,marginBottom:28}}>
         <div style={{padding:"13px 20px",borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:8,height:8,borderRadius:"50%",background:C.indigo}}/>
           <span style={{fontSize:13,fontWeight:700,color:"#1a1208",letterSpacing:"1px"}}>GESAMT</span>
           <span style={{fontSize:12,color:C.muted}}>{label}</span>
-          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{rows.reduce((a,r)=>a+r.dealCount,0)} Deals</span>
+          <span style={{fontSize:11,color:C.muted,marginLeft:4}}>{sum.dealCount} Deals</span>
         </div>
         <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
         <table style={{minWidth:900,width:"100%",borderCollapse:"collapse"}}>
@@ -5422,9 +5429,7 @@ export default function Dashboard() {
             <th style={{...TH,textAlign:"right",color:C.green}}>Netto Cash-IN</th>
           </tr></thead>
           <tbody>
-            {rows.map((r,i)=>{
-              const isTop = r.partner===topPartner && rows.length>1;
-              return (
+            {rows.map((r,i)=>{const isTop=r.partner===topPartner;return(
               <tr key={r.partner} style={{borderBottom:`1px solid ${C.border}`,background:isTop?"#fef9e7":i%2===0?"transparent":"#f5f0e8"}}>
                 <td style={{...TD,fontWeight:600,color:C.text}}>{isTop&&<span style={{marginRight:6}}>🥇</span>}{r.partner}</td>
                 <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.dealCount}</td>
@@ -5441,8 +5446,7 @@ export default function Dashboard() {
                 <td style={{...TD,textAlign:"right",...mono(r.rene?C.amber:C.dimmed)}}>{fmt(r.rene)}</td>
                 <td style={{...TD,textAlign:"right",...mono("#1a1208"),fontWeight:600}}>{fmt(nettoOf(r))}</td>
               </tr>
-              );
-            })}
+            );})}
             <tr style={{background:"#e0d8cc",borderTop:`2px solid ${C.border2}`}}>
               <td style={{...TD,fontWeight:400,color:C.text}}>Gesamtsumme</td>
               <td style={{...TD,textAlign:"center",fontWeight:400,...mono("#1a1208")}}>{sum.dealCount}</td>
@@ -5784,7 +5788,6 @@ export default function Dashboard() {
         })()}
 
         {activeTab==="tagesansicht"&&(()=>{
-          // Vortag berechnen
           const allDaysSorted=[...new Set(deals.filter(d=>d.monat===selectedMonth).map(d=>d.datum))].sort((a,b)=>{
             const [ad,am,ay]=a.split(".").map(Number); const [bd,bm,by]=b.split(".").map(Number);
             return new Date(ay,am-1,ad).getTime()-new Date(by,bm-1,bd).getTime();
@@ -5792,22 +5795,9 @@ export default function Dashboard() {
           const todayIdx=allDaysSorted.indexOf(selectedDatum);
           const prevDatum=todayIdx>0?allDaysSorted[todayIdx-1]:null;
           const prevDeals=prevDatum?deals.filter(d=>d.datum===prevDatum):[];
-          const prevIntern=prevDeals.filter(d=>d.internVol>0);
-          const prevExtern=prevDeals.filter(d=>d.externVol>0&&d.internVol===0);
-          function deltaArrow(curr:number,prev:number){
-            if(!prev) return null;
-            const pct=Math.round((curr-prev)/prev*100);
-            const up=curr>=prev;
-            return <span style={{fontSize:11,fontWeight:700,color:up?"#2a7a2a":"#c0392b",marginLeft:6}}>
-              {up?"▲":"▼"} {Math.abs(pct)}%
-            </span>;
-          }
-          const todayCashGesamt=sumRows(tagRows).scgCash;
+          const prevCashIntern=sumRows(aggregate(prevDeals.filter(d=>d.internVol>0))).scgCash;
+          const prevCashExtern=sumRows(aggregate(prevDeals.filter(d=>d.externVol>0&&d.internVol===0))).scgCash;
           const prevCashGesamt=sumRows(aggregate(prevDeals)).scgCash;
-          const todayCashIntern=sumRows(tagIntern).scgCash;
-          const prevCashIntern=sumRows(aggregate(prevIntern)).scgCash;
-          const todayCashExtern=sumRows(tagExtern).scgCash;
-          const prevCashExtern=sumRows(aggregate(prevExtern)).scgCash;
           return (<>
           <div style={{marginBottom:24,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
             <h1 style={{margin:0,fontSize:21,fontWeight:700}}>Tagesansicht</h1>
@@ -5816,18 +5806,9 @@ export default function Dashboard() {
             {prevDatum&&<span style={{fontSize:11,color:C.muted}}>vs. Vortag {prevDatum}</span>}
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:28}}>
-            <div>
-              <SumCard label="INTERN" vol={sumRows(tagIntern).scgVol} cash={todayCashIntern} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.internVol>0))} color={C.green} bg="#d4ead6" border="#2d7a3a"/>
-              {prevDatum&&<div style={{textAlign:"center",marginTop:4,fontSize:12,color:C.muted}}>Cash IN {deltaArrow(todayCashIntern,prevCashIntern)}</div>}
-            </div>
-            <div>
-              <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={todayCashExtern} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.externVol>0&&d.internVol===0))} color={C.pink} bg="#f0d4d4" border="#c0392b"/>
-              {prevDatum&&<div style={{textAlign:"center",marginTop:4,fontSize:12,color:C.muted}}>Cash IN {deltaArrow(todayCashExtern,prevCashExtern)}</div>}
-            </div>
-            <div>
-              <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={todayCashGesamt} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8"/>
-              {prevDatum&&<div style={{textAlign:"center",marginTop:4,fontSize:12,color:C.muted}}>Cash IN {deltaArrow(todayCashGesamt,prevCashGesamt)}</div>}
-            </div>
+            <SumCard label="INTERN" vol={sumRows(tagIntern).scgVol} cash={sumRows(tagIntern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.internVol>0))} color={C.green} bg="#d4ead6" border="#2d7a3a" prevCash={prevDatum?prevCashIntern:undefined}/>
+            <SumCard label="EXTERN" vol={sumRows(tagExtern).scgVol} cash={sumRows(tagExtern).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum&&d.externVol>0&&d.internVol===0))} color={C.pink} bg="#f0d4d4" border="#c0392b" prevCash={prevDatum?prevCashExtern:undefined}/>
+            <SumCard label="GESAMT" vol={sumRows(tagRows).scgVol} cash={sumRows(tagRows).scgCash} netto={nettoFromDeals(deals.filter(d=>d.datum===selectedDatum))} color={C.indigo} bg="#ffffff" border="#d4c9b8" prevCash={prevDatum?prevCashGesamt:undefined}/>
           </div>
           <InternTable rows={tagIntern} label={selectedDatum}/>
           <ExternTable rows={tagExtern} label={selectedDatum}/>
