@@ -6625,8 +6625,9 @@ export default function Dashboard() {
               maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
             });
             const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
-            const nettoCash = provBetrag - mitarbeiterProv;
-            return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,maCols,nettoCash};
+            const mitarbeiterProvPct = scgCash > 0 ? mitarbeiterProv / scgCash * 100 : 0;
+            const nettoCash = scgCash - mitarbeiterProv;
+            return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,mitarbeiterProvPct,maCols,nettoCash};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
 
           const totals = {
@@ -6719,7 +6720,7 @@ export default function Dashboard() {
                       <th style={{...TH,textAlign:"right"}}>SUM VON TOTAL</th>
                       <th style={{...TH,textAlign:"right"}}>SUM VON ERSTE RATE</th>
                       <th style={{...TH,textAlign:"center"}}>PROVISION (%)</th>
-                      <th style={{...TH,textAlign:"right"}}>MITARBEITER-PROVISION</th>
+                      <th style={{...TH,textAlign:"center"}}>MITARBEITER-PROVISION</th>
                       <th style={{...TH,textAlign:"right"}}>SUM VON SCG VOLUMEN</th>
                       <th style={{...TH,textAlign:"right"}}>SUM VON SCG CASH IN</th>
                       {activeMACols.map(col=><th key={col.label} style={{...TH,textAlign:"right"}}>{col.label.toUpperCase()}</th>)}
@@ -6735,7 +6736,7 @@ export default function Dashboard() {
                         <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>
                           {r.provPct>0?r.provPct.toFixed(2)+"%":"—"}
                         </td>
-                        <td style={{...TD,textAlign:"right",...mono(C.muted)}}>{r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}</td>
+                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"0,00%"}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
                         {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",...mono(C.muted)}}>{(r.maCols[col.label]||0)>0?fmt(r.maCols[col.label]):"—"}</td>)}
@@ -6747,7 +6748,7 @@ export default function Dashboard() {
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
                       <td style={{...TD}}></td>
-                      <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{totals.mitarbeiterProv>0?fmt(totals.mitarbeiterProv):"—"}</td>
+                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.muted)}}>{totals.scgCash>0?(totals.mitarbeiterProv/totals.scgCash*100).toFixed(2)+"%":"0,00%"}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
                       {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.maCols[col.label]||0)}</td>)}
@@ -6756,7 +6757,7 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
-              <div style={{marginTop:12,fontSize:11,color:C.muted}}>💡 Provision = SCG Cash IN × Partner-Rate. Netto = Provision − Mitarbeiter-Provision. Raten über ⚙️ editierbar.</div>
+              <div style={{marginTop:12,fontSize:11,color:C.muted}}>💡 Provision = SCG Cash IN × Partner-Rate. Netto Cash-IN = SCG Cash IN − Mitarbeiter-Provision. Raten über ⚙️ editierbar.</div>
             </div>
           );
         })()}
