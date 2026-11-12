@@ -5089,6 +5089,8 @@ export default function Dashboard() {
     fontSize: "13" as string,
     fontFamily: "modern" as "modern"|"klassisch"|"mono",
     zahlenFett: false,
+    akzentFarbe: "" as string,
+    kartenRundung: "12" as string,
   });
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
@@ -5145,7 +5147,7 @@ export default function Dashboard() {
   const t = THEMES[settings.theme];
   const C = {
     ...t,
-    indigo: settings.theme==="dark"?"#818cf8":"#5c4a2a",
+    indigo: settings.akzentFarbe || (settings.theme==="dark"?"#818cf8":"#5c4a2a"),
     green:  settings.theme==="dark"?"#34d399":"#2d7a3a",
     amber:  settings.theme==="dark"?"#fbbf24":"#a07820",
     pink:   settings.theme==="dark"?"#f87171":"#c0392b",
@@ -5154,6 +5156,7 @@ export default function Dashboard() {
   const FS = isNaN(Number(settings.fontSize)) ? (settings.fontSize==="klein"?13:settings.fontSize==="gross"?17:15) : Number(settings.fontSize);
   const FF = settings.fontFamily==="mono"?"'DM Mono',monospace":settings.fontFamily==="klassisch"?"Georgia,serif":"Inter,system-ui,sans-serif";
   const FW = settings.zahlenFett?700:400;
+  const BR = Number(settings.kartenRundung)||12;
   const TH: React.CSSProperties = {
     padding:"10px 16px", textAlign:"left", fontSize:11, color:C.muted,
     letterSpacing:"1.2px", textTransform:"uppercase", borderBottom:`1px solid ${C.border}`,
@@ -5161,7 +5164,7 @@ export default function Dashboard() {
   };
   const TD: React.CSSProperties = { padding:"10px 16px", fontSize:FS, whiteSpace:"nowrap", fontWeight:FW, color:C.text, fontFamily:FF };
   const card = (accent?:string):React.CSSProperties => ({
-    background:C.card, border:`1px solid ${C.border}`, borderRadius:12,
+    background:C.card, border:`1px solid ${C.border}`, borderRadius:BR,
     ...(accent?{borderTop:`2px solid ${accent}`}:{})
   });
   const mono = (_color:string):React.CSSProperties => ({fontFamily:FF,color:C.text,fontWeight:FW});
@@ -5599,12 +5602,39 @@ export default function Dashboard() {
                   ))}
                 </div>
               </div>
-              <div style={{background:t.th,borderRadius:10,padding:"14px 18px",marginBottom:20,border:`1px solid ${C.border}`}}>
+              <div style={{marginBottom:24}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>AKZENTFARBE</div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+                  {["","#5c4a2a","#2d7a3a","#c0392b","#1a6a8a","#6d28d9","#b45309","#0f766e","#be185d","#1d4ed8"].map(col=>(
+                    <button key={col||"auto"} onClick={()=>setSettings(s=>({...s,akzentFarbe:col}))}
+                      style={{width:28,height:28,borderRadius:"50%",border:`3px solid ${settings.akzentFarbe===col?"#1a1208":"transparent"}`,background:col||"linear-gradient(135deg,#5c4a2a,#2d7a3a,#c0392b)",cursor:"pointer",padding:0,outline:"none",flexShrink:0}}
+                      title={col?"Farbe "+col:"Standard"}/>
+                  ))}
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginLeft:4}}>
+                    <span style={{fontSize:11,color:C.muted}}>Eigene:</span>
+                    <input type="color" value={settings.akzentFarbe||"#5c4a2a"} onChange={e=>setSettings(s=>({...s,akzentFarbe:e.target.value}))}
+                      style={{width:32,height:28,borderRadius:6,border:`1px solid ${C.border}`,cursor:"pointer",padding:2,background:"transparent"}}/>
+                  </div>
+                </div>
+              </div>
+              <div style={{marginBottom:24}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.muted,letterSpacing:"1.5px",marginBottom:12}}>KARTEN-ECKEN</div>
+                <div style={{display:"flex",gap:8}}>
+                  {([["0","Eckig"],["8","Leicht"],["12","Normal"],["20","Rund"],["28","Sehr rund"]] as const).map(([val,lbl])=>(
+                    <button key={val} onClick={()=>setSettings(s=>({...s,kartenRundung:val}))}
+                      style={{flex:1,padding:"10px 6px",borderRadius:Number(val),fontSize:11,fontWeight:600,cursor:"pointer",border:`2px solid ${settings.kartenRundung===val?C.indigo:C.border}`,background:settings.kartenRundung===val?t.th:C.card,color:C.text}}>{lbl}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{background:t.th,borderRadius:BR,padding:"14px 18px",marginBottom:20,border:`1px solid ${C.border}`}}>
                 <div style={{fontSize:10,color:C.muted,letterSpacing:"2px",marginBottom:6}}>VORSCHAU</div>
                 <div style={{fontFamily:FF,fontSize:FS,fontWeight:FW,color:C.text}}>183.206,47 € · 227.625,08 €</div>
                 <div style={{fontFamily:FF,fontSize:FS-2,color:C.muted,marginTop:4}}>Beispiel Tagesansicht Mai 2026</div>
               </div>
-              <button onClick={()=>setSettingsOpen(false)} style={{width:"100%",padding:"12px",borderRadius:8,fontSize:13,fontWeight:700,background:C.indigo,color:"#ffffff",border:"none",cursor:"pointer"}}>Übernehmen & Schließen</button>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>setSettings({theme:"beige",fontSize:"13",fontFamily:"modern",zahlenFett:false,akzentFarbe:"",kartenRundung:"12"})} style={{flex:1,padding:"12px",borderRadius:8,fontSize:12,fontWeight:600,background:C.card,color:C.muted,border:`1px solid ${C.border}`,cursor:"pointer"}}>Zurücksetzen</button>
+                <button onClick={()=>setSettingsOpen(false)} style={{flex:2,padding:"12px",borderRadius:8,fontSize:13,fontWeight:700,background:C.indigo,color:"#ffffff",border:"none",cursor:"pointer"}}>Übernehmen & Schließen</button>
+              </div>
             </div>
           </div>
         )}
