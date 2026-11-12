@@ -5292,15 +5292,10 @@ export default function Dashboard() {
           <div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Cash IN</div><div style={{fontSize:19,fontWeight:400,...mono("#1a1208")}}>{fmt0(cash)}</div></div>
           {netto!==undefined&&<div><div style={{fontSize:10,color:C.muted,marginBottom:3}}>Netto</div><div style={{fontSize:19,fontWeight:400,...mono("#1a1208")}}>{fmt0(netto)}</div></div>}
         </div>
-        {hasPrev&&<div style={{marginTop:12,paddingTop:10,borderTop:`1px solid ${border}`,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-          <span style={{fontSize:10,color:C.muted}}>Vortag Cash IN:</span>
-          <span style={{fontSize:11,...mono(C.muted)}}>{fmt0(prevCash!)}</span>
-          {pct!==null&&<span style={{fontSize:12,fontWeight:700,color:up?"#2a7a2a":"#c0392b"}}>
-            {up?"▲":"▼"} {Math.abs(pct)}%
-          </span>}
-          <span style={{fontSize:11,color:up?"#2a7a2a":"#c0392b",...mono(up?"#2a7a2a":"#c0392b")}}>
-            ({up?"+":""}{fmt0(diff)})
-          </span>
+        {hasPrev&&<div style={{marginTop:8,paddingTop:8,borderTop:`1px solid ${border}`,display:"flex",alignItems:"center",gap:6}}>
+          <span style={{fontSize:9,color:C.muted}}>Vortag:</span>
+          <span style={{fontSize:9,color:C.muted}}>{fmt0(prevCash!)}</span>
+          <span style={{fontSize:9,fontWeight:700,color:up?"#2a7a2a":"#c0392b"}}>({up?"+":""}{fmt0(diff)})</span>
         </div>}
       </div>
     );
