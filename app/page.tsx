@@ -6605,6 +6605,7 @@ export default function Dashboard() {
             provPct:number;          // weighted avg or single value
             provBetrag:number;       // sum of (scgCash * provPct) per deal
             mitarbeiterProv:number;  // sum of MA-prov fields
+            mitarbeiterProvPct:number; // MA-prov as % of scgCash
             maCols:Record<string,number>; // per-MA-col totals
             nettoCash:number;
           };
