@@ -5085,6 +5085,8 @@ export default function Dashboard() {
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
   const [provEditOpen, setProvEditOpen] = useState(false);
   const [closerProvOverride, setCloserProvOverride] = useState<Record<string,number>>({});
+  const [editingCloserProv, setEditingCloserProv] = useState<string|null>(null);
+  const [editingCloserVal, setEditingCloserVal] = useState<string>("");
 
   type ProvRate = {intern:number; extern:number; mitarbeiter:number; suelei?:number; florian?:number};
   const DEFAULT_PROV_CONFIG: Record<string,ProvRate> = {
@@ -6738,14 +6740,30 @@ export default function Dashboard() {
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
                         <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo,cursor:"pointer"}}
-                          onClick={()=>{
-                            const val = prompt(`Provision % für ${r.closer}:`, r.provPct.toFixed(2));
-                            if(val===null) return;
-                            const n = parseFloat(val.replace(",","."));
-                            if(!isNaN(n)) setCloserProvOverride(prev=>({...prev,[r.closer]:n}));
-                          }}
-                          title="Klicken zum Bearbeiten">
-                          {r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️
+                          onClick={()=>{if(editingCloserProv!==r.closer){setEditingCloserProv(r.closer);setEditingCloserVal(r.provPct.toFixed(2));}}}>
+                          {editingCloserProv===r.closer
+                            ? <input
+                                autoFocus
+                                type="number"
+                                value={editingCloserVal}
+                                onChange={e=>setEditingCloserVal(e.target.value)}
+                                onBlur={()=>{
+                                  const n=parseFloat(editingCloserVal.replace(",","."));
+                                  if(!isNaN(n)) setCloserProvOverride(prev=>({...prev,[r.closer]:n}));
+                                  setEditingCloserProv(null);
+                                }}
+                                onKeyDown={e=>{
+                                  if(e.key==="Enter"){
+                                    const n=parseFloat(editingCloserVal.replace(",","."));
+                                    if(!isNaN(n)) setCloserProvOverride(prev=>({...prev,[r.closer]:n}));
+                                    setEditingCloserProv(null);
+                                  }
+                                  if(e.key==="Escape") setEditingCloserProv(null);
+                                }}
+                                style={{width:60,textAlign:"center",border:`1px solid ${C.indigo}`,borderRadius:4,padding:"2px 4px",background:C.card,color:C.indigo,fontWeight:700}}
+                              />
+                            : <>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️</>
+                          }
                         </td>
                         <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"0,00%"}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
