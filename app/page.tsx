@@ -5084,6 +5084,7 @@ export default function Dashboard() {
   const [selKW, setSelKW] = useState<string>("alle");
   const [rankMetric, setRankMetric] = useState<"cash"|"vol"|"deals">("cash");
   const [provEditOpen, setProvEditOpen] = useState(false);
+  const [closerProvOverride, setCloserProvOverride] = useState<Record<string,number>>({});
 
   type ProvRate = {intern:number; extern:number; mitarbeiter:number; suelei?:number; florian?:number};
   const DEFAULT_PROV_CONFIG: Record<string,ProvRate> = {
@@ -6605,7 +6606,6 @@ export default function Dashboard() {
             provPct:number;          // weighted avg or single value
             provBetrag:number;       // sum of (scgCash * provPct) per deal
             mitarbeiterProv:number;  // sum of MA-prov fields
-            mitarbeiterProvPct:number; // MA-prov as % of scgCash
             maCols:Record<string,number>; // per-MA-col totals
             nettoCash:number;
           };
@@ -6617,9 +6617,12 @@ export default function Dashboard() {
             const ersteRate = cd.reduce((a,d)=>a+d.ersteRate,0);
             const scgVol = cd.reduce((a,d)=>a+d.scgVol,0);
             const scgCash = cd.reduce((a,d)=>a+d.scgCash,0);
-            // Provision: sum per deal
-            const provBetrag = cd.reduce((a,d)=>a + d.scgCash * getDealProvPct(d) / 100, 0);
-            const provPct = scgCash > 0 ? provBetrag / scgCash * 100 : 0;
+            // Provision: use override if set, else sum per deal
+            const overridePct = closerProvOverride[closer];
+            const provBetrag = overridePct !== undefined
+              ? scgCash * overridePct / 100
+              : cd.reduce((a,d)=>a + d.scgCash * getDealProvPct(d) / 100, 0);
+            const provPct = overridePct !== undefined ? overridePct : (scgCash > 0 ? provBetrag / scgCash * 100 : 0);
             // MA-prov per column
             const maCols: Record<string,number> = {};
             activeMACols.forEach(col=>{
@@ -6734,8 +6737,15 @@ export default function Dashboard() {
                         <td style={{...TD,fontWeight:600,color:C.text}}>{r.closer}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.total)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.ersteRate)}</td>
-                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo}}>
-                          {r.provPct>0?r.provPct.toFixed(2)+"%":"—"}
+                        <td style={{...TD,textAlign:"center",fontWeight:700,color:C.indigo,cursor:"pointer"}}
+                          onClick={()=>{
+                            const val = prompt(`Provision % für ${r.closer}:`, r.provPct.toFixed(2));
+                            if(val===null) return;
+                            const n = parseFloat(val.replace(",","."));
+                            if(!isNaN(n)) setCloserProvOverride(prev=>({...prev,[r.closer]:n}));
+                          }}
+                          title="Klicken zum Bearbeiten">
+                          {r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️
                         </td>
                         <td style={{...TD,textAlign:"center",...mono(C.muted)}}>{r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"0,00%"}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
