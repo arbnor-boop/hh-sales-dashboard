@@ -5087,20 +5087,34 @@ export default function Dashboard() {
 
   type ProvRate = {intern:number; extern:number; mitarbeiter:number; suelei?:number; florian?:number};
   const DEFAULT_PROV_CONFIG: Record<string,ProvRate> = {
-    "Candidate-flow":           {intern:14, extern:4,  mitarbeiter:5},
-    "Grundl Leadership":        {intern:20, extern:10, mitarbeiter:7.5},
-    "Schippke":                 {intern:25, extern:10, mitarbeiter:8},
-    "Florian Schimpf":          {intern:15, extern:15, mitarbeiter:0},
-    "ProvipAnda":               {intern:10, extern:10, mitarbeiter:0, suelei:12.5},
-    "Eitel Invest AG":          {intern:12.5, extern:12.5, mitarbeiter:0},
-    "Tax Angels":               {intern:25, extern:15, mitarbeiter:9},
-    "Reviso Treuhand AG":       {intern:25, extern:15, mitarbeiter:9},
-    "2b AHEAD ThinkTank GmbH":  {intern:15, extern:15, mitarbeiter:0},
-    "ZELLGUT GmbH":             {intern:20, extern:6,  mitarbeiter:7.5},
-    "Investmentpunk":           {intern:10, extern:10, mitarbeiter:0, suelei:12.5},
-    "Close Consulting - Leon":  {intern:20, extern:20, mitarbeiter:0},
-    "OD Solutions GmbH":        {intern:10, extern:10, mitarbeiter:0},
-    "SML Solution GmbH":        {intern:15, extern:15, mitarbeiter:0, florian:1},
+    // Intern Partner
+    "Candidate-flow":                       {intern:14, extern:4,   mitarbeiter:5},
+    "Grundl Leadership":                    {intern:20, extern:10,  mitarbeiter:7.5},
+    "Schippke":                             {intern:25, extern:10,  mitarbeiter:8},
+    "ZELLGUT GmbH":                         {intern:20, extern:6,   mitarbeiter:7.5},
+    "HH SCG":                               {intern:0,  extern:0,   mitarbeiter:0},
+    "Nuhi Consulting":                      {intern:0,  extern:0,   mitarbeiter:0},
+    "White Immobilien":                     {intern:0,  extern:0,   mitarbeiter:0},
+    "KHPH AG":                              {intern:0,  extern:0,   mitarbeiter:0},
+    "Peak":                                 {intern:0,  extern:0,   mitarbeiter:0},
+    "Hamann & Kollegen Immobilien GmbH":    {intern:0,  extern:0,   mitarbeiter:0},
+    // Extern Partner
+    "Florian Schimpf":                      {intern:15, extern:15,  mitarbeiter:0},
+    "ProviPanda":                           {intern:10, extern:10,  mitarbeiter:0, suelei:12.5},
+    "Eitel Invest AG":                      {intern:12.5, extern:12.5, mitarbeiter:0},
+    "Tax Angels":                           {intern:25, extern:15,  mitarbeiter:9},
+    "Reviso Treuhand AG":                   {intern:25, extern:15,  mitarbeiter:9},
+    "2b AHEAD ThinkTank GmbH":             {intern:15, extern:15,  mitarbeiter:0},
+    "Investmentpunk":                       {intern:10, extern:10,  mitarbeiter:0, suelei:12.5},
+    "Close Consulting - Leon":              {intern:20, extern:20,  mitarbeiter:0},
+    "OD Solutions GmbH":                   {intern:10, extern:10,  mitarbeiter:0},
+    "SML Solution GmbH":                   {intern:15, extern:15,  mitarbeiter:0, florian:1},
+    "MBA":                                  {intern:0,  extern:0,   mitarbeiter:0},
+    "Volume-Trader":                        {intern:0,  extern:0,   mitarbeiter:0},
+    "Temmer":                               {intern:0,  extern:0,   mitarbeiter:0},
+    "ECOM HOUSE GmbH":                      {intern:0,  extern:0,   mitarbeiter:0},
+    "Everflow Excellence":                  {intern:0,  extern:0,   mitarbeiter:0},
+    "CAREFREE":                             {intern:0,  extern:0,   mitarbeiter:0},
   };
   const [provConfig, setProvConfig] = useState<Record<string,ProvRate>>(DEFAULT_PROV_CONFIG);
   const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46};
@@ -6562,7 +6576,7 @@ export default function Dashboard() {
             const cfg = provConfig[d.partner];
             if (!cfg) return 0; // Partner nicht konfiguriert → 0% (kein Eintrag in Tabelle)
             const setterL = d.setter.trim().toLowerCase();
-            if ((d.partner==="ProvipAnda"||d.partner==="Investmentpunk") && cfg.suelei && setterL.includes("sülei")) return cfg.suelei!;
+            if ((d.partner==="ProviPanda"||d.partner==="Investmentpunk") && cfg.suelei && setterL.includes("sülei")) return cfg.suelei!;
             if (d.partner==="SML Solution GmbH" && cfg.florian && FLORIAN_NAMES.some(n=>setterL.includes(n))) return cfg.florian!;
             const isInt = d.internVol > 0;
             return isInt ? cfg.intern : cfg.extern;
@@ -6685,51 +6699,14 @@ export default function Dashboard() {
                       })}
                     </tbody>
                   </table>
-                  <div style={{fontSize:11,color:C.muted,marginTop:10}}>Änderungen werden sofort gespeichert.</div>
-                  {/* Unknown partners section */}
-                  {unknownPartners.length>0&&(
-                    <div style={{marginTop:16,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
-                      <div style={{fontSize:12,fontWeight:700,color:"#c0392b",marginBottom:10}}>⚠️ Partner ohne Rate (Provision = 0%):</div>
-                      <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                        <thead>
-                          <tr style={{background:t.th}}>
-                            <th style={{...TH,textAlign:"left",fontSize:11}}>PARTNER</th>
-                            <th style={{...TH,textAlign:"center",fontSize:11}}>INTERN %</th>
-                            <th style={{...TH,textAlign:"center",fontSize:11}}>EXTERN %</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {unknownPartners.map((partner,i)=>{
-                            const cfg = provConfig[partner]||{intern:0,extern:0,mitarbeiter:0};
-                            return (
-                              <tr key={partner} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                                <td style={{...TD,fontWeight:600,color:"#c0392b",fontSize:12}}>{partner}</td>
-                                <td style={{...TD,textAlign:"center"}}>
-                                  <input type="number" step="0.5" min="0" max="50" value={cfg.intern||""}
-                                    onChange={e=>updateProvRate(partner,"intern",parseFloat(e.target.value)||0)}
-                                    style={{width:60,padding:"4px 6px",borderRadius:6,border:`1px solid #c0392b`,background:C.bg,color:C.text,fontSize:12,textAlign:"center"}}
-                                  />
-                                </td>
-                                <td style={{...TD,textAlign:"center"}}>
-                                  <input type="number" step="0.5" min="0" max="50" value={cfg.extern||""}
-                                    onChange={e=>updateProvRate(partner,"extern",parseFloat(e.target.value)||0)}
-                                    style={{width:60,padding:"4px 6px",borderRadius:6,border:`1px solid #c0392b`,background:C.bg,color:C.text,fontSize:12,textAlign:"center"}}
-                                  />
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                  <div style={{fontSize:11,color:C.muted,marginTop:10}}>Änderungen werden sofort gespeichert. Partner mit 0% = keine Provision.</div>
                 </div>
               )}
 
-              {/* Warning for unknown partners */}
+              {/* Warning only for truly unknown partners (not in config at all) */}
               {unknownPartners.length>0&&(
                 <div style={{background:"#fef3cd",border:"1px solid #f0c040",borderRadius:8,padding:"10px 16px",marginBottom:12,fontSize:12,color:"#7a5a00"}}>
-                  ⚠️ Folgende Partner haben keine Provision-Rate konfiguriert (werden mit 0% gerechnet): <strong>{unknownPartners.join(", ")}</strong>. Bitte unter ⚙️ Raten bearbeiten eintragen.
+                  ⚠️ Neue Partner ohne Konfiguration: <strong>{unknownPartners.join(", ")}</strong> → werden mit 0% gerechnet.
                 </div>
               )}
 
