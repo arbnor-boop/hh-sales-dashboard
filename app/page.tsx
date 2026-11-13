@@ -6634,14 +6634,17 @@ export default function Dashboard() {
             activeMACols.forEach(col=>{
               maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
             });
-            // MA-Provision: Euro aus Spalten
-            const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
             // MA-% = Override oder gewichteter Durchschnitt aus provConfig
             const mitarbeiterProvPct = maProvOverride[closer] !== undefined
               ? maProvOverride[closer]
               : ersteRate > 0
                 ? cd.reduce((a,d)=>a + d.ersteRate * (provConfig[d.partner]?.mitarbeiter||0), 0) / ersteRate
                 : 0;
+            // MA-Euro: wenn Override gesetzt → Erste Rate × Override-%, sonst aus MA-Spalten
+            const mitarbeiterProvRaw = Object.values(maCols).reduce((a,v)=>a+v,0);
+            const mitarbeiterProv = maProvOverride[closer] !== undefined
+              ? ersteRate * maProvOverride[closer] / 100
+              : mitarbeiterProvRaw;
             const nettoCash = scgCash - mitarbeiterProv;
             return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,mitarbeiterProvPct,maCols,nettoCash};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
