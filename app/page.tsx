@@ -6634,10 +6634,12 @@ export default function Dashboard() {
             activeMACols.forEach(col=>{
               maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
             });
-            // MA-Provision: Euro aus Spalten, oder manueller Override (Euro)
-            const mitarbeiterProvRaw = Object.values(maCols).reduce((a,v)=>a+v,0);
-            const mitarbeiterProv = maProvOverride[closer] !== undefined ? maProvOverride[closer] : mitarbeiterProvRaw;
-            const mitarbeiterProvPct = scgCash > 0 ? mitarbeiterProv / scgCash * 100 : 0;
+            // MA-Provision: Euro aus Spalten
+            const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
+            // MA-% = gewichteter Durchschnitt der mitarbeiter-Rate aus provConfig pro Deal
+            const mitarbeiterProvPct = ersteRate > 0
+              ? cd.reduce((a,d)=>a + d.ersteRate * (provConfig[d.partner]?.mitarbeiter||0), 0) / ersteRate
+              : 0;
             const nettoCash = scgCash - mitarbeiterProv;
             return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,mitarbeiterProvPct,maCols,nettoCash};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
@@ -6772,7 +6774,7 @@ export default function Dashboard() {
                           }
                         </td>
                         <td style={{...TD,textAlign:"center",...mono(C.muted)}}>
-                          {r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}
+                          {r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"—"}
                         </td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
@@ -6785,7 +6787,7 @@ export default function Dashboard() {
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
                       <td style={{...TD}}></td>
-                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.muted)}}>{totals.mitarbeiterProv>0?fmt(totals.mitarbeiterProv):"—"}</td>
+                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.muted)}}>{totals.scgCash>0?(totals.mitarbeiterProv/totals.scgCash*100).toFixed(2)+"%":"—"}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
                       {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.maCols[col.label]||0)}</td>)}
