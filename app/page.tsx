@@ -6634,10 +6634,9 @@ export default function Dashboard() {
             activeMACols.forEach(col=>{
               maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
             });
-            const mitarbeiterProvRaw = Object.values(maCols).reduce((a,v)=>a+v,0);
-            const maOverridePct = maProvOverride[closer];
-            const mitarbeiterProv = maOverridePct !== undefined ? scgCash * maOverridePct / 100 : mitarbeiterProvRaw;
-            const mitarbeiterProvPct = maOverridePct !== undefined ? maOverridePct : (scgCash > 0 ? mitarbeiterProvRaw / scgCash * 100 : 0);
+            // MA-Provision: immer Euro-Betrag aus den MA-Spalten
+            const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
+            const mitarbeiterProvPct = scgCash > 0 ? mitarbeiterProv / scgCash * 100 : 0;
             const nettoCash = scgCash - mitarbeiterProv;
             return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,mitarbeiterProvPct,maCols,nettoCash};
           }).filter(r=>r.total>0).sort((a,b)=>b.scgCash-a.scgCash);
@@ -6771,31 +6770,8 @@ export default function Dashboard() {
                             : <>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️</>
                           }
                         </td>
-                        <td style={{...TD,textAlign:"center",...mono(C.muted),cursor:"pointer"}}
-                          onClick={()=>{if(editingMaProv!==r.closer){setEditingMaProv(r.closer);setEditingMaVal(r.mitarbeiterProvPct.toFixed(2));}}}>
-                          {editingMaProv===r.closer
-                            ? <input
-                                autoFocus
-                                type="number"
-                                value={editingMaVal}
-                                onChange={e=>setEditingMaVal(e.target.value)}
-                                onBlur={()=>{
-                                  const n=parseFloat(editingMaVal.replace(",","."));
-                                  if(!isNaN(n)) setMaProvOverride(prev=>({...prev,[r.closer]:n}));
-                                  setEditingMaProv(null);
-                                }}
-                                onKeyDown={e=>{
-                                  if(e.key==="Enter"){
-                                    const n=parseFloat(editingMaVal.replace(",","."));
-                                    if(!isNaN(n)) setMaProvOverride(prev=>({...prev,[r.closer]:n}));
-                                    setEditingMaProv(null);
-                                  }
-                                  if(e.key==="Escape") setEditingMaProv(null);
-                                }}
-                                style={{width:60,textAlign:"center",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 4px",background:C.card,color:C.muted,fontWeight:700}}
-                              />
-                            : <>{r.mitarbeiterProvPct>0?r.mitarbeiterProvPct.toFixed(2)+"%":"0,00%"} ✏️</>
-                          }
+                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>
+                          {r.mitarbeiterProv>0?`${fmt(r.mitarbeiterProv)} (${r.mitarbeiterProvPct.toFixed(2)}%)`:"0,00%"}
                         </td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
