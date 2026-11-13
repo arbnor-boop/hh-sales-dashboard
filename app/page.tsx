@@ -5123,7 +5123,7 @@ export default function Dashboard() {
     "CAREFREE":                             {intern:0,  extern:0,   mitarbeiter:0},
   };
   const [provConfig, setProvConfig] = useState<Record<string,ProvRate>>(DEFAULT_PROV_CONFIG);
-  const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46};
+  const TATSAECHLICH: Record<string,number> = {"Januar 2026":386900.03,"Februar 2026":429497.26,"März 2026":330583.52,"April 2026":500640.74,"Mai 2026":469666.79,"Juni 2026":496274.77,"Juli 2026":530893.14,"August 2026":470427.37,"September 2026":507941.46,"Oktober 2026":486645.74};
   const [settings, setSettings] = useState({
     theme: "beige" as "beige"|"dark"|"white",
     fontSize: "13" as string,
@@ -6634,8 +6634,9 @@ export default function Dashboard() {
             activeMACols.forEach(col=>{
               maCols[col.label] = cd.reduce((a,d)=>a+(d[col.key] as number),0);
             });
-            // MA-Provision: immer Euro-Betrag aus den MA-Spalten
-            const mitarbeiterProv = Object.values(maCols).reduce((a,v)=>a+v,0);
+            // MA-Provision: Euro aus Spalten, oder manueller Override (Euro)
+            const mitarbeiterProvRaw = Object.values(maCols).reduce((a,v)=>a+v,0);
+            const mitarbeiterProv = maProvOverride[closer] !== undefined ? maProvOverride[closer] : mitarbeiterProvRaw;
             const mitarbeiterProvPct = scgCash > 0 ? mitarbeiterProv / scgCash * 100 : 0;
             const nettoCash = scgCash - mitarbeiterProv;
             return {closer,total,ersteRate,scgVol,scgCash,provPct,provBetrag,mitarbeiterProv,mitarbeiterProvPct,maCols,nettoCash};
@@ -6770,8 +6771,17 @@ export default function Dashboard() {
                             : <>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️</>
                           }
                         </td>
-                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>
-                          {r.mitarbeiterProv>0?`${fmt(r.mitarbeiterProv)} (${r.mitarbeiterProvPct.toFixed(2)}%)`:"0,00%"}
+                        <td style={{...TD,textAlign:"center",...mono(C.muted),cursor:"pointer"}}
+                          onClick={()=>{if(editingMaProv!==r.closer){setEditingMaProv(r.closer);setEditingMaVal(r.mitarbeiterProv.toFixed(2));}}}>
+                          {editingMaProv===r.closer
+                            ? <input autoFocus type="number" value={editingMaVal}
+                                onChange={e=>setEditingMaVal(e.target.value)}
+                                onBlur={()=>{const n=parseFloat(editingMaVal.replace(",","."));if(!isNaN(n))setMaProvOverride(prev=>({...prev,[r.closer]:n}));setEditingMaProv(null);}}
+                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingMaVal.replace(",","."));if(!isNaN(n))setMaProvOverride(prev=>({...prev,[r.closer]:n}));setEditingMaProv(null);}if(e.key==="Escape")setEditingMaProv(null);}}
+                                style={{width:80,textAlign:"center",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 4px",background:C.card,color:C.muted,fontWeight:700}}
+                              />
+                            : <>{r.mitarbeiterProv>0?`${fmt(r.mitarbeiterProv)} (${r.mitarbeiterProvPct.toFixed(2)}%) ✏️`:"0,00% ✏️"}</>
+                          }
                         </td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
