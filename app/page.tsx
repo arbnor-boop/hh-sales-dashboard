@@ -6771,17 +6771,8 @@ export default function Dashboard() {
                             : <>{r.provPct>0?r.provPct.toFixed(2)+"%":"—"} ✏️</>
                           }
                         </td>
-                        <td style={{...TD,textAlign:"center",...mono(C.muted),cursor:"pointer"}}
-                          onClick={()=>{if(editingMaProv!==r.closer){setEditingMaProv(r.closer);setEditingMaVal(r.mitarbeiterProvPct.toFixed(2));}}}>
-                          {editingMaProv===r.closer
-                            ? <input autoFocus type="number" value={editingMaVal}
-                                onChange={e=>setEditingMaVal(e.target.value)}
-                                onBlur={()=>{const n=parseFloat(editingMaVal.replace(",","."));if(!isNaN(n))setMaProvOverride(prev=>({...prev,[r.closer]:r.scgCash*n/100}));setEditingMaProv(null);}}
-                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingMaVal.replace(",","."));if(!isNaN(n))setMaProvOverride(prev=>({...prev,[r.closer]:r.scgCash*n/100}));setEditingMaProv(null);}if(e.key==="Escape")setEditingMaProv(null);}}
-                                style={{width:60,textAlign:"center",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 4px",background:C.card,color:C.muted,fontWeight:700}}
-                              />
-                            : <>{r.mitarbeiterProvPct>0?`${r.mitarbeiterProvPct.toFixed(2)}% ✏️`:"0,00% ✏️"}</>
-                          }
+                        <td style={{...TD,textAlign:"center",...mono(C.muted)}}>
+                          {r.mitarbeiterProvPct>0?`${r.mitarbeiterProvPct.toFixed(2)}%`:"0,00%"}
                         </td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
