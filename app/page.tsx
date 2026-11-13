@@ -6772,7 +6772,7 @@ export default function Dashboard() {
                           }
                         </td>
                         <td style={{...TD,textAlign:"center",...mono(C.muted)}}>
-                          {r.mitarbeiterProvPct>0?`${r.mitarbeiterProvPct.toFixed(2)}%`:"0,00%"}
+                          {r.mitarbeiterProv>0?fmt(r.mitarbeiterProv):"—"}
                         </td>
                         <td style={{...TD,textAlign:"right",...mono(C.text)}}>{fmt(r.scgVol)}</td>
                         <td style={{...TD,textAlign:"right",...mono(C.green)}}>{fmt(r.scgCash)}</td>
@@ -6785,7 +6785,7 @@ export default function Dashboard() {
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.total)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.ersteRate)}</td>
                       <td style={{...TD}}></td>
-                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.muted)}}>{totals.scgCash>0?(totals.mitarbeiterProv/totals.scgCash*100).toFixed(2)+"%":"0,00%"}</td>
+                      <td style={{...TD,textAlign:"center",fontWeight:700,...mono(C.muted)}}>{totals.mitarbeiterProv>0?fmt(totals.mitarbeiterProv):"—"}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.text)}}>{fmt(totals.scgVol)}</td>
                       <td style={{...TD,textAlign:"right",fontWeight:700,...mono(C.green)}}>{fmt(totals.scgCash)}</td>
                       {activeMACols.map(col=><td key={col.label} style={{...TD,textAlign:"right",fontWeight:700,...mono(C.muted)}}>{fmt(totals.maCols[col.label]||0)}</td>)}
