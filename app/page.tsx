@@ -5074,7 +5074,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"provisionen"|"admin">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"provisionen"|"marge"|"admin">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -5090,6 +5090,27 @@ export default function Dashboard() {
   const [maProvOverride, setMaProvOverride] = useState<Record<string,number>>({});
   const [editingMaProv, setEditingMaProv] = useState<string|null>(null);
   const [editingMaVal, setEditingMaVal] = useState<string>("");
+  // Marge Tab
+  const [margeMonat, setMargeMonat] = useState("Oktober 2026");
+  const [margeRows, setMargeRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
+  const [margeStatus, setMargeStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
+  const MARGE_FIRMEN = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH"];
+  const MARGE_FIRMEN_SHORT: Record<string,string> = {
+    "HH Sales Consulting Germany GmbH":"HH Sales Consulting Germany GmbH",
+    "Peak Revenue AG":"Peak Revenue AG",
+    "HP Venius":"HP Venius (Dubai)",
+    "Hamann & Kollegen Immobilien GmbH":"Hamann & Kollegen Immobilien GmbH",
+  };
+  // Kontostand editierbar, Startwerte aus Screenshot
+  const [margeKontostand, setMargeKontostand] = useState<Record<string,number>>({
+    "HH Sales Consulting Germany GmbH": 438132.20,
+    "Peak Revenue AG": 35096.00,
+    "HP Venius": 20871.10,
+    "Hamann & Kollegen Immobilien GmbH": 133308.26,
+  });
+  const [editingKontoFirma, setEditingKontoFirma] = useState<string|null>(null);
+  const [editingKontoVal, setEditingKontoVal] = useState<string>("");
+  const margeZiel = 35;
 
   type ProvRate = {intern:number; extern:number; mitarbeiter:number; suelei?:number; florian?:number};
   const DEFAULT_PROV_CONFIG: Record<string,ProvRate> = {
@@ -5195,6 +5216,23 @@ export default function Dashboard() {
     const interval = setInterval(fetchSheetData, 2 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "marge") return;
+    async function loadMargeMonat() {
+      setMargeStatus("loading");
+      try {
+        const gid = MONAT_TO_GID[margeMonat] ?? "0";
+        const res = await fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"});
+        const text = await res.text();
+        const rows = parseFirmenCSV(text);
+        if (rows.length === 0) { setMargeStatus("error"); return; }
+        setMargeRows(rows);
+        setMargeStatus("success");
+      } catch { setMargeStatus("error"); }
+    }
+    loadMargeMonat();
+  }, [activeTab, margeMonat]);
 
   const THEMES = {
     beige: {bg:"#f0ece0",sidebar:"#faf6ef",card:"#ffffff",border:"#d4c9b8",border2:"#c4b9a8",text:"#1a1208",muted:"#6b5e4e",dimmed:"#e0d8cc",th:"#e8ddd0"},
@@ -5552,7 +5590,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -6811,6 +6849,133 @@ export default function Dashboard() {
                 </table>
               </div>
               <div style={{marginTop:12,fontSize:11,color:C.muted}}>💡 Provision = SCG Cash IN × Partner-Rate. Netto Cash-IN = SCG Cash IN − Mitarbeiter-Provision. Raten über ⚙️ editierbar.</div>
+            </div>
+          );
+        })()}
+        {activeTab==="marge"&&(()=>{
+          const months = Object.keys(MONAT_TO_GID);
+          // Berechne pro Firma: Einnahmen, Ausgaben aus margeRows
+          type MargeFirmaRow = {firma:string; short:string; ein:number; aus:number; gewinn:number; marge:number; kontostand:number};
+          const firmaMap: Record<string,{ein:number;aus:number}> = {};
+          MARGE_FIRMEN.forEach(f=>{ firmaMap[f]={ein:0,aus:0}; });
+          margeRows.forEach(r=>{
+            if (!firmaMap[r.firma]) return;
+            if (r.betrag>=0) firmaMap[r.firma].ein += r.betrag;
+            else firmaMap[r.firma].aus += r.betrag;
+          });
+          const rows: MargeFirmaRow[] = MARGE_FIRMEN.map(f=>{
+            const {ein,aus} = firmaMap[f];
+            const gewinn = ein+aus;
+            const marge = ein>0?gewinn/ein*100:0;
+            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[f]||0};
+          });
+          const totEin = rows.reduce((a,r)=>a+r.ein,0);
+          const totAus = rows.reduce((a,r)=>a+r.aus,0);
+          const totGewinn = totEin+totAus;
+          const totMarge = totEin>0?totGewinn/totEin*100:0;
+          const totKonto = rows.reduce((a,r)=>a+r.kontostand,0);
+          const fehlenderBetrag = totEin*margeZiel/100 - totGewinn;
+          const noetUmsatz = totAus!==0 ? Math.abs(totAus)/(1-margeZiel/100) : 0;
+          const TH2 = {padding:"10px 14px",fontSize:11,fontWeight:700,letterSpacing:"1.5px",color:C.muted,textTransform:"uppercase" as const,borderBottom:`2px solid ${C.border2}`,whiteSpace:"nowrap" as const};
+          const TD2 = {padding:"11px 14px",fontSize:14,borderBottom:`1px solid ${C.border}`};
+          const fmtE = (n:number,pos?:boolean)=>{
+            const s = new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Math.abs(n));
+            return (pos&&n>=0?"":n<0?"-":"")+s+" €";
+          };
+          return (
+            <div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>📊 Marge — Jahresübersicht 4 Firmen</h2>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  <select value={margeMonat} onChange={e=>setMargeMonat(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                    {months.map(m=><option key={m} value={m}>{m}</option>)}
+                  </select>
+                  {margeStatus==="loading"&&<span style={{fontSize:12,color:C.muted}}>⏳ Laden…</span>}
+                  {margeStatus==="error"&&<span style={{fontSize:12,color:"#c0392b"}}>⚠️ Fehler</span>}
+                  {margeStatus==="success"&&<span style={{fontSize:12,color:C.green}}>✓ Live</span>}
+                </div>
+              </div>
+              {/* Haupttabelle */}
+              <div style={{...card() as object,padding:0,overflow:"auto",marginBottom:24}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr style={{background:t.th}}>
+                      <th style={{...TH2,textAlign:"left"}}>Firma</th>
+                      <th style={{...TH2,textAlign:"right"}}>Einnahmen</th>
+                      <th style={{...TH2,textAlign:"right"}}>Ausgaben</th>
+                      <th style={{...TH2,textAlign:"right"}}>Gewinn</th>
+                      <th style={{...TH2,textAlign:"right"}}>Marge</th>
+                      <th style={{...TH2,textAlign:"right"}}>Kontostand ✏️</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r,i)=>(
+                      <tr key={r.firma} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
+                        <td style={{...TD2,fontWeight:600,color:C.text}}>{r.short}</td>
+                        <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.green}}>{r.ein>0?fmtE(r.ein):"—"}</td>
+                        <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:"#c0392b"}}>{r.aus<0?fmtE(r.aus):"—"}</td>
+                        <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.gewinn>=0?C.green:"#c0392b"}}>{r.ein>0||r.aus<0?fmtE(r.gewinn):"—"}</td>
+                        <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.marge>=margeZiel?C.green:r.marge>=20?"#f59e0b":"#c0392b"}}>{r.ein>0?r.marge.toFixed(2)+"%":"—"}</td>
+                        <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.indigo,cursor:"pointer"}}
+                          onClick={()=>{if(editingKontoFirma!==r.firma){setEditingKontoFirma(r.firma);setEditingKontoVal(r.kontostand.toFixed(2));}}}>
+                          {editingKontoFirma===r.firma
+                            ? <input autoFocus type="number" value={editingKontoVal}
+                                onChange={e=>setEditingKontoVal(e.target.value)}
+                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(",","."));if(!isNaN(n))setMargeKontostand(prev=>({...prev,[r.firma]:n}));setEditingKontoFirma(null);}}
+                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(",","."));if(!isNaN(n))setMargeKontostand(prev=>({...prev,[r.firma]:n}));setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
+                                style={{width:120,textAlign:"right",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 6px",background:C.card,color:C.indigo,fontWeight:700,fontFamily:"'DM Mono',monospace"}}
+                              />
+                            : <>{fmtE(r.kontostand)} ✏️</>
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                    <tr style={{borderTop:`2px solid ${C.border2}`,background:t.th}}>
+                      <td style={{...TD2,fontWeight:800,color:C.text}}>GESAMT ALLE 4 FIRMEN</td>
+                      <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:C.green}}>{totEin>0?fmtE(totEin):"—"}</td>
+                      <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:"#c0392b"}}>{totAus<0?fmtE(totAus):"—"}</td>
+                      <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:800,color:totGewinn>=0?C.green:"#c0392b"}}>{totEin>0||totAus<0?fmtE(totGewinn):"—"}</td>
+                      <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:800,color:totMarge>=margeZiel?C.green:totMarge>=20?"#f59e0b":"#c0392b"}}>{totEin>0?totMarge.toFixed(2)+"%":"—"}</td>
+                      <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:800,color:C.indigo}}>{fmtE(totKonto)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              {/* Ziel-Marge Analyse */}
+              {totEin>0&&(
+                <div style={{...card() as object,padding:24,marginBottom:16}}>
+                  <div style={{fontSize:16,fontWeight:800,color:"#fff",background:C.indigo,borderRadius:8,padding:"8px 16px",marginBottom:16,display:"inline-block"}}>Ziel: {margeZiel}% Marge</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
+                    {[
+                      {label:"Gesamtumsatz",val:fmtE(totEin),color:C.text},
+                      {label:"Gesamtausgaben",val:fmtE(totAus),color:"#c0392b"},
+                      {label:"Ist-Gewinn",val:fmtE(totGewinn),color:totGewinn>=0?C.green:"#c0392b"},
+                      {label:"Ist-Marge",val:totMarge.toFixed(2)+"%",color:totMarge>=margeZiel?C.green:"#f59e0b"},
+                      {label:"Ziel-Marge",val:margeZiel.toFixed(2)+"%",color:C.text},
+                      {label:"Nötiger Gewinn ("+margeZiel+"%)",val:fmtE(totEin*margeZiel/100),color:C.text},
+                      {label:"Fehlender Betrag zum Ziel",val:(fehlenderBetrag>0?"+":"")+fmtE(fehlenderBetrag),color:fehlenderBetrag<=0?C.green:"#f59e0b"},
+                      {label:"Nötiger Umsatz",val:fmtE(noetUmsatz),color:C.muted},
+                    ].map(({label,val,color})=>(
+                      <div key={label} style={{background:t.th,borderRadius:10,padding:"12px 16px"}}>
+                        <div style={{fontSize:11,color:C.muted,marginBottom:4,fontWeight:600,letterSpacing:"0.5px"}}>{label}</div>
+                        <div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color}}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {fehlenderBetrag>0&&(
+                    <div style={{marginTop:16,padding:"12px 16px",background:"#fff9f0",border:"1px solid #f59e0b",borderRadius:10,fontSize:13,color:"#92400e"}}>
+                      💡 Wir sind bei {totMarge.toFixed(2)}% — nur {(margeZiel-totMarge).toFixed(2)}% unter dem Ziel. {fmtE(fehlenderBetrag)} fehlen noch. Option A: Ausgaben um {fmtE(fehlenderBetrag)} kürzen. Option B: Umsatz auf {fmtE(noetUmsatz)} erhöhen.
+                    </div>
+                  )}
+                  {fehlenderBetrag<=0&&(
+                    <div style={{marginTop:16,padding:"12px 16px",background:"#f0faf4",border:"1px solid #2d7a3a",borderRadius:10,fontSize:13,color:"#1a5c2a"}}>
+                      ✅ Ziel erreicht! Aktuelle Marge {totMarge.toFixed(2)}% übertrifft das {margeZiel}%-Ziel um {Math.abs(fehlenderBetrag/totEin*100).toFixed(2)} Prozentpunkte.
+                    </div>
+                  )}
+                </div>
+              )}
+              {margeStatus==="idle"&&<div style={{color:C.muted,fontSize:13}}>Monat auswählen um Daten zu laden.</div>}
+              {margeStatus==="error"&&<div style={{color:"#c0392b",fontSize:13}}>⚠️ Keine Daten für diesen Monat verfügbar.</div>}
             </div>
           );
         })()}
