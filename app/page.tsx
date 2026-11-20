@@ -6919,11 +6919,11 @@ export default function Dashboard() {
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.indigo,cursor:"pointer"}}
                           onClick={()=>{if(editingKontoFirma!==r.firma){setEditingKontoFirma(r.firma);setEditingKontoVal(r.kontostand.toFixed(2));}}}>
                           {editingKontoFirma===r.firma
-                            ? <input autoFocus type="number" value={editingKontoVal}
+                            ? <input autoFocus type="text" value={editingKontoVal}
                                 onChange={e=>setEditingKontoVal(e.target.value)}
-                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(",","."));if(!isNaN(n))setMargeKontostand(prev=>({...prev,[r.firma]:n}));setEditingKontoFirma(null);}}
-                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(",","."));if(!isNaN(n))setMargeKontostand(prev=>({...prev,[r.firma]:n}));setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
-                                style={{width:120,textAlign:"right",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 6px",background:C.card,color:C.indigo,fontWeight:700,fontFamily:"'DM Mono',monospace"}}
+                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n))setMargeKontostand(prev=>({...prev,[r.firma]:n}));setEditingKontoFirma(null);}}
+                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n))setMargeKontostand(prev=>({...prev,[r.firma]:n}));setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
+                                style={{width:150,textAlign:"right",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 6px",background:C.card,color:C.indigo,fontWeight:700,fontFamily:"'DM Mono',monospace"}}
                               />
                             : <>{fmtE(r.kontostand)} ✏️</>
                           }
