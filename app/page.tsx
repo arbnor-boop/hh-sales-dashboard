@@ -6943,35 +6943,35 @@ export default function Dashboard() {
               </div>
               {/* Ziel-Marge Analyse */}
               {totEin>0&&(
-                <div style={{...card() as object,padding:24,marginBottom:16}}>
-                  <div style={{fontSize:16,fontWeight:800,color:"#fff",background:C.indigo,borderRadius:8,padding:"8px 16px",marginBottom:16,display:"inline-block"}}>Ziel: {margeZiel}% Marge</div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:16}}>
-                    {[
-                      {label:"Gesamtumsatz",val:fmtE(totEin),color:C.text},
-                      {label:"Gesamtausgaben",val:fmtE(totAus),color:"#c0392b"},
-                      {label:"Ist-Gewinn",val:fmtE(totGewinn),color:totGewinn>=0?C.green:"#c0392b"},
-                      {label:"Ist-Marge",val:totMarge.toFixed(2)+"%",color:totMarge>=margeZiel?C.green:"#f59e0b"},
-                      {label:"Ziel-Marge",val:margeZiel.toFixed(2)+"%",color:C.text},
-                      {label:"Nötiger Gewinn ("+margeZiel+"%)",val:fmtE(totEin*margeZiel/100),color:C.text},
-                      {label:"Fehlender Betrag zum Ziel",val:(fehlenderBetrag>0?"+":"")+fmtE(fehlenderBetrag),color:fehlenderBetrag<=0?C.green:"#f59e0b"},
-                      {label:"Nötiger Umsatz",val:fmtE(noetUmsatz),color:C.muted},
-                    ].map(({label,val,color})=>(
-                      <div key={label} style={{background:t.th,borderRadius:10,padding:"12px 16px"}}>
-                        <div style={{fontSize:11,color:C.muted,marginBottom:4,fontWeight:600,letterSpacing:"0.5px"}}>{label}</div>
-                        <div style={{fontSize:16,fontWeight:700,fontFamily:"'DM Mono',monospace",color}}>{val}</div>
-                      </div>
-                    ))}
-                  </div>
-                  {fehlenderBetrag>0&&(
-                    <div style={{marginTop:16,padding:"12px 16px",background:"#fff9f0",border:"1px solid #f59e0b",borderRadius:10,fontSize:13,color:"#92400e"}}>
-                      💡 Wir sind bei {totMarge.toFixed(2)}% — nur {(margeZiel-totMarge).toFixed(2)}% unter dem Ziel. {fmtE(fehlenderBetrag)} fehlen noch. Option A: Ausgaben um {fmtE(fehlenderBetrag)} kürzen. Option B: Umsatz auf {fmtE(noetUmsatz)} erhöhen.
-                    </div>
-                  )}
-                  {fehlenderBetrag<=0&&(
-                    <div style={{marginTop:16,padding:"12px 16px",background:"#f0faf4",border:"1px solid #2d7a3a",borderRadius:10,fontSize:13,color:"#1a5c2a"}}>
-                      ✅ Ziel erreicht! Aktuelle Marge {totMarge.toFixed(2)}% übertrifft das {margeZiel}%-Ziel um {Math.abs(fehlenderBetrag/totEin*100).toFixed(2)} Prozentpunkte.
-                    </div>
-                  )}
+                <div style={{...card() as object,padding:0,overflow:"auto",marginBottom:16}}>
+                  <table style={{width:"100%",borderCollapse:"collapse"}}>
+                    <thead>
+                      <tr style={{background:C.indigo}}>
+                        <th colSpan={2} style={{padding:"12px 18px",fontSize:14,fontWeight:800,color:"#fff",textAlign:"center",letterSpacing:"0.5px"}}>Ziel-Analyse ({margeZiel}% Marge)</th>
+                      </tr>
+                      <tr style={{background:t.th}}>
+                        <th style={{...TH2,textAlign:"left"}}>Kennzahl</th>
+                        <th style={{...TH2,textAlign:"right"}}>Wert</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        {label:"Gesamtumsatz", val:fmtE(totEin), color:C.text, bold:false},
+                        {label:"Gesamtausgaben", val:fmtE(totAus), color:"#c0392b", bold:false},
+                        {label:"Ist-Gewinn", val:fmtE(totGewinn), color:totGewinn>=0?C.green:"#c0392b", bold:false},
+                        {label:"Ist-Marge", val:totMarge.toFixed(2)+"%", color:totMarge>=margeZiel?C.green:"#f59e0b", bold:false},
+                        {label:"Ziel-Marge", val:margeZiel.toFixed(2)+"%", color:C.text, bold:false},
+                        {label:"Nötiger Gewinn ("+margeZiel+"% × Umsatz)", val:fmtE(totEin*margeZiel/100), color:C.text, bold:false},
+                        {label:"Fehlender Betrag / Überschuss", val:(fehlenderBetrag>0?"-":fehlenderBetrag<0?"+":"")+fmtE(Math.abs(fehlenderBetrag)), color:fehlenderBetrag<=0?C.green:"#c0392b", bold:true, bg:fehlenderBetrag<=0?"#f0fdf4":"#fff5f5"},
+                        {label:"Nötiger Umsatz (um "+margeZiel+"% zu erreichen)", val:fmtE(noetUmsatz), color:C.muted, bold:false, bg:"#fffef0"},
+                      ].map(({label,val,color,bold,bg},i)=>(
+                        <tr key={label} style={{background:bg||(i%2===0?"transparent":t.th),borderBottom:`1px solid ${C.border}`}}>
+                          <td style={{...TD2,color:C.text,fontWeight:bold?700:400}}>{label}</td>
+                          <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:bold?800:500,color}}>{val}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
               {margeStatus==="idle"&&<div style={{color:C.muted,fontSize:13}}>Monat auswählen um Daten zu laden.</div>}
