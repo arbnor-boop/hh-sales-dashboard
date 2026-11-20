@@ -5097,7 +5097,7 @@ export default function Dashboard() {
   const MARGE_FIRMEN = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH"];
   const MARGE_FIRMEN_SHORT: Record<string,string> = {
     "HH Sales Consulting Germany GmbH":"HH Sales Consulting Germany GmbH",
-    "Peak Revenue AG":"Peak Revenue AG",
+    "Peak Revenue AG":"Peak Revenue AG / Operations",
     "HP Venius":"HP Venius (Dubai)",
     "Hamann & Kollegen Immobilien GmbH":"Hamann & Kollegen Immobilien GmbH",
   };
