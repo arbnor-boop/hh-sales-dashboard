@@ -6855,19 +6855,23 @@ export default function Dashboard() {
         {activeTab==="marge"&&(()=>{
           const months = Object.keys(MONAT_TO_GID);
           // Berechne pro Firma: Einnahmen, Ausgaben aus margeRows
-          type MargeFirmaRow = {firma:string; short:string; ein:number; aus:number; gewinn:number; marge:number; kontostand:number};
+          // Peak Revenue AG bucht in CHF → mit Kurs umrechnen
+          const MARGE_CHF_TO_EUR = 1.05;
+          const MARGE_CHF_FIRMEN = new Set(["Peak Revenue AG"]);
+          type MargeFirmaRow = {firma:string; short:string; ein:number; aus:number; gewinn:number; marge:number; kontostand:number; isCHF:boolean};
           const firmaMap: Record<string,{ein:number;aus:number}> = {};
           MARGE_FIRMEN.forEach(f=>{ firmaMap[f]={ein:0,aus:0}; });
           margeRows.forEach(r=>{
             if (!firmaMap[r.firma]) return;
-            if (r.betrag>=0) firmaMap[r.firma].ein += r.betrag;
-            else firmaMap[r.firma].aus += r.betrag;
+            const faktor = MARGE_CHF_FIRMEN.has(r.firma) ? MARGE_CHF_TO_EUR : 1;
+            if (r.betrag>=0) firmaMap[r.firma].ein += r.betrag * faktor;
+            else firmaMap[r.firma].aus += r.betrag * faktor;
           });
           const rows: MargeFirmaRow[] = MARGE_FIRMEN.map(f=>{
             const {ein,aus} = firmaMap[f];
             const gewinn = ein+aus;
             const marge = ein>0?gewinn/ein*100:0;
-            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[f]||0};
+            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[f]||0, isCHF:MARGE_CHF_FIRMEN.has(f)};
           });
           const totEin = rows.reduce((a,r)=>a+r.ein,0);
           const totAus = rows.reduce((a,r)=>a+r.aus,0);
@@ -6911,7 +6915,7 @@ export default function Dashboard() {
                   <tbody>
                     {rows.map((r,i)=>(
                       <tr key={r.firma} style={{borderBottom:`1px solid ${C.border}`,background:i%2===0?"transparent":t.th}}>
-                        <td style={{...TD2,fontWeight:600,color:C.text}}>{r.short}</td>
+                        <td style={{...TD2,fontWeight:600,color:C.text}}>{r.short}{r.isCHF&&<span style={{fontSize:10,color:C.muted,marginLeft:6,fontWeight:400}}>CHF→EUR (~{MARGE_CHF_TO_EUR})</span>}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.green}}>{r.ein>0?fmtE(r.ein):"—"}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:"#c0392b"}}>{r.aus<0?fmtE(r.aus):"—"}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.gewinn>=0?C.green:"#c0392b"}}>{r.ein>0||r.aus<0?fmtE(r.gewinn):"—"}</td>
