@@ -5101,13 +5101,8 @@ export default function Dashboard() {
     "HP Venius":"HP Venius (Dubai)",
     "Hamann & Kollegen Immobilien GmbH":"Hamann & Kollegen Immobilien GmbH",
   };
-  // Kontostand editierbar, Startwerte aus Screenshot
-  const MARGE_KONTO_DEFAULT: Record<string,number> = {
-    "HH Sales Consulting Germany GmbH": 438132.20,
-    "Peak Revenue AG": 35096.00,
-    "HP Venius": 20871.10,
-    "Hamann & Kollegen Immobilien GmbH": 133308.26,
-  };
+  // Kontostand editierbar, pro Firma+Monat gespeichert
+  const MARGE_KONTO_DEFAULT: Record<string,number> = {};
   const [margeKontostand, setMargeKontostand] = useState<Record<string,number>>(MARGE_KONTO_DEFAULT);
   const [editingKontoFirma, setEditingKontoFirma] = useState<string|null>(null);
   const [editingKontoVal, setEditingKontoVal] = useState<string>("");
@@ -5184,8 +5179,8 @@ export default function Dashboard() {
       if (saved) setProvConfig({...DEFAULT_PROV_CONFIG, ...JSON.parse(saved)});
     } catch {}
     try {
-      const savedKonto = localStorage.getItem("hh_marge_kontostand");
-      if (savedKonto) setMargeKontostand({...MARGE_KONTO_DEFAULT, ...JSON.parse(savedKonto)});
+      const savedKonto = localStorage.getItem("hh_marge_kontostand_v2");
+      if (savedKonto) setMargeKontostand(JSON.parse(savedKonto));
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -6877,7 +6872,7 @@ export default function Dashboard() {
             const {ein,aus} = firmaMap[f];
             const gewinn = ein+aus;
             const marge = ein>0?gewinn/ein*100:0;
-            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[f]||0, isCHF:MARGE_CHF_FIRMEN.has(f)};
+            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[f+"|"+margeMonat]||0, isCHF:MARGE_CHF_FIRMEN.has(f)};
           });
           const totEin = rows.reduce((a,r)=>a+r.ein,0);
           const totAus = rows.reduce((a,r)=>a+r.aus,0);
@@ -6927,12 +6922,12 @@ export default function Dashboard() {
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.gewinn>=0?C.green:"#c0392b"}}>{r.ein>0||r.aus<0?fmtE(r.gewinn):"—"}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.marge>=margeZiel?C.green:r.marge>=20?"#f59e0b":"#c0392b"}}>{r.ein>0?r.marge.toFixed(2)+"%":"—"}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.indigo,cursor:"pointer"}}
-                          onClick={()=>{if(editingKontoFirma!==r.firma){setEditingKontoFirma(r.firma);setEditingKontoVal(r.kontostand.toFixed(2));}}}>
+                          onClick={()=>{if(editingKontoFirma!==r.firma){setEditingKontoFirma(r.firma);setEditingKontoVal(r.kontostand===0?"":r.kontostand.toFixed(2));}}}>
                           {editingKontoFirma===r.firma
                             ? <input autoFocus type="text" value={editingKontoVal}
                                 onChange={e=>setEditingKontoVal(e.target.value)}
-                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){setMargeKontostand(prev=>{const next={...prev,[r.firma]:n};try{localStorage.setItem("hh_marge_kontostand",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}}
-                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){setMargeKontostand(prev=>{const next={...prev,[r.firma]:n};try{localStorage.setItem("hh_marge_kontostand",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
+                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){setMargeKontostand(prev=>{const next={...prev,[r.firma+"|"+margeMonat]:n};try{localStorage.setItem("hh_marge_kontostand_v2",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}}
+                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){setMargeKontostand(prev=>{const next={...prev,[r.firma+"|"+margeMonat]:n};try{localStorage.setItem("hh_marge_kontostand_v2",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
                                 style={{width:150,textAlign:"right",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 6px",background:C.card,color:C.indigo,fontWeight:700,fontFamily:"'DM Mono',monospace"}}
                               />
                             : <>{fmtE(r.kontostand)} ✏️</>
