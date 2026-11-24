@@ -5224,11 +5224,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (activeTab !== "marge") return;
+    setMargeRows([]);
+    setMargeStatus("loading");
     async function loadMargeMonat() {
-      setMargeStatus("loading");
       try {
         const gid = MONAT_TO_GID[margeMonat] ?? "0";
-        const res = await fetch("/api/firmen?gid=" + gid + "&t=" + Date.now(), {cache:"no-store"});
+        const res = await fetch("/api/firmen?gid=" + gid + "&nocache=" + Date.now(), {cache:"no-store", headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}});
         const text = await res.text();
         const rows = parseFirmenCSV(text);
         if (rows.length === 0) { setMargeStatus("error"); return; }
