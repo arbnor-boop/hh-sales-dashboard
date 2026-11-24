@@ -5092,8 +5092,11 @@ export default function Dashboard() {
   const [editingMaVal, setEditingMaVal] = useState<string>("");
   // Marge Tab
   const [margeMonat, setMargeMonat] = useState("Oktober 2026");
+  const [margeAnsicht, setMargeAnsicht] = useState<"monat"|"jahr">("monat");
   const [margeRows, setMargeRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
   const [margeStatus, setMargeStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
+  const [margeJahrRows, setMargeJahrRows] = useState<{firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[]>([]);
+  const [margeJahrStatus, setMargeJahrStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
   const MARGE_FIRMEN = ["HH Sales Consulting Germany GmbH","Peak Revenue AG","HP Venius","Hamann & Kollegen Immobilien GmbH"];
   const MARGE_FIRMEN_SHORT: Record<string,string> = {
     "HH Sales Consulting Germany GmbH":"HH Sales Consulting Germany GmbH",
@@ -5234,6 +5237,27 @@ export default function Dashboard() {
     }
     loadMargeMonat();
   }, [activeTab, margeMonat]);
+
+  useEffect(() => {
+    if (activeTab !== "marge" || margeAnsicht !== "jahr") return;
+    if (margeJahrStatus === "loading") return;
+    setMargeJahrRows([]);
+    setMargeJahrStatus("loading");
+    async function loadJahr() {
+      try {
+        const gidEntries = Object.entries(MONAT_TO_GID);
+        const results = await Promise.all(gidEntries.map(([,gid]) =>
+          fetch("/api/firmen?gid=" + gid + "&nocache=" + Date.now(), {cache:"no-store", headers:{"Cache-Control":"no-cache","Pragma":"no-cache"}}).then(r=>r.text()).catch(()=>"")
+        ));
+        const allRows: {firma:string;datum:string;name:string;betrag:number;kategorie:string;monat:string}[] = [];
+        results.forEach(text => { if (text) allRows.push(...parseFirmenCSV(text)); });
+        setMargeJahrRows(allRows);
+        setMargeJahrStatus(allRows.length > 0 ? "success" : "error");
+      } catch { setMargeJahrStatus("error"); }
+    }
+    loadJahr();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, margeAnsicht]);
 
   const THEMES = {
     beige: {bg:"#f0ece0",sidebar:"#faf6ef",card:"#ffffff",border:"#d4c9b8",border2:"#c4b9a8",text:"#1a1208",muted:"#6b5e4e",dimmed:"#e0d8cc",th:"#e8ddd0"},
@@ -6855,14 +6879,16 @@ export default function Dashboard() {
         })()}
         {activeTab==="marge"&&(()=>{
           const months = Object.keys(MONAT_TO_GID);
-          // Berechne pro Firma: Einnahmen, Ausgaben aus margeRows
+          const isJahr = margeAnsicht === "jahr";
+          const activeRows = isJahr ? margeJahrRows : margeRows;
+          // Berechne pro Firma: Einnahmen, Ausgaben
           // Peak Revenue AG bucht in CHF → mit Kurs umrechnen
           const MARGE_CHF_TO_EUR = 1.05;
           const MARGE_CHF_FIRMEN = new Set(["Peak Revenue AG"]);
           type MargeFirmaRow = {firma:string; short:string; ein:number; aus:number; gewinn:number; marge:number; kontostand:number; isCHF:boolean};
           const firmaMap: Record<string,{ein:number;aus:number}> = {};
           MARGE_FIRMEN.forEach(f=>{ firmaMap[f]={ein:0,aus:0}; });
-          margeRows.forEach(r=>{
+          activeRows.forEach(r=>{
             if (!firmaMap[r.firma]) return;
             const faktor = MARGE_CHF_FIRMEN.has(r.firma) ? MARGE_CHF_TO_EUR : 1;
             if (r.betrag>=0) firmaMap[r.firma].ein += r.betrag * faktor;
@@ -6872,7 +6898,8 @@ export default function Dashboard() {
             const {ein,aus} = firmaMap[f];
             const gewinn = ein+aus;
             const marge = ein>0?gewinn/ein*100:0;
-            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[f+"|"+margeMonat]||0, isCHF:MARGE_CHF_FIRMEN.has(f)};
+            const kontoKey = isJahr ? f+"|jahr2026" : f+"|"+margeMonat;
+            return {firma:f, short:MARGE_FIRMEN_SHORT[f], ein, aus, gewinn, marge, kontostand:margeKontostand[kontoKey]||0, isCHF:MARGE_CHF_FIRMEN.has(f)};
           });
           const totEin = rows.reduce((a,r)=>a+r.ein,0);
           const totAus = rows.reduce((a,r)=>a+r.aus,0);
@@ -6890,14 +6917,25 @@ export default function Dashboard() {
           return (
             <div>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
-                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>📊 Marge — Jahresübersicht 4 Firmen</h2>
+                <h2 style={{fontSize:22,fontWeight:800,color:C.text,margin:0}}>📊 Marge — {margeAnsicht==="jahr"?"Jahres":"Monats"}übersicht 4 Firmen</h2>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                  <select value={margeMonat} onChange={e=>setMargeMonat(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
+                  {/* Toggle Monat/Jahr */}
+                  <div style={{display:"flex",borderRadius:8,overflow:"hidden",border:`2px solid ${C.border}`}}>
+                    {(["monat","jahr"] as const).map(a=>(
+                      <button key={a} onClick={()=>setMargeAnsicht(a)} style={{padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer",border:"none",background:margeAnsicht===a?C.indigo:"transparent",color:margeAnsicht===a?"#fff":C.muted,transition:"all .15s"}}>
+                        {a==="monat"?"📅 Monat":"📆 Jahr 2026"}
+                      </button>
+                    ))}
+                  </div>
+                  {margeAnsicht==="monat"&&<select value={margeMonat} onChange={e=>setMargeMonat(e.target.value)} style={{padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",border:`2px solid ${C.border}`,background:C.card,color:C.text}}>
                     {months.map(m=><option key={m} value={m}>{m}</option>)}
-                  </select>
-                  {margeStatus==="loading"&&<span style={{fontSize:12,color:C.muted}}>⏳ Laden…</span>}
-                  {margeStatus==="error"&&<span style={{fontSize:12,color:"#c0392b"}}>⚠️ Fehler</span>}
-                  {margeStatus==="success"&&<span style={{fontSize:12,color:C.green}}>✓ Live</span>}
+                  </select>}
+                  {margeAnsicht==="monat"&&margeStatus==="loading"&&<span style={{fontSize:12,color:C.muted}}>⏳ Laden…</span>}
+                  {margeAnsicht==="monat"&&margeStatus==="error"&&<span style={{fontSize:12,color:"#c0392b"}}>⚠️ Fehler</span>}
+                  {margeAnsicht==="monat"&&margeStatus==="success"&&<span style={{fontSize:12,color:C.green}}>✓ Live</span>}
+                  {margeAnsicht==="jahr"&&margeJahrStatus==="loading"&&<span style={{fontSize:12,color:C.muted}}>⏳ Alle Monate laden…</span>}
+                  {margeAnsicht==="jahr"&&margeJahrStatus==="error"&&<span style={{fontSize:12,color:"#c0392b"}}>⚠️ Fehler</span>}
+                  {margeAnsicht==="jahr"&&margeJahrStatus==="success"&&<span style={{fontSize:12,color:C.green}}>✓ Live</span>}
                 </div>
               </div>
               {/* Haupttabelle */}
@@ -6926,8 +6964,8 @@ export default function Dashboard() {
                           {editingKontoFirma===r.firma
                             ? <input autoFocus type="text" value={editingKontoVal}
                                 onChange={e=>setEditingKontoVal(e.target.value)}
-                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){setMargeKontostand(prev=>{const next={...prev,[r.firma+"|"+margeMonat]:n};try{localStorage.setItem("hh_marge_kontostand_v2",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}}
-                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){setMargeKontostand(prev=>{const next={...prev,[r.firma+"|"+margeMonat]:n};try{localStorage.setItem("hh_marge_kontostand_v2",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
+                                onBlur={()=>{const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){const k=isJahr?r.firma+"|jahr2026":r.firma+"|"+margeMonat;setMargeKontostand(prev=>{const next={...prev,[k]:n};try{localStorage.setItem("hh_marge_kontostand_v2",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}}
+                                onKeyDown={e=>{if(e.key==="Enter"){const n=parseFloat(editingKontoVal.replace(/\./g,"").replace(",","."));if(!isNaN(n)){const k=isJahr?r.firma+"|jahr2026":r.firma+"|"+margeMonat;setMargeKontostand(prev=>{const next={...prev,[k]:n};try{localStorage.setItem("hh_marge_kontostand_v2",JSON.stringify(next));}catch{}return next;});}setEditingKontoFirma(null);}if(e.key==="Escape")setEditingKontoFirma(null);}}
                                 style={{width:150,textAlign:"right",border:`1px solid ${C.muted}`,borderRadius:4,padding:"2px 6px",background:C.card,color:C.indigo,fontWeight:700,fontFamily:"'DM Mono',monospace"}}
                               />
                             : <>{fmtE(r.kontostand)} ✏️</>
@@ -6979,8 +7017,9 @@ export default function Dashboard() {
                   </table>
                 </div>
               )}
-              {margeStatus==="idle"&&<div style={{color:C.muted,fontSize:13}}>Monat auswählen um Daten zu laden.</div>}
-              {margeStatus==="error"&&<div style={{color:"#c0392b",fontSize:13}}>⚠️ Keine Daten für diesen Monat verfügbar.</div>}
+              {!isJahr&&margeStatus==="idle"&&<div style={{color:C.muted,fontSize:13}}>Monat auswählen um Daten zu laden.</div>}
+              {!isJahr&&margeStatus==="error"&&<div style={{color:"#c0392b",fontSize:13}}>⚠️ Keine Daten für diesen Monat verfügbar.</div>}
+              {isJahr&&margeJahrStatus==="error"&&<div style={{color:"#c0392b",fontSize:13}}>⚠️ Fehler beim Laden der Jahresdaten.</div>}
             </div>
           );
         })()}
