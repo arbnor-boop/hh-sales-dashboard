@@ -1,15 +1,22 @@
-export async function GET() {
-  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTvEtbNxKBc_D9vdTtiglhv8rTmraXiH6nLr9dTLrQQjyQCG2SEkVXsUdganxtjmdRniRamAJx_e1Ek/pub?output=csv";
-  const res = await fetch(url, { cache: "no-store" });
-  let text = await res.text();
-  // Normalize line endings
-  text = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  return new Response(text, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-      "Pragma": "no-cache",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
+import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const gid = searchParams.get("gid") ?? "0";
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7IdyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv&gid=" + gid;
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+    return new NextResponse(text, {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Surrogate-Control": "no-store",
+      }
+    });
+  } catch {
+    return new NextResponse("error", { status: 500 });
+  }
 }
