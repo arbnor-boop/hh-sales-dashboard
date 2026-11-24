@@ -6960,7 +6960,7 @@ export default function Dashboard() {
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.gewinn>=0?C.green:"#c0392b"}}>{r.ein>0||r.aus<0?fmtE(r.gewinn):"—"}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",fontWeight:700,color:r.marge>=margeZiel?C.green:r.marge>=20?"#f59e0b":"#c0392b"}}>{r.ein>0?r.marge.toFixed(2)+"%":"—"}</td>
                         <td style={{...TD2,textAlign:"right",fontFamily:"'DM Mono',monospace",color:C.indigo,cursor:"pointer"}}
-                          onClick={()=>{if(editingKontoFirma!==r.firma){setEditingKontoFirma(r.firma);setEditingKontoVal(r.kontostand===0?"":r.kontostand.toFixed(2));}}}>
+                          onClick={()=>{if(editingKontoFirma!==r.firma){setEditingKontoFirma(r.firma);setEditingKontoVal(r.kontostand===0?"":new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2}).format(r.kontostand));}}}>
                           {editingKontoFirma===r.firma
                             ? <input autoFocus type="text" value={editingKontoVal}
                                 onChange={e=>setEditingKontoVal(e.target.value)}
