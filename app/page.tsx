@@ -5175,7 +5175,7 @@ export default function Dashboard() {
   }
 
   // Nur Partner, die zu diesem Dashboard gehören (siehe app/dashboard-config.ts)
-  const deals = useMemo(()=>(uploadedDeals ?? DEALS).filter(d=>partnerAllowed(d.partner)),[uploadedDeals]);
+  const deals = useMemo(()=>(uploadedDeals ?? (IS_PROJEKTE ? [] : DEALS)).filter(d=>partnerAllowed(d.partner)),[uploadedDeals]);
 
   // Load provConfig from localStorage
   useEffect(() => {

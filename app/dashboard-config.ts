@@ -13,6 +13,7 @@
 //     SALES_SHEET_CSV_URL            CSV-Link ("Im Web veröffentlichen") des Sheets im anderen Drive
 //     NEXT_PUBLIC_SALES_PASSWORD     eigenes Passwort
 //     NEXT_PUBLIC_DASHBOARD_TITLE    optional, Name oben links (Standard "PROJEKTE")
+//     NEXT_PUBLIC_SHOW_ALL_PARTNERS  "1" -> alle Partner aus diesem Sheet zeigen (nicht nur die 6)
 // ============================================================
 
 export const PROJEKT_PARTNERS = [
@@ -62,15 +63,18 @@ export function isProjektPartner(name: string): boolean {
 }
 
 /** Darf dieser Partner im aktuellen Dashboard angezeigt werden? */
+// Projekte-Dashboard: NEXT_PUBLIC_SHOW_ALL_PARTNERS=1 zeigt alle Partner aus dem eigenen Sheet
+const SHOW_ALL_PARTNERS = process.env.NEXT_PUBLIC_SHOW_ALL_PARTNERS === "1";
+
 export function partnerAllowed(name: string): boolean {
-  if (IS_PROJEKTE) return isProjektPartner(name);
+  if (IS_PROJEKTE) return SHOW_ALL_PARTNERS || isProjektPartner(name);
   if (HIDE_PROJEKTE_IN_HH) return !isProjektPartner(name);
   return true;
 }
 
 /** Server-seitig: Partner-Filter auf ein Sales-CSV anwenden (Kopfzeilen bleiben erhalten). */
 export function filterSalesCsv(text: string): string {
-  if (!IS_PROJEKTE && !HIDE_PROJEKTE_IN_HH) return text;
+  if (IS_PROJEKTE ? SHOW_ALL_PARTNERS : !HIDE_PROJEKTE_IN_HH) return text;
   const lines = text.split("\n");
   let headerIdx = -1;
   let partnerCol = -1;
