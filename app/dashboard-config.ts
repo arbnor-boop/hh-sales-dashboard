@@ -58,7 +58,7 @@ function norm(s: string): string {
 
 // Partner, die nur im Peak-Dashboard erscheinen sollen (werden im HH-Dashboard
 // zusätzlich zu den 6 Projekten ausgeblendet, wenn NEXT_PUBLIC_HIDE_PROJEKTE=1)
-const PEAK_ONLY_KEYS = ["taxangels", "peak", "khph", "carefree"];
+const PEAK_ONLY_KEYS = ["taxangels", "peak", "khph", "carefree", "reviso"];
 
 function isPeakOnlyPartner(name: string): boolean {
   const n = norm(name || "");
