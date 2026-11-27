@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { IS_PROJEKTE, DASHBOARD_TITLE, partnerAllowed } from "./dashboard-config";
+import PeakKosten from "./peak-kosten";
 
 const SHEET_URL = "/api/sheet";
 
@@ -5075,7 +5076,7 @@ export default function Dashboard() {
 
   const [selectedMonth, setSelectedMonth] = useState("Mai 2026");
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
-  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"provisionen"|"marge"|"admin">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"provisionen"|"marge"|"admin"|"kosten">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
@@ -5619,7 +5620,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["admin","⚙️ Closer Admin"]] as const).filter(([t])=>!(IS_PROJEKTE&&t==="marge")).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["kosten","💼 Projekte & Kosten"],["admin","⚙️ Closer Admin"]] as const).filter(([t])=>IS_PROJEKTE?t!=="marge":t!=="kosten").map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -6881,6 +6882,7 @@ export default function Dashboard() {
             </div>
           );
         })()}
+        {activeTab==="kosten"&&IS_PROJEKTE&&<PeakKosten/>}
         {activeTab==="marge"&&(()=>{
           const months = Object.keys(MONAT_TO_GID);
           const isJahr = margeAnsicht === "jahr";
