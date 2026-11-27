@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
+import { IS_PROJEKTE } from "../../dashboard-config";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const gid = searchParams.get("gid") ?? "0";
-  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7IdyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv&gid=" + gid;
+  // Firmen-/Marge-Daten (HH-Firmen). Im Projekte-Dashboard nur, wenn ein eigenes Sheet gesetzt ist.
+  const base = process.env.FIRMEN_SHEET_CSV_URL
+    || (IS_PROJEKTE ? "" : "https://docs.google.com/spreadsheets/d/e/2PACX-1vQYYsY8LCNoYUVl-Hi4yPb_w7vVrx-AuhNh0wcVuxKeevlndP7IdyzwGO6t8ckisPVoDWMVhnSyGlXv/pub?output=csv");
+  if (!base) return new NextResponse("", { status: 404 });
+  const url = base.replace(/([?&])gid=[^&]*/, "$1").replace(/[?&]$/, "") + (base.includes("?") ? "&" : "?") + "gid=" + gid;
   try {
     const res = await fetch(url, { cache: "no-store" });
     const text = await res.text();

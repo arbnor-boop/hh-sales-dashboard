@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
+import { IS_PROJEKTE, DASHBOARD_TITLE, partnerAllowed } from "./dashboard-config";
 
 const SHEET_URL = "/api/sheet";
 
@@ -3646,7 +3647,7 @@ function parseCSV(text: string): Deal[] {
   }).filter(Boolean) as Deal[];
 }
 
-const PASSWORD = "HHSales3!";
+const PASSWORD = process.env.NEXT_PUBLIC_SALES_PASSWORD || "HHSales3!";
 const PASSWORD2 = "Sales!";
 
 // ============================================================
@@ -5057,7 +5058,7 @@ export default function Dashboard() {
   useEffect(() => {
     const auth = localStorage.getItem("hh_scg_auth");
     if (auth === "sales") { setSelDash("sales"); setLoggedIn(true); }
-    else if (auth === "firmen") { setSelDash("firmen"); setLoggedIn(true); }
+    else if (auth === "firmen" && !IS_PROJEKTE) { setSelDash("firmen"); setLoggedIn(true); }
     setHydrated(true);
   }, []);
 
@@ -5173,7 +5174,8 @@ export default function Dashboard() {
     setChatLoading(false);
   }
 
-  const deals = uploadedDeals ?? DEALS;
+  // Nur Partner, die zu diesem Dashboard gehören (siehe app/dashboard-config.ts)
+  const deals = useMemo(()=>(uploadedDeals ?? DEALS).filter(d=>partnerAllowed(d.partner)),[uploadedDeals]);
 
   // Load provConfig from localStorage
   useEffect(() => {
@@ -5316,16 +5318,17 @@ export default function Dashboard() {
     return (
       <div style={{minHeight:"100vh",background:"#f0ece0",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Inter',sans-serif"}}>
         <div style={{background:"#ffffff",border:"1px solid #1c1c2e",borderRadius:16,padding:"40px 48px",width:400,textAlign:"center"}}>
-          <div style={{fontSize:26,fontWeight:400,color:"#fff",letterSpacing:"-0.5px"}}>HH SCG</div>
+          <div style={{fontSize:26,fontWeight:400,color:"#fff",letterSpacing:"-0.5px"}}>{DASHBOARD_TITLE}</div>
           <div style={{fontSize:11,color:"#6b5e4e",letterSpacing:"3px",marginBottom:24}}>DASHBOARD</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
+          <div style={{display:"grid",gridTemplateColumns:IS_PROJEKTE?"1fr":"1fr 1fr",gap:10,marginBottom:24}}>
             <div onClick={()=>setSelDash("sales")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
               background:selDash==="sales"?"#d4c9b8":"#e8ddd0",
               border:`2px solid ${selDash==="sales"?"#5c4a2a":"#c4b9a8"}`}}>
               <div style={{fontSize:20,marginBottom:6}}>📊</div>
               <div style={{fontSize:12,fontWeight:700,color:"#5c4a2a"}}>Sales Dashboard</div>
-              <div style={{fontSize:10,color:"#6b5e4e",marginTop:2}}>HH SCG Sales</div>
+              <div style={{fontSize:10,color:"#6b5e4e",marginTop:2}}>{IS_PROJEKTE?"Projekte Sales":"HH SCG Sales"}</div>
             </div>
+            {!IS_PROJEKTE && (
             <div onClick={()=>setSelDash("firmen")} style={{padding:"14px",borderRadius:10,cursor:"pointer",textAlign:"center",
               background:selDash==="firmen"?"#c8e0ca":"#d4e8d4",
               border:`2px solid ${selDash==="firmen"?"#2d7a3a":"#2d7a3a"}`}}>
@@ -5333,6 +5336,7 @@ export default function Dashboard() {
               <div style={{fontSize:12,fontWeight:700,color:"#2d7a3a"}}>Jahresübersicht</div>
               <div style={{fontSize:10,color:"#6b5e4e",marginTop:2}}>4 Firmen</div>
             </div>
+            )}
           </div>
           {selDash && (
             <>
@@ -5610,12 +5614,12 @@ export default function Dashboard() {
     <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:FF,display:"flex"}}>
       <div style={{width:220,background:C.sidebar,borderRight:`1px solid ${C.border}`,position:"fixed",top:0,bottom:0,left:0,zIndex:100,overflowY:"auto",display:"flex",flexDirection:"column"}}>
         <div style={{padding:"20px 18px 16px",borderBottom:`1px solid ${C.border}`}}>
-          <div style={{fontSize:19,fontWeight:800,letterSpacing:"-0.5px",color:"#fff"}}>HH SCG</div>
+          <div style={{fontSize:19,fontWeight:800,letterSpacing:"-0.5px",color:"#fff"}}>{DASHBOARD_TITLE}</div>
           <div style={{fontSize:10,color:C.muted,marginTop:2,letterSpacing:"3px"}}>SALES DASHBOARD</div>
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["admin","⚙️ Closer Admin"]] as const).map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["admin","⚙️ Closer Admin"]] as const).filter(([t])=>!(IS_PROJEKTE&&t==="marge")).map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
@@ -5665,7 +5669,7 @@ export default function Dashboard() {
             {uploadStatus==="success" ? "● LIVE — Google Sheet" : uploadStatus==="error" ? "● Eingebaute Daten" : "⟳ Verbinde..."}
           </div>
           {uploadedDeals && (
-            <div style={{marginTop:6,fontSize:10,color:C.muted,textAlign:"center"}}>{uploadedDeals.length} Deals geladen</div>
+            <div style={{marginTop:6,fontSize:10,color:C.muted,textAlign:"center"}}>{deals.length} Deals geladen</div>
           )}
           <button onClick={async()=>{
             setUploadStatus("idle");
