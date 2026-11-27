@@ -3595,8 +3595,8 @@ function parseCSV(text: string): Deal[] {
   const iTotal    = col(["total"]);
   const iErste    = col(["erste rate","erste_rate","ersterate"]);
   const iCloser   = col(["closer","setter"]);
-  const iScgVol   = col(["scg volumen","scg_volumen"]);
-  const iScgCash  = col(["scg cash in","scg_cash_in"]);
+  const iScgVol   = col(["scg volumen","scg_volumen","peak volumen"]);
+  const iScgCash  = col(["scg cash in","scg_cash_in","peak cash in"]);
   console.log("Column indices - scgVol:", iScgVol, "scgCash:", iScgCash, "partner:", col(["partner"]), "date:", col(["date"]));
   const iMontano  = col(["montano"]);
   const iCem      = col(["cem"]);
