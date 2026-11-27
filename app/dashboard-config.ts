@@ -56,6 +56,16 @@ function norm(s: string): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
+// Partner, die nur im Peak-Dashboard erscheinen sollen (werden im HH-Dashboard
+// zusätzlich zu den 6 Projekten ausgeblendet, wenn NEXT_PUBLIC_HIDE_PROJEKTE=1)
+const PEAK_ONLY_KEYS = ["taxangels", "peak", "khph", "carefree"];
+
+function isPeakOnlyPartner(name: string): boolean {
+  const n = norm(name || "");
+  if (!n) return false;
+  return isProjektPartner(name) || PEAK_ONLY_KEYS.some(k => n.startsWith(k));
+}
+
 export function isProjektPartner(name: string): boolean {
   const n = norm(name || "");
   if (!n) return false;
@@ -68,7 +78,7 @@ const SHOW_ALL_PARTNERS = process.env.NEXT_PUBLIC_SHOW_ALL_PARTNERS === "1";
 
 export function partnerAllowed(name: string): boolean {
   if (IS_PROJEKTE) return SHOW_ALL_PARTNERS || isProjektPartner(name);
-  if (HIDE_PROJEKTE_IN_HH) return !isProjektPartner(name);
+  if (HIDE_PROJEKTE_IN_HH) return !isPeakOnlyPartner(name);
   return true;
 }
 
