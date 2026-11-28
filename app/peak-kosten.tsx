@@ -41,9 +41,25 @@ function num(s: string | undefined): number {
 }
 
 function monatKey(s: string): string {
-  const m = String(s ?? "").trim().match(/^(\d{1,2})-(\d{4})$/);
-  return m ? m[2] + "-" + m[1].padStart(2, "0") : "";
+  const t = String(s ?? "").trim();
+  const m = t.match(/^(\d{1,2})-(\d{4})$/);
+  if (m) return m[2] + "-" + m[1].padStart(2, "0");
+  // Google-Sheets-Datumszahl (z. B. 46023 = 01.01.2026), falls das Format fehlt
+  if (/^\d{5}$/.test(t)) {
+    const d = new Date(Date.UTC(1899, 11, 30) + Number(t) * 86400000);
+    return d.getUTCFullYear() + "-" + String(d.getUTCMonth() + 1).padStart(2, "0");
+  }
+  return "";
 }
+
+// Welche Projekte und Mitarbeiter zu Peak gehören; alles andere zählt zu HH.
+const PEAK_PROJEKTE = ["invesmentpunk", "investmentpunk", "provipanda", "odsolution", "smlsolution", "lana", "terminjager", "taxangels", "carefree"];
+const PEAK_MITARBEITER = ["adrianbecker", "petrit", "kada", "melvin"];
+const schluessel = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]/g, "");
+export const istPeakProjekt = (p: string) => PEAK_PROJEKTE.some((k) => schluessel(p).startsWith(k));
+export const istPeakMitarbeiter = (p: string) => PEAK_MITARBEITER.includes(schluessel(p));
+type Firma = "gesamt" | "hh" | "peak";
+const FIRMEN: [Firma, string][] = [["gesamt", "Gesamt HH + Peak"], ["hh", "Nur HH"], ["peak", "Nur Peak"]];
 
 export function ladeProjekte(text: string): { zeilen: ProjektZeile[]; personen: string[] } {
   const rows = parseCsv(text);
@@ -119,6 +135,7 @@ export default function PeakKosten() {
   const [status, setStatus] = useState<"laden" | "ok" | "fehler">("laden");
   const [monat, setMonat] = useState("");
   const [offen, setOffen] = useState<Set<string>>(new Set());
+  const [firma, setFirma] = useState<Firma>("gesamt");
 
   useEffect(() => {
     let aktiv = true;
@@ -142,9 +159,11 @@ export default function PeakKosten() {
     return () => { aktiv = false; clearInterval(t); };
   }, []);
 
+  const pFirma = useMemo(() => (firma === "gesamt" ? projekte : projekte.filter((r) => istPeakProjekt(r.projekt) === (firma === "peak"))), [projekte, firma]);
+  const mFirma = useMemo(() => (firma === "gesamt" ? mitarbeiter : mitarbeiter.filter((r) => istPeakMitarbeiter(r.person) === (firma === "peak"))), [mitarbeiter, firma]);
   const monate = useMemo(() => [...new Set([...projekte.map((r) => r.monat), ...mitarbeiter.map((r) => r.monat)])].sort(), [projekte, mitarbeiter]);
-  const pSel = useMemo(() => (monat ? projekte.filter((r) => r.monat === monat) : projekte), [projekte, monat]);
-  const mSel = useMemo(() => (monat ? mitarbeiter.filter((r) => r.monat === monat) : mitarbeiter), [mitarbeiter, monat]);
+  const pSel = useMemo(() => (monat ? pFirma.filter((r) => r.monat === monat) : pFirma), [pFirma, monat]);
+  const mSel = useMemo(() => (monat ? mFirma.filter((r) => r.monat === monat) : mFirma), [mFirma, monat]);
 
   const kpi = useMemo(() => {
     const umsatz = pSel.reduce((t, r) => t + r.umsatz, 0), kosten = pSel.reduce((t, r) => t + r.kosten, 0);
@@ -166,12 +185,12 @@ export default function PeakKosten() {
 
   const proMonat = useMemo(() => {
     const m = new Map<string, { monat: string; umsatz: number; kosten: number }>();
-    for (const r of projekte) {
+    for (const r of pFirma) {
       const a = m.get(r.monat) || { monat: r.monat, umsatz: 0, kosten: 0 };
       a.umsatz += r.umsatz; a.kosten += r.kosten; m.set(r.monat, a);
     }
     return [...m.values()].sort((a, b) => a.monat.localeCompare(b.monat));
-  }, [projekte]);
+  }, [pFirma]);
 
   const proPerson = useMemo(() => {
     const m = new Map<string, { person: string; grund: number; reise: number; kosten: number; retainer: number; einnahmen: number; ergebnis: number }>();
@@ -190,7 +209,7 @@ export default function PeakKosten() {
   if (status === "fehler")
     return (
       <div style={{ padding: 24, background: F.card, border: `1px solid ${F.border}`, borderRadius: 12, color: F.text }}>
-        Die Tabelle „Peak Projekte & Mitarbeiterkosten 2026“ konnte nicht geladen werden. In Vercel müssen
+        Die Tabelle „Peak Projekte & Mitarbeiterkosten 26“ konnte nicht geladen werden. In Vercel müssen
         <code> PEAK_PROJEKTE_CSV_URL</code> und <code>PEAK_MITARBEITER_CSV_URL</code> gesetzt sein.
       </div>
     );
@@ -199,6 +218,15 @@ export default function PeakKosten() {
     <div style={{ display: "flex", flexDirection: "column", gap: 20, color: F.text }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>💼 Projekte & Kosten — {zeitraum}</h2>
+        <div style={{ display: "flex", gap: 4, background: F.th, borderRadius: 20, padding: 3 }}>
+          {FIRMEN.map(([f, label]) => (
+            <button key={f} onClick={() => setFirma(f)}
+              style={{ padding: "6px 14px", borderRadius: 16, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700,
+                background: firma === f ? F.akzent : "transparent", color: firma === f ? "#fff" : F.muted }}>
+              {label}
+            </button>
+          ))}
+        </div>
         <select value={monat} onChange={(e) => setMonat(e.target.value)}
           style={{ marginLeft: "auto", padding: "8px 12px", borderRadius: 8, border: `1px solid ${F.border}`, background: F.card, color: F.text, fontSize: 13 }}>
           <option value="">Ganzes Jahr</option>
