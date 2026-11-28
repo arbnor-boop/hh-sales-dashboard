@@ -3648,6 +3648,9 @@ function parseCSV(text: string): Deal[] {
   }).filter(Boolean) as Deal[];
 }
 
+// Im Peak-Dashboard (Projekte-Modus) ausgeblendete Reiter
+const PEAK_HIDDEN_TABS: readonly string[] = ["marge","kosten","admin","closer_intern","closer_extern","rangliste"];
+
 const PASSWORD = process.env.NEXT_PUBLIC_SALES_PASSWORD || "HHSales3!";
 const PASSWORD2 = "Sales!";
 
@@ -5620,7 +5623,7 @@ export default function Dashboard() {
         </div>
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
-          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["kosten","💼 Projekte & Kosten"],["admin","⚙️ Closer Admin"]] as const).filter(([t])=>IS_PROJEKTE?t!=="marge":t!=="kosten").map(([t,lbl])=>(
+          {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["kosten","💼 Projekte & Kosten"],["admin","⚙️ Closer Admin"]] as const).filter(([t])=>IS_PROJEKTE?!PEAK_HIDDEN_TABS.includes(t):t!=="kosten").map(([t,lbl])=>(
             <button key={t} onClick={()=>setActiveTab(t)} style={sideBtn(activeTab===t)}>
               <span>{lbl}</span>
               {activeTab===t&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
