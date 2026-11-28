@@ -3656,9 +3656,9 @@ function parseCSV(text: string): Deal[] {
 }
 
 // Im Peak-Dashboard (Projekte-Modus) ausgeblendete Reiter
-const PEAK_HIDDEN_TABS: readonly string[] = ["kosten","admin","closer_intern","closer_extern","rangliste"];
+const PEAK_HIDDEN_TABS: readonly string[] = ["kosten","admin","closer_intern","closer_extern","rangliste","jahresuebersicht","pivot"];
 // Im HH-Sales-Dashboard ausgeblendete Reiter
-const HH_HIDDEN_TABS: readonly string[] = ["kosten","marge","jahresuebersicht","closer_intern","closer_extern","pivot","rangliste"];
+const HH_HIDDEN_TABS: readonly string[] = ["kosten","marge","jahresuebersicht","closer_intern","closer_extern","pivot","rangliste","admin"];
 
 const PASSWORD = process.env.NEXT_PUBLIC_SALES_PASSWORD || "HHSales3!";
 const PASSWORD2 = "Sales!";
