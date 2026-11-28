@@ -85,6 +85,20 @@ export function partnerAllowed(name: string): boolean {
 /** Server-seitig: Partner-Filter auf ein Sales-CSV anwenden (Kopfzeilen bleiben erhalten). */
 export function filterSalesCsv(text: string): string {
   if (IS_PROJEKTE ? SHOW_ALL_PARTNERS : !HIDE_PROJEKTE_IN_HH) return text;
+  return filterCsvByPartner(text, partnerAllowed);
+}
+
+/** Partner, die das HH-Dashboard zeigt (ohne Peak-Projekte) – für "Gesamt Peak + HH" im Peak-Dashboard. */
+export function hhPartnerAllowed(name: string): boolean {
+  return !isPeakOnlyPartner(name);
+}
+
+/** Server-seitig: HH-Sales-CSV so filtern, wie es das HH-Dashboard zeigt. */
+export function filterHhSalesCsv(text: string): string {
+  return filterCsvByPartner(text, hhPartnerAllowed);
+}
+
+function filterCsvByPartner(text: string, allowed: (name: string) => boolean): string {
   const lines = text.split("\n");
   let headerIdx = -1;
   let partnerCol = -1;
@@ -106,7 +120,7 @@ export function filterSalesCsv(text: string): string {
       const cols = splitCsvLine(line, sep);
       const partner = (cols[partnerCol] || "").trim();
       if (!partner) return headerIdx === -1; // Vorspann-Zeilen ohne Header behalten
-      return partnerAllowed(partner);
+      return allowed(partner);
     })
     .join("\n");
 }

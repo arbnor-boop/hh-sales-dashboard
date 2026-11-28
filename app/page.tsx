@@ -10,6 +10,13 @@ async function fetchSheet() {
   return res.text();
 }
 
+// Peak-Dashboard: HH-Sales-Deals (ohne Peak-Projekte) für die Ansicht "Gesamt Peak + HH"
+async function fetchHhSheet() {
+  const res = await fetch("/api/hh-sheet?t=" + Date.now(), {cache: "no-store"});
+  if (!res.ok) throw new Error("hh-sheet " + res.status);
+  return res.text();
+}
+
 const INTERN_PARTNERS = new Set([
   "ZELLGUT GmbH","Grundl Leadership","Schippke","HH SCG",
   "Nuhi Consulting","White Immobilien","KHPH AG","Peak",
@@ -5081,6 +5088,10 @@ export default function Dashboard() {
   const [selectedDatum, setSelectedDatum] = useState("04.05.2026");
   const [activeTab, setActiveTab] = useState<"dashboard"|"tagesansicht"|"wochenansicht"|"monatsansicht"|"jahresuebersicht"|"closer_intern"|"closer_extern"|"pivot"|"rangliste"|"netcash"|"provisionen"|"marge"|"admin"|"kosten">("dashboard");
   const [uploadedDeals, setUploadedDeals] = useState<Deal[]|null>(null);
+  // Peak-Dashboard: HH-Sales-Deals und Umschalter "Nur Peak" / "Gesamt Peak + HH"
+  const [hhDeals, setHhDeals] = useState<Deal[]>([]);
+  const [hhStatus, setHhStatus] = useState<"idle"|"success"|"error">("idle");
+  const [gesamtModus, setGesamtModus] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<"idle"|"success"|"error">("idle");
   const [monthOpen, setMonthOpen] = useState(false);
   const [closerView, setCloserView] = useState<"monat"|"tag">("monat");
@@ -5179,7 +5190,28 @@ export default function Dashboard() {
   }
 
   // Nur Partner, die zu diesem Dashboard gehören (siehe app/dashboard-config.ts)
-  const deals = useMemo(()=>(uploadedDeals ?? (IS_PROJEKTE ? [] : DEALS)).filter(d=>partnerAllowed(d.partner)),[uploadedDeals]);
+  const deals = useMemo(()=>{
+    const own = (uploadedDeals ?? (IS_PROJEKTE ? [] : DEALS)).filter(d=>partnerAllowed(d.partner));
+    // "Gesamt Peak + HH": HH-Deals sind serverseitig schon wie im HH-Dashboard gefiltert
+    return IS_PROJEKTE && gesamtModus ? [...own, ...hhDeals] : own;
+  },[uploadedDeals, hhDeals, gesamtModus]);
+
+  useEffect(() => {
+    if (!IS_PROJEKTE) return;
+    async function loadHh() {
+      try {
+        const parsed = parseCSV(await fetchHhSheet());
+        setHhDeals(parsed);
+        setHhStatus(parsed.length > 0 ? "success" : "error");
+      } catch (e) {
+        console.error("HH-Sheet fetch error:", e);
+        setHhStatus("error");
+      }
+    }
+    loadHh();
+    const interval = setInterval(loadHh, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Load provConfig from localStorage
   useEffect(() => {
@@ -5621,6 +5653,20 @@ export default function Dashboard() {
           <div style={{fontSize:19,fontWeight:800,letterSpacing:"-0.5px",color:"#fff"}}>{DASHBOARD_TITLE}</div>
           <div style={{fontSize:10,color:C.muted,marginTop:2,letterSpacing:"3px"}}>SALES DASHBOARD</div>
         </div>
+        {IS_PROJEKTE && (
+          <div style={{padding:"14px 12px 4px"}}>
+            <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Zahlen</div>
+            <button onClick={()=>setGesamtModus(false)} style={sideBtn(!gesamtModus)}>
+              <span>🔷 Nur {DASHBOARD_TITLE}</span>
+              {!gesamtModus&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
+            </button>
+            <button onClick={()=>setGesamtModus(true)} style={sideBtn(gesamtModus)}>
+              <span>➕ Gesamt {DASHBOARD_TITLE} + HH</span>
+              {gesamtModus&&<span style={{width:6,height:6,borderRadius:"50%",background:C.indigo,flexShrink:0}}/>}
+            </button>
+            {gesamtModus&&hhStatus==="error"&&<div style={{fontSize:10,color:"#c0392b",padding:"2px 4px"}}>HH-Zahlen konnten nicht geladen werden</div>}
+          </div>
+        )}
         <div style={{padding:"14px 12px 4px"}}>
           <div style={{fontSize:10,color:"#d4c9b8",letterSpacing:"2px",marginBottom:6,padding:"0 4px",textTransform:"uppercase"}}>Ansicht</div>
           {([["dashboard","🏠 Übersicht"],["tagesansicht","📅 Tagesansicht"],["wochenansicht","📆 Wochenansicht"],["monatsansicht","📊 Monatsansicht"],["jahresuebersicht","📈 Jahresübersicht"],["closer_intern","👤 Closer Intern"],["closer_extern","👤 Closer Extern"],["pivot","📋 Pivot"],["rangliste","🏆 Rangliste"],["netcash","💵 Net-Cash-Update"],["provisionen","💰 Provisionen"],["marge","📊 Marge"],["kosten","💼 Projekte & Kosten"],["admin","⚙️ Closer Admin"]] as const).filter(([t])=>IS_PROJEKTE?!PEAK_HIDDEN_TABS.includes(t):t!=="kosten").map(([t,lbl])=>(
